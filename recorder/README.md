@@ -21,7 +21,7 @@ with `t` (epoch milliseconds) and `type`:
 | `mouse_press`, `mouse_release` | `x`, `y`, `button` (1 left, 2 middle, 3 right) | every button |
 | `wheel` | `x`, `y`, `rot` | scroll |
 | `key_press`, `key_release` | `key` (`"char"` for letters/digits unless typed text is on), `code` | every key |
-| `menu_click` | `option`, `target`, `action`, `id`, `p0`, `p1`, `item`, `x`, `y`, `tick` | every menu action the client runs |
+| `menu_click` | `option`, `target`, `action`, `id`, `p0`, `p1`, `item`, `x`, `y`, `tick`, plus `dx`, `dy` (target tile relative to you) for objects, ground items and NPCs, and `npc_index`, `npc_id` for NPCs | every menu action the client runs |
 | `tick` | `tick`, `x`, `y`, `plane`, `anim`, `interacting`, `hp`, `prayer`, `run`, `yaw`, `pitch`, `camera_moved`, `focused`, `inv`, `worn`, `bank_open`, `npcs[]`, `players[]`, `objects[]` | every 600 ms game tick |
 | `xp` | `skill`, `xp`, `level` | XP drops |
 | `game_message` | `msg` | game/engine messages only, never player chat |
@@ -30,10 +30,13 @@ with `t` (epoch milliseconds) and `type`:
 | `anim`, `interacting` | your animation / target changes | as they happen |
 | `session_end` | `reason` | logout, pause, or plugin stopped |
 
-`npcs[]` has `id`, `name`, `dx`, `dy` (tiles relative to you), `anim`, `hp_ratio`,
+`npcs[]` has `index` (matches `menu_click.npc_index`), `id`, `name`, `dx`, `dy` (tiles relative to you), `anim`, `hp_ratio`,
 `hp_scale`, `targets_me`. `players[]` are anonymous: offsets, animation and combat
 level, never names. `objects[]` are game, wall and ground objects within the radius,
 with `id`, `kind`, `dx`, `dy`.
+
+Schema 2 (Nov 2026) added the click offsets and NPC index so every click can be matched
+to the thing in the tick snapshot; schema 1 files only have scene `p0`/`p1`.
 
 Privacy defaults: letters and digits are stored as `"char"` (timing only), other
 players' chat and names are never stored, and the login screen is never recorded.
