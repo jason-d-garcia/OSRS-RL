@@ -72,16 +72,13 @@ From a look at RSMod's `content/` folder (late 2025 snapshot):
 | Woodcutting (all trees, axes, despawn timers) | implemented |
 | Bank interface | implemented |
 | Combat, special attacks | implemented |
-| Gemstone crab | **not scripted**: the NPC and objects exist in the cache only |
-| Mining | **not implemented** (needed for the crab shell) |
-| Varlamore / Tlati Rainforest area scripts (cave tunnels) | not implemented |
+| Gemstone crab, shell and tunnels | in this repo: `rsmod-content/gemstone-crab` (see its README to install) |
+| Mining skill | not implemented, and not needed: the shell only needs a pickaxe |
 
-So Draynor willows can run on the server as soon as it is up. Gem crabs need new
-RSMod content scripts: the crab's timer-based health and no-retaliation behaviour,
-damage tracking with the top-16 rule, burrow and resurface at the next mine, the
-shell (mine for 3 gems), and the cave shortcut. That is the next server task, along
-with the headless agent plugin that lets the trainer drive bot players over a
-socket with the same observation and action schema as `osrs_rl/env.py`.
+So Draynor willows can run on the server as soon as it is up, and gem crabs once
+the `gemstone-crab` module is copied in. The next server task is the headless agent
+plugin that lets the trainer drive bot players over a socket with the same
+observation and action schema as `osrs_rl/env.py`.
 
 ## Notes
 
