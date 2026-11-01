@@ -73,10 +73,9 @@ the project) and `python -m osrs_rl.recordings <file>` prints a summary.
 
 ## Notes
 
-* Built against `net.runelite:client:latest.release`. It was written against the
-  RuneLite API as of late October 2026 but not compiled in the cloud sandbox,
-  which cannot reach repo.runelite.net; if `gradlew run` reports a compile error,
-  paste it back and it will be fixed.
+* Built against `net.runelite:client:latest.release`. `gradlew build` compiles
+  cleanly against the RuneLite release of November 2026. It has not been run
+  inside a live client yet.
 * Mouse coordinates are canvas pixels as RuneLite reports them. With stretched
   mode on, `session_start.stretched` is true; keep the window size fixed within a
   session if you can.

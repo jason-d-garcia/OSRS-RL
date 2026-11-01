@@ -38,11 +38,14 @@ the square, so that is (1273, 3173).
 
 ## Not checked yet
 
-* **It has never been compiled against RSMod.** My sandbox can't download RSMod's game
-  cache. Every API call was checked against RSMod's source, but expect a few compile
-  errors on the first build. Paste them to me and I'll fix them.
-* **Spawns from the cache.** If the cache's map already places a gemstone crab, the
-  script deletes any crab it didn't spawn on that crab's first timer tick.
+* **Compiled and run headless (Nov 2026, RSMod main, revision 233).** `gradlew install`
+  and `gradlew run` succeed, the unit tests pass, and with temporary logging the crab
+  spawned at the north mine on startup, its timer ran every tick, its hitpoints fell
+  by 1000 every 100 ticks down to the 2000 floor, and it burrowed at tick 1000 and came
+  up at the east mine. Nothing has been checked with a client logged in yet: hitting
+  the crab, mining the shell and the tunnels are still untested.
+* **Spawns from the cache.** No cache-placed crab showed up in the headless run. If
+  one ever does, the script deletes any crab it didn't spawn on that crab's first timer tick.
 * **Approximate coordinates.** The tunnel exit tile is set to one tile south of each
   tunnel, and the crab is centred on the mine coordinates from the RuneLite plugins.
   Both may be off by a tile or two.

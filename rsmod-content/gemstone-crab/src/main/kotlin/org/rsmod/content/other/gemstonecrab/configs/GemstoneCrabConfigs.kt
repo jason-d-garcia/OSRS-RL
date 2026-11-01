@@ -61,7 +61,8 @@ internal object GemstoneCrabNpcEditor : NpcEditor() {
         edit(gem_crab_npcs.crab) {
             hitpoints = GemstoneCrabRules.HITPOINTS_POOL
             timer = GemstoneCrabRules.TIMER_INTERVAL
-            respawnRate = Int.MAX_VALUE
+            // The cache stores respawn rate as an unsigned short, so 65535 is the largest it holds.
+            respawnRate = 65535
             giveChase = false
             defaultMode = none
             param[params.npc_com_xp_multiplier] = GemstoneCrabRules.XP_MULTIPLIER
