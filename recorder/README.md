@@ -33,10 +33,14 @@ with `t` (epoch milliseconds) and `type`:
 `npcs[]` has `index` (matches `menu_click.npc_index`), `id`, `name`, `dx`, `dy` (tiles relative to you), `anim`, `hp_ratio`,
 `hp_scale`, `targets_me`. `players[]` are anonymous: offsets, animation and combat
 level, never names. `objects[]` are game, wall and ground objects within the radius,
-with `id`, `kind`, `dx`, `dy`.
+with `id`, `kind`, `dx`, `dy`; objects bigger than one tile give their south-west
+corner (the tile a click on them reports) plus `w`, `h` in tiles.
 
 Schema 2 (Nov 2026) added the click offsets and NPC index so every click can be matched
 to the thing in the tick snapshot; schema 1 files only have scene `p0`/`p1`.
+Schema 3 switched large objects in `objects[]` from their centre tile to their south-west
+corner, so object clicks match exactly; in schema 2 files they are off by about half the
+object's size.
 
 Privacy defaults: letters and digits are stored as `"char"` (timing only), other
 players' chat and names are never stored, and the login screen is never recorded.
