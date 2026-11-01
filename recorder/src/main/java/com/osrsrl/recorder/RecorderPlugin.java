@@ -78,7 +78,7 @@ import net.runelite.client.util.Text;
 )
 public class RecorderPlugin extends Plugin
 {
-	static final int SCHEMA_VERSION = 1;
+	static final int SCHEMA_VERSION = 2;
 	static final File OUT_DIR = new File(RuneLite.RUNELITE_DIR, "osrs-rl-recordings");
 
 	@Inject
@@ -342,6 +342,7 @@ public class RecorderPlugin extends Plugin
 		r.put("p0", e.getParam0());
 		r.put("p1", e.getParam1());
 		r.put("item", e.getItemId());
+		clickTarget(r, e);
 		net.runelite.api.Point m = client.getMouseCanvasPosition();
 		if (m != null)
 		{
@@ -350,6 +351,40 @@ public class RecorderPlugin extends Plugin
 		}
 		r.put("tick", client.getTickCount());
 		emit(r);
+	}
+
+	/**
+	 * Adds where the clicked thing is, in the same frame as the tick snapshots: {@code dx}/{@code dy}
+	 * tile offsets from the player for tile targets (objects and ground items), and the NPC's
+	 * {@code npc_index} (the same key as {@code npcs[].index}) and type id for NPC targets.
+	 */
+	private void clickTarget(Map<String, Object> r, MenuOptionClicked e)
+	{
+		if (e.getMenuAction() == null || client.getLocalPlayer() == null)
+		{
+			return;
+		}
+		String a = e.getMenuAction().name();
+		WorldView wv = client.getTopLevelWorldView();
+		WorldPoint me = client.getLocalPlayer().getWorldLocation();
+		if (a.contains("NPC"))
+		{
+			NPC n = wv.npcs().byIndex(e.getId());
+			r.put("npc_index", e.getId());
+			if (n != null)
+			{
+				WorldPoint p = n.getWorldLocation();
+				r.put("npc_id", n.getId());
+				r.put("dx", p.getX() - me.getX());
+				r.put("dy", p.getY() - me.getY());
+			}
+		}
+		else if (a.contains("GAME_OBJECT") || a.contains("GROUND_ITEM") || a.equals("EXAMINE_OBJECT"))
+		{
+			WorldPoint p = WorldPoint.fromScene(wv, e.getParam0(), e.getParam1(), wv.getPlane());
+			r.put("dx", p.getX() - me.getX());
+			r.put("dy", p.getY() - me.getY());
+		}
 	}
 
 	@Subscribe
@@ -478,6 +513,7 @@ public class RecorderPlugin extends Plugin
 				continue;
 			}
 			Map<String, Object> m = new LinkedHashMap<>();
+			m.put("index", n.getIndex());
 			m.put("id", n.getId());
 			m.put("name", n.getName());
 			m.put("dx", p.getX() - me.getX());
