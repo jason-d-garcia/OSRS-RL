@@ -1,0 +1,3002 @@
+{
+ "gemcrab": {
+  "activity": "gemcrab",
+  "ticks": 5000000,
+  "kl_coef": 0.1,
+  "reward_cfg": {
+   "human_median_rate_per_hour": 46968.99702467084,
+   "cap_rate_per_hour": 54448.95900369743,
+   "reaction_floor_ms": 520.9164368991926,
+   "shaping_weight": 0.2,
+   "camera_weight": 0.05,
+   "reward_scale": 10.0
+  },
+  "human_heldout": {
+   "progress_per_h_median": 49069.26296321263,
+   "progress_per_h_iqr": [
+    39238.212543014335,
+    53393.45182359188
+   ],
+   "actions_per_session": 11.875
+  },
+  "rules_floor_human_false_flag": 0.0,
+  "bots": {
+   "scripted": {
+    "detectors": {
+     "rules_floor": {
+      "balanced_acc": 1.0,
+      "bot_flag_rate": 1.0,
+      "human_false_flag_rate": 0.0
+     },
+     "feature_gbt": {
+      "balanced_acc": 1.0,
+      "auc": 1.0
+     },
+     "sequence_gru": {
+      "balanced_acc": 0.975,
+      "auc": 0.969
+     },
+     "best": {
+      "name": "feature_gbt",
+      "balanced_acc": 1.0,
+      "auc": 1.0
+     }
+    },
+    "timescales": {
+     "reaction_ks": 0.47653965204397475,
+     "gap_ks": 0.21133461047254148,
+     "gap_autocorr_bot": -0.4751332104206085,
+     "gap_autocorr_human": -0.17264220118522644,
+     "progress_per_h_bot_median": 50321.459485429965,
+     "progress_per_h_human_iqr": [
+      39238.212543014335,
+      53393.45182359188
+     ],
+     "progress_in_human_iqr_frac": 0.54,
+     "camera_per_h_bot": 0.0,
+     "camera_per_h_human": 3.099943036089796,
+     "frac_gaps_over_60s_bot": 0.34657142857142853,
+     "frac_gaps_over_60s_human": 0.4500513375513376
+    },
+    "progress_per_h_median": 51478.40820404503,
+    "actions_per_session": 9.69
+   },
+   "bc": {
+    "detectors": {
+     "rules_floor": {
+      "balanced_acc": 0.5,
+      "bot_flag_rate": 0.0,
+      "human_false_flag_rate": 0.0
+     },
+     "feature_gbt": {
+      "balanced_acc": 0.55,
+      "auc": 0.5595
+     },
+     "sequence_gru": {
+      "balanced_acc": 0.47,
+      "auc": 0.47300000000000003
+     },
+     "best": {
+      "name": "feature_gbt",
+      "balanced_acc": 0.55,
+      "auc": 0.5595
+     }
+    },
+    "timescales": {
+     "reaction_ks": 0.11151571739807042,
+     "gap_ks": 0.0704923657574198,
+     "gap_autocorr_bot": -0.06371235847473145,
+     "gap_autocorr_human": -0.17264220118522644,
+     "progress_per_h_bot_median": 50196.04861121972,
+     "progress_per_h_human_iqr": [
+      39238.212543014335,
+      53393.45182359188
+     ],
+     "progress_in_human_iqr_frac": 0.4,
+     "camera_per_h_bot": 3.815080180637842,
+     "camera_per_h_human": 3.099943036089796,
+     "frac_gaps_over_60s_bot": 0.43360857761089955,
+     "frac_gaps_over_60s_human": 0.4500513375513376
+    },
+    "progress_per_h_median": 49947.82679993636,
+    "actions_per_session": 14.27
+   },
+   "rl_kl": {
+    "detectors": {
+     "rules_floor": {
+      "balanced_acc": 0.5,
+      "bot_flag_rate": 0.0,
+      "human_false_flag_rate": 0.0
+     },
+     "feature_gbt": {
+      "balanced_acc": 0.7375,
+      "auc": 0.841
+     },
+     "sequence_gru": {
+      "balanced_acc": 0.7949999999999999,
+      "auc": 0.9015
+     },
+     "best": {
+      "name": "sequence_gru",
+      "balanced_acc": 0.7949999999999999,
+      "auc": 0.9015
+     }
+    },
+    "timescales": {
+     "reaction_ks": 0.14857113380790254,
+     "gap_ks": 0.12599043118034892,
+     "gap_autocorr_bot": -0.04637493938207626,
+     "gap_autocorr_human": -0.17264220118522644,
+     "progress_per_h_bot_median": 48571.87702594475,
+     "progress_per_h_human_iqr": [
+      39238.212543014335,
+      53393.45182359188
+     ],
+     "progress_in_human_iqr_frac": 0.42,
+     "camera_per_h_bot": 9.865942876824844,
+     "camera_per_h_human": 3.099943036089796,
+     "frac_gaps_over_60s_bot": 0.43716592069556803,
+     "frac_gaps_over_60s_human": 0.4500513375513376
+    },
+    "progress_per_h_median": 47595.887981224885,
+    "actions_per_session": 16.54
+   },
+   "pure_rl": {
+    "detectors": {
+     "rules_floor": {
+      "balanced_acc": 0.53,
+      "bot_flag_rate": 0.06,
+      "human_false_flag_rate": 0.0
+     },
+     "feature_gbt": {
+      "balanced_acc": 1.0,
+      "auc": 1.0
+     },
+     "sequence_gru": {
+      "balanced_acc": 1.0,
+      "auc": 1.0
+     },
+     "best": {
+      "name": "feature_gbt",
+      "balanced_acc": 1.0,
+      "auc": 1.0
+     }
+    },
+    "timescales": {
+     "reaction_ks": 0.3414259692948218,
+     "gap_ks": 0.39934374597196776,
+     "gap_autocorr_bot": -0.05431514233350754,
+     "gap_autocorr_human": -0.17264220118522644,
+     "progress_per_h_bot_median": 50521.90788746771,
+     "progress_per_h_human_iqr": [
+      39238.212543014335,
+      53393.45182359188
+     ],
+     "progress_in_human_iqr_frac": 0.48,
+     "camera_per_h_bot": 6.658187917014663,
+     "camera_per_h_human": 3.099943036089796,
+     "frac_gaps_over_60s_bot": 0.06065561377054902,
+     "frac_gaps_over_60s_human": 0.4500513375513376
+    },
+    "progress_per_h_median": 52397.912527499975,
+    "actions_per_session": 83.94
+   }
+  },
+  "rl_curve": [
+   {
+    "ticks": 141772,
+    "progress_per_h": 46786.61976770169,
+    "kl_per_episode": 0.0,
+    "actions_per_episode": 14.28125
+   },
+   {
+    "ticks": 284324,
+    "progress_per_h": 46492.17832266531,
+    "kl_per_episode": 0.6791017353534698,
+    "actions_per_episode": 15.65625
+   },
+   {
+    "ticks": 451662,
+    "progress_per_h": 44958.7545888545,
+    "kl_per_episode": 1.185102022252977,
+    "actions_per_episode": 13.75
+   },
+   {
+    "ticks": 608682,
+    "progress_per_h": 48230.06914594721,
+    "kl_per_episode": 2.516625409014523,
+    "actions_per_episode": 15.375
+   },
+   {
+    "ticks": 777447,
+    "progress_per_h": 46461.69589760489,
+    "kl_per_episode": 1.686345353256911,
+    "actions_per_episode": 13.75
+   },
+   {
+    "ticks": 948721,
+    "progress_per_h": 44920.721859549245,
+    "kl_per_episode": 3.1898487568832934,
+    "actions_per_episode": 14.53125
+   },
+   {
+    "ticks": 1120552,
+    "progress_per_h": 41638.39240946196,
+    "kl_per_episode": 3.3292725859209895,
+    "actions_per_episode": 14.40625
+   },
+   {
+    "ticks": 1282060,
+    "progress_per_h": 47257.37424630516,
+    "kl_per_episode": 2.922367148566991,
+    "actions_per_episode": 14.0
+   },
+   {
+    "ticks": 1440363,
+    "progress_per_h": 46073.56166711819,
+    "kl_per_episode": 2.319079961627722,
+    "actions_per_episode": 13.625
+   },
+   {
+    "ticks": 1598501,
+    "progress_per_h": 47202.312171007026,
+    "kl_per_episode": 2.3105901731178164,
+    "actions_per_episode": 14.28125
+   },
+   {
+    "ticks": 1745992,
+    "progress_per_h": 48292.148314659775,
+    "kl_per_episode": 2.4397196522913873,
+    "actions_per_episode": 15.375
+   },
+   {
+    "ticks": 1892829,
+    "progress_per_h": 49794.183135394356,
+    "kl_per_episode": 2.5858265296556056,
+    "actions_per_episode": 16.40625
+   },
+   {
+    "ticks": 2037694,
+    "progress_per_h": 44879.505837098026,
+    "kl_per_episode": 2.7068986855447292,
+    "actions_per_episode": 16.5
+   },
+   {
+    "ticks": 2166996,
+    "progress_per_h": 47510.132746643096,
+    "kl_per_episode": 2.301438252441585,
+    "actions_per_episode": 15.96875
+   },
+   {
+    "ticks": 2303554,
+    "progress_per_h": 48125.0348002712,
+    "kl_per_episode": 2.356668177526444,
+    "actions_per_episode": 14.53125
+   },
+   {
+    "ticks": 2433876,
+    "progress_per_h": 47929.324473593195,
+    "kl_per_episode": 2.0228036015760154,
+    "actions_per_episode": 16.1875
+   },
+   {
+    "ticks": 2563976,
+    "progress_per_h": 47787.56987711761,
+    "kl_per_episode": 2.3944586711004376,
+    "actions_per_episode": 16.75
+   },
+   {
+    "ticks": 2690591,
+    "progress_per_h": 46173.04818557517,
+    "kl_per_episode": 2.7490420038811862,
+    "actions_per_episode": 17.5
+   },
+   {
+    "ticks": 2811418,
+    "progress_per_h": 49526.25349575968,
+    "kl_per_episode": 2.5954726161435246,
+    "actions_per_episode": 16.84375
+   },
+   {
+    "ticks": 2933209,
+    "progress_per_h": 46981.15789615584,
+    "kl_per_episode": 1.907119546085596,
+    "actions_per_episode": 16.8125
+   },
+   {
+    "ticks": 3055228,
+    "progress_per_h": 47987.02201102824,
+    "kl_per_episode": 2.5547643520403653,
+    "actions_per_episode": 17.78125
+   },
+   {
+    "ticks": 3185927,
+    "progress_per_h": 49147.87729932212,
+    "kl_per_episode": 2.6121710427105427,
+    "actions_per_episode": 17.75
+   },
+   {
+    "ticks": 3316127,
+    "progress_per_h": 45532.228367850716,
+    "kl_per_episode": 3.3420736235566437,
+    "actions_per_episode": 17.0
+   },
+   {
+    "ticks": 3446433,
+    "progress_per_h": 51685.999032008374,
+    "kl_per_episode": 2.4197344155982137,
+    "actions_per_episode": 15.75
+   },
+   {
+    "ticks": 3574951,
+    "progress_per_h": 49031.87331781293,
+    "kl_per_episode": 3.1180609609000385,
+    "actions_per_episode": 16.09375
+   },
+   {
+    "ticks": 3702029,
+    "progress_per_h": 49555.525466230276,
+    "kl_per_episode": 2.5584392878226936,
+    "actions_per_episode": 16.59375
+   },
+   {
+    "ticks": 3830682,
+    "progress_per_h": 45117.909932158866,
+    "kl_per_episode": 3.0344597450457513,
+    "actions_per_episode": 15.78125
+   },
+   {
+    "ticks": 3953848,
+    "progress_per_h": 48520.74355052258,
+    "kl_per_episode": 2.8881074097007513,
+    "actions_per_episode": 16.59375
+   },
+   {
+    "ticks": 4079844,
+    "progress_per_h": 43895.398963964326,
+    "kl_per_episode": 3.3257566578686237,
+    "actions_per_episode": 18.09375
+   },
+   {
+    "ticks": 4207986,
+    "progress_per_h": 48060.95977598864,
+    "kl_per_episode": 2.555277402512729,
+    "actions_per_episode": 16.125
+   },
+   {
+    "ticks": 4334228,
+    "progress_per_h": 45504.73914172728,
+    "kl_per_episode": 2.706673664506525,
+    "actions_per_episode": 17.0
+   },
+   {
+    "ticks": 4468191,
+    "progress_per_h": 46303.812201086774,
+    "kl_per_episode": 2.2452438790351152,
+    "actions_per_episode": 15.5625
+   },
+   {
+    "ticks": 4596114,
+    "progress_per_h": 46701.62768704158,
+    "kl_per_episode": 2.80949155241251,
+    "actions_per_episode": 16.375
+   },
+   {
+    "ticks": 4719850,
+    "progress_per_h": 51061.47417794929,
+    "kl_per_episode": 2.3215375230647624,
+    "actions_per_episode": 16.59375
+   },
+   {
+    "ticks": 4846413,
+    "progress_per_h": 50237.67400444587,
+    "kl_per_episode": 3.464114441536367,
+    "actions_per_episode": 16.96875
+   },
+   {
+    "ticks": 4967143,
+    "progress_per_h": 47225.118894965635,
+    "kl_per_episode": 3.0594320567324758,
+    "actions_per_episode": 17.28125
+   },
+   {
+    "ticks": 5090791,
+    "progress_per_h": 50453.19417899157,
+    "kl_per_episode": 2.5214265750255436,
+    "actions_per_episode": 17.28125
+   }
+  ],
+  "pure_rl_curve": [
+   {
+    "ticks": 50656,
+    "progress_per_h": 36190.243112088814,
+    "actions_per_episode": 694.3333333333334
+   },
+   {
+    "ticks": 60057,
+    "progress_per_h": 36044.61187223194,
+    "actions_per_episode": 697.5
+   },
+   {
+    "ticks": 71203,
+    "progress_per_h": 36044.61187223194,
+    "actions_per_episode": 697.5
+   },
+   {
+    "ticks": 86223,
+    "progress_per_h": 36044.61187223194,
+    "actions_per_episode": 697.5
+   },
+   {
+    "ticks": 101546,
+    "progress_per_h": 41647.83341832715,
+    "actions_per_episode": 562.4375
+   },
+   {
+    "ticks": 117349,
+    "progress_per_h": 41647.83341832715,
+    "actions_per_episode": 562.4375
+   },
+   {
+    "ticks": 137369,
+    "progress_per_h": 41757.67923834142,
+    "actions_per_episode": 550.9375
+   },
+   {
+    "ticks": 157677,
+    "progress_per_h": 47999.199948369125,
+    "actions_per_episode": 362.78125
+   },
+   {
+    "ticks": 180203,
+    "progress_per_h": 47999.199948369125,
+    "actions_per_episode": 362.78125
+   },
+   {
+    "ticks": 204435,
+    "progress_per_h": 50599.08256208664,
+    "actions_per_episode": 275.0
+   },
+   {
+    "ticks": 231450,
+    "progress_per_h": 51190.326762595345,
+    "actions_per_episode": 273.125
+   },
+   {
+    "ticks": 258845,
+    "progress_per_h": 50330.687526214024,
+    "actions_per_episode": 236.6875
+   },
+   {
+    "ticks": 289251,
+    "progress_per_h": 48849.863828415146,
+    "actions_per_episode": 223.0625
+   },
+   {
+    "ticks": 320841,
+    "progress_per_h": 48072.37717488698,
+    "actions_per_episode": 209.84375
+   },
+   {
+    "ticks": 355766,
+    "progress_per_h": 50873.120982811175,
+    "actions_per_episode": 189.75
+   },
+   {
+    "ticks": 390606,
+    "progress_per_h": 53129.66482969113,
+    "actions_per_episode": 174.65625
+   },
+   {
+    "ticks": 426735,
+    "progress_per_h": 53663.37101426408,
+    "actions_per_episode": 169.75
+   },
+   {
+    "ticks": 462633,
+    "progress_per_h": 54477.26140091717,
+    "actions_per_episode": 161.90625
+   },
+   {
+    "ticks": 496414,
+    "progress_per_h": 52472.56598148696,
+    "actions_per_episode": 162.78125
+   },
+   {
+    "ticks": 527816,
+    "progress_per_h": 51456.58527127204,
+    "actions_per_episode": 168.65625
+   },
+   {
+    "ticks": 563123,
+    "progress_per_h": 49966.07369677155,
+    "actions_per_episode": 174.78125
+   },
+   {
+    "ticks": 600246,
+    "progress_per_h": 50127.2105547532,
+    "actions_per_episode": 169.59375
+   },
+   {
+    "ticks": 636664,
+    "progress_per_h": 50224.45913877475,
+    "actions_per_episode": 161.46875
+   },
+   {
+    "ticks": 675640,
+    "progress_per_h": 50325.178135775524,
+    "actions_per_episode": 157.65625
+   },
+   {
+    "ticks": 720733,
+    "progress_per_h": 50446.25210397686,
+    "actions_per_episode": 148.5
+   },
+   {
+    "ticks": 767926,
+    "progress_per_h": 46938.00685280538,
+    "actions_per_episode": 131.0
+   },
+   {
+    "ticks": 815584,
+    "progress_per_h": 47327.80001553379,
+    "actions_per_episode": 125.375
+   },
+   {
+    "ticks": 866222,
+    "progress_per_h": 50141.918193890604,
+    "actions_per_episode": 119.25
+   },
+   {
+    "ticks": 923970,
+    "progress_per_h": 48647.25985342899,
+    "actions_per_episode": 110.5
+   },
+   {
+    "ticks": 983536,
+    "progress_per_h": 44737.20851179933,
+    "actions_per_episode": 103.625
+   },
+   {
+    "ticks": 1047175,
+    "progress_per_h": 45553.19891999147,
+    "actions_per_episode": 97.65625
+   },
+   {
+    "ticks": 1109228,
+    "progress_per_h": 47437.00301856619,
+    "actions_per_episode": 92.53125
+   },
+   {
+    "ticks": 1173369,
+    "progress_per_h": 47155.5056728858,
+    "actions_per_episode": 95.25
+   },
+   {
+    "ticks": 1233159,
+    "progress_per_h": 49869.03468806123,
+    "actions_per_episode": 97.875
+   },
+   {
+    "ticks": 1292452,
+    "progress_per_h": 52934.11215448695,
+    "actions_per_episode": 99.375
+   },
+   {
+    "ticks": 1344613,
+    "progress_per_h": 50788.33723227272,
+    "actions_per_episode": 106.375
+   },
+   {
+    "ticks": 1398560,
+    "progress_per_h": 51909.998001126296,
+    "actions_per_episode": 111.3125
+   },
+   {
+    "ticks": 1455093,
+    "progress_per_h": 51011.5676097903,
+    "actions_per_episode": 108.3125
+   },
+   {
+    "ticks": 1510712,
+    "progress_per_h": 49504.248285720154,
+    "actions_per_episode": 107.34375
+   },
+   {
+    "ticks": 1563281,
+    "progress_per_h": 46695.2078048838,
+    "actions_per_episode": 109.65625
+   },
+   {
+    "ticks": 1618904,
+    "progress_per_h": 48072.2810008809,
+    "actions_per_episode": 111.125
+   },
+   {
+    "ticks": 1676340,
+    "progress_per_h": 49877.112402062776,
+    "actions_per_episode": 107.5
+   },
+   {
+    "ticks": 1733103,
+    "progress_per_h": 48194.63420209628,
+    "actions_per_episode": 102.8125
+   },
+   {
+    "ticks": 1791801,
+    "progress_per_h": 49140.20565113169,
+    "actions_per_episode": 102.71875
+   },
+   {
+    "ticks": 1850029,
+    "progress_per_h": 51728.35813791855,
+    "actions_per_episode": 103.4375
+   },
+   {
+    "ticks": 1907487,
+    "progress_per_h": 49780.12770684899,
+    "actions_per_episode": 103.6875
+   },
+   {
+    "ticks": 1962592,
+    "progress_per_h": 49956.130212055315,
+    "actions_per_episode": 103.375
+   },
+   {
+    "ticks": 2021597,
+    "progress_per_h": 51897.686315167884,
+    "actions_per_episode": 105.15625
+   },
+   {
+    "ticks": 2078580,
+    "progress_per_h": 49348.1122353297,
+    "actions_per_episode": 103.34375
+   },
+   {
+    "ticks": 2134427,
+    "progress_per_h": 45654.5025518554,
+    "actions_per_episode": 105.03125
+   },
+   {
+    "ticks": 2191354,
+    "progress_per_h": 46848.944830955916,
+    "actions_per_episode": 105.0625
+   },
+   {
+    "ticks": 2245592,
+    "progress_per_h": 49223.892420335804,
+    "actions_per_episode": 105.875
+   },
+   {
+    "ticks": 2303692,
+    "progress_per_h": 47033.78625842309,
+    "actions_per_episode": 108.15625
+   },
+   {
+    "ticks": 2361917,
+    "progress_per_h": 48425.966292609184,
+    "actions_per_episode": 102.34375
+   },
+   {
+    "ticks": 2415491,
+    "progress_per_h": 49550.515331880364,
+    "actions_per_episode": 103.78125
+   },
+   {
+    "ticks": 2472161,
+    "progress_per_h": 49422.98452475143,
+    "actions_per_episode": 106.75
+   },
+   {
+    "ticks": 2526995,
+    "progress_per_h": 49111.526037924996,
+    "actions_per_episode": 105.59375
+   },
+   {
+    "ticks": 2582596,
+    "progress_per_h": 49535.265628274734,
+    "actions_per_episode": 104.9375
+   },
+   {
+    "ticks": 2638554,
+    "progress_per_h": 49644.97957711406,
+    "actions_per_episode": 105.53125
+   },
+   {
+    "ticks": 2695807,
+    "progress_per_h": 47855.155220578206,
+    "actions_per_episode": 103.34375
+   },
+   {
+    "ticks": 2757827,
+    "progress_per_h": 45711.63570995423,
+    "actions_per_episode": 102.34375
+   },
+   {
+    "ticks": 2820618,
+    "progress_per_h": 49282.97509370309,
+    "actions_per_episode": 94.59375
+   },
+   {
+    "ticks": 2885810,
+    "progress_per_h": 49424.06420545478,
+    "actions_per_episode": 90.59375
+   },
+   {
+    "ticks": 2952826,
+    "progress_per_h": 50373.01919115528,
+    "actions_per_episode": 89.71875
+   },
+   {
+    "ticks": 3012014,
+    "progress_per_h": 50094.31435398485,
+    "actions_per_episode": 92.125
+   },
+   {
+    "ticks": 3076142,
+    "progress_per_h": 47970.689875189826,
+    "actions_per_episode": 95.40625
+   },
+   {
+    "ticks": 3138649,
+    "progress_per_h": 50032.99269194599,
+    "actions_per_episode": 92.53125
+   },
+   {
+    "ticks": 3200842,
+    "progress_per_h": 49623.90436153707,
+    "actions_per_episode": 91.5
+   },
+   {
+    "ticks": 3264200,
+    "progress_per_h": 49251.03227511894,
+    "actions_per_episode": 95.125
+   },
+   {
+    "ticks": 3326414,
+    "progress_per_h": 49412.64134329188,
+    "actions_per_episode": 93.21875
+   },
+   {
+    "ticks": 3390090,
+    "progress_per_h": 51126.53937872624,
+    "actions_per_episode": 91.71875
+   },
+   {
+    "ticks": 3454688,
+    "progress_per_h": 51978.12378270767,
+    "actions_per_episode": 91.1875
+   },
+   {
+    "ticks": 3520048,
+    "progress_per_h": 49179.40292620398,
+    "actions_per_episode": 86.25
+   },
+   {
+    "ticks": 3587688,
+    "progress_per_h": 47543.198424190814,
+    "actions_per_episode": 88.65625
+   },
+   {
+    "ticks": 3651696,
+    "progress_per_h": 51517.94571741896,
+    "actions_per_episode": 87.5625
+   },
+   {
+    "ticks": 3715461,
+    "progress_per_h": 52701.3652798774,
+    "actions_per_episode": 92.09375
+   },
+   {
+    "ticks": 3777003,
+    "progress_per_h": 49654.7442760321,
+    "actions_per_episode": 94.0
+   },
+   {
+    "ticks": 3843356,
+    "progress_per_h": 49938.867833352015,
+    "actions_per_episode": 89.25
+   },
+   {
+    "ticks": 3915362,
+    "progress_per_h": 51876.5457406113,
+    "actions_per_episode": 86.375
+   },
+   {
+    "ticks": 3991262,
+    "progress_per_h": 49265.04086422432,
+    "actions_per_episode": 80.40625
+   },
+   {
+    "ticks": 4072368,
+    "progress_per_h": 51340.5345043357,
+    "actions_per_episode": 75.03125
+   },
+   {
+    "ticks": 4145843,
+    "progress_per_h": 47480.94507553961,
+    "actions_per_episode": 78.09375
+   },
+   {
+    "ticks": 4227515,
+    "progress_per_h": 49747.14919668847,
+    "actions_per_episode": 78.78125
+   },
+   {
+    "ticks": 4303820,
+    "progress_per_h": 52590.409951549154,
+    "actions_per_episode": 74.78125
+   },
+   {
+    "ticks": 4378215,
+    "progress_per_h": 54640.31508024641,
+    "actions_per_episode": 78.3125
+   },
+   {
+    "ticks": 4455025,
+    "progress_per_h": 52457.6970237171,
+    "actions_per_episode": 78.78125
+   },
+   {
+    "ticks": 4524945,
+    "progress_per_h": 52397.368466212465,
+    "actions_per_episode": 81.40625
+   },
+   {
+    "ticks": 4598839,
+    "progress_per_h": 50899.89287579506,
+    "actions_per_episode": 83.28125
+   },
+   {
+    "ticks": 4671157,
+    "progress_per_h": 49570.11768423607,
+    "actions_per_episode": 83.71875
+   },
+   {
+    "ticks": 4743929,
+    "progress_per_h": 52985.13797370477,
+    "actions_per_episode": 81.46875
+   },
+   {
+    "ticks": 4817834,
+    "progress_per_h": 49555.26582019554,
+    "actions_per_episode": 83.21875
+   },
+   {
+    "ticks": 4891732,
+    "progress_per_h": 49611.930554591265,
+    "actions_per_episode": 82.125
+   },
+   {
+    "ticks": 4965756,
+    "progress_per_h": 50206.148872345344,
+    "actions_per_episode": 82.78125
+   },
+   {
+    "ticks": 5039992,
+    "progress_per_h": 51005.34610948895,
+    "actions_per_episode": 80.03125
+   }
+  ],
+  "bc_history": [
+   {
+    "epoch": 0,
+    "train_nll": 6.872410859171042,
+    "val_nll": 3.7298011779785156,
+    "val_intent_acc": 0.5992366671562195
+   },
+   {
+    "epoch": 1,
+    "train_nll": 3.200415144888972,
+    "val_nll": 2.836124897003174,
+    "val_intent_acc": 0.5992366671562195
+   },
+   {
+    "epoch": 2,
+    "train_nll": 2.542980094017797,
+    "val_nll": 2.471445083618164,
+    "val_intent_acc": 0.7290076613426208
+   },
+   {
+    "epoch": 3,
+    "train_nll": 2.3039306893068203,
+    "val_nll": 2.0314133167266846,
+    "val_intent_acc": 0.7977099418640137
+   },
+   {
+    "epoch": 4,
+    "train_nll": 2.1449302506629078,
+    "val_nll": 2.079200267791748,
+    "val_intent_acc": 0.8091602921485901
+   },
+   {
+    "epoch": 5,
+    "train_nll": 2.050561853721317,
+    "val_nll": 1.8929829597473145,
+    "val_intent_acc": 0.8740457892417908
+   },
+   {
+    "epoch": 6,
+    "train_nll": 1.9781924009560825,
+    "val_nll": 1.9253450632095337,
+    "val_intent_acc": 0.8893129825592041
+   },
+   {
+    "epoch": 7,
+    "train_nll": 1.947027523599221,
+    "val_nll": 1.8061374425888062,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 8,
+    "train_nll": 1.9308677555596405,
+    "val_nll": 1.7491596937179565,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 9,
+    "train_nll": 1.9241191255329217,
+    "val_nll": 1.7657568454742432,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 10,
+    "train_nll": 1.9026620056431884,
+    "val_nll": 1.771309494972229,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 11,
+    "train_nll": 1.8688587587352765,
+    "val_nll": 1.9233052730560303,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 12,
+    "train_nll": 1.7883895052434122,
+    "val_nll": 1.5754859447479248,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 13,
+    "train_nll": 1.6932692809055794,
+    "val_nll": 1.663020372390747,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 14,
+    "train_nll": 1.6515835348891832,
+    "val_nll": 1.5489184856414795,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 15,
+    "train_nll": 1.6363214878356112,
+    "val_nll": 1.6959408521652222,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 16,
+    "train_nll": 1.6408695303034886,
+    "val_nll": 1.7863733768463135,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 17,
+    "train_nll": 1.6394821138388296,
+    "val_nll": 1.5814895629882812,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 18,
+    "train_nll": 1.6173065034762377,
+    "val_nll": 1.7076187133789062,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 19,
+    "train_nll": 1.6372314495040396,
+    "val_nll": 1.540366530418396,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 20,
+    "train_nll": 1.6158903455686713,
+    "val_nll": 1.6742746829986572,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 21,
+    "train_nll": 1.6092622399765932,
+    "val_nll": 1.5307146310806274,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 22,
+    "train_nll": 1.620841944720825,
+    "val_nll": 1.5829769372940063,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 23,
+    "train_nll": 1.6073407097962578,
+    "val_nll": 1.5997464656829834,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 24,
+    "train_nll": 1.6032424407688317,
+    "val_nll": 1.5751205682754517,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 25,
+    "train_nll": 1.6034642985271987,
+    "val_nll": 1.5452874898910522,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 26,
+    "train_nll": 1.6349902683494495,
+    "val_nll": 1.4380632638931274,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 27,
+    "train_nll": 1.6078452685220805,
+    "val_nll": 1.5365233421325684,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 28,
+    "train_nll": 1.5972902860780933,
+    "val_nll": 1.6222647428512573,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 29,
+    "train_nll": 1.6059981653483535,
+    "val_nll": 1.8371551036834717,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 30,
+    "train_nll": 1.6161612868903286,
+    "val_nll": 1.6741430759429932,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 31,
+    "train_nll": 1.598287952821807,
+    "val_nll": 1.6917470693588257,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 32,
+    "train_nll": 1.5893781315095799,
+    "val_nll": 1.6581628322601318,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 33,
+    "train_nll": 1.6026658253560395,
+    "val_nll": 1.5124744176864624,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 34,
+    "train_nll": 1.609256127618325,
+    "val_nll": 1.4669175148010254,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 35,
+    "train_nll": 1.6264610382440123,
+    "val_nll": 1.6864852905273438,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 36,
+    "train_nll": 1.6208536098390847,
+    "val_nll": 1.6974223852157593,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 37,
+    "train_nll": 1.644220797514036,
+    "val_nll": 1.4548263549804688,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 38,
+    "train_nll": 1.6249082410957536,
+    "val_nll": 1.8469858169555664,
+    "val_intent_acc": 0.8931297659873962
+   },
+   {
+    "epoch": 39,
+    "train_nll": 1.6039981080195007,
+    "val_nll": 1.632051944732666,
+    "val_intent_acc": 0.8931297659873962
+   }
+  ]
+ },
+ "willows": {
+  "activity": "willows",
+  "ticks": 5000000,
+  "kl_coef": 0.1,
+  "reward_cfg": {
+   "human_median_rate_per_hour": 21523.905289930655,
+   "cap_rate_per_hour": 24460.6989959042,
+   "reaction_floor_ms": 521.9386841207603,
+   "shaping_weight": 0.2,
+   "camera_weight": 0.05,
+   "reward_scale": 10.0
+  },
+  "human_heldout": {
+   "progress_per_h_median": 23230.198103819504,
+   "progress_per_h_iqr": [
+    18773.961883932527,
+    25880.627097121975
+   ],
+   "actions_per_session": 78.525
+  },
+  "rules_floor_human_false_flag": 0.0,
+  "bots": {
+   "scripted": {
+    "detectors": {
+     "rules_floor": {
+      "balanced_acc": 1.0,
+      "bot_flag_rate": 1.0,
+      "human_false_flag_rate": 0.0
+     },
+     "feature_gbt": {
+      "balanced_acc": 1.0,
+      "auc": 1.0
+     },
+     "sequence_gru": {
+      "balanced_acc": 1.0,
+      "auc": 1.0
+     },
+     "best": {
+      "name": "feature_gbt",
+      "balanced_acc": 1.0,
+      "auc": 1.0
+     }
+    },
+    "timescales": {
+     "reaction_ks": 0.4983330307113528,
+     "gap_ks": 0.27832687851244076,
+     "gap_autocorr_bot": 0.2248123735189438,
+     "gap_autocorr_human": 0.09625310450792313,
+     "progress_per_h_bot_median": 28533.000758355774,
+     "progress_per_h_human_iqr": [
+      18773.961883932527,
+      25880.627097121975
+     ],
+     "progress_in_human_iqr_frac": 0.32,
+     "camera_per_h_bot": 0.0,
+     "camera_per_h_human": 14.786886154647544,
+     "frac_gaps_over_60s_bot": 0.005950356116771594,
+     "frac_gaps_over_60s_human": 0.034208945574861885
+    },
+    "progress_per_h_median": 29227.5,
+    "actions_per_session": 72.05
+   },
+   "bc": {
+    "detectors": {
+     "rules_floor": {
+      "balanced_acc": 0.5,
+      "bot_flag_rate": 0.0,
+      "human_false_flag_rate": 0.0
+     },
+     "feature_gbt": {
+      "balanced_acc": 0.48000000000000004,
+      "auc": 0.534
+     },
+     "sequence_gru": {
+      "balanced_acc": 0.5025,
+      "auc": 0.475
+     },
+     "best": {
+      "name": "feature_gbt",
+      "balanced_acc": 0.48000000000000004,
+      "auc": 0.534
+     }
+    },
+    "timescales": {
+     "reaction_ks": 0.13523343417107359,
+     "gap_ks": 0.04976253468935332,
+     "gap_autocorr_bot": 0.1504538655281067,
+     "gap_autocorr_human": 0.09625310450792313,
+     "progress_per_h_bot_median": 23659.1742899394,
+     "progress_per_h_human_iqr": [
+      18773.961883932527,
+      25880.627097121975
+     ],
+     "progress_in_human_iqr_frac": 0.28,
+     "camera_per_h_bot": 14.621453543869173,
+     "camera_per_h_human": 14.786886154647544,
+     "frac_gaps_over_60s_bot": 0.04719793580614616,
+     "frac_gaps_over_60s_human": 0.034208945574861885
+    },
+    "progress_per_h_median": 21713.87196857889,
+    "actions_per_session": 78.25
+   },
+   "rl_kl": {
+    "detectors": {
+     "rules_floor": {
+      "balanced_acc": 0.5,
+      "bot_flag_rate": 0.0,
+      "human_false_flag_rate": 0.0
+     },
+     "feature_gbt": {
+      "balanced_acc": 0.745,
+      "auc": 0.8245
+     },
+     "sequence_gru": {
+      "balanced_acc": 0.4975,
+      "auc": 0.5105
+     },
+     "best": {
+      "name": "feature_gbt",
+      "balanced_acc": 0.745,
+      "auc": 0.8245
+     }
+    },
+    "timescales": {
+     "reaction_ks": 0.10287463030068533,
+     "gap_ks": 0.048988680974625276,
+     "gap_autocorr_bot": 0.09735000878572464,
+     "gap_autocorr_human": 0.09625310450792313,
+     "progress_per_h_bot_median": 24416.87588848389,
+     "progress_per_h_human_iqr": [
+      18773.961883932527,
+      25880.627097121975
+     ],
+     "progress_in_human_iqr_frac": 0.4,
+     "camera_per_h_bot": 19.606732265857296,
+     "camera_per_h_human": 14.786886154647544,
+     "frac_gaps_over_60s_bot": 0.026034158171748145,
+     "frac_gaps_over_60s_human": 0.034208945574861885
+    },
+    "progress_per_h_median": 23867.28555893035,
+    "actions_per_session": 86.91
+   },
+   "pure_rl": {
+    "detectors": {
+     "rules_floor": {
+      "balanced_acc": 0.85,
+      "bot_flag_rate": 0.7,
+      "human_false_flag_rate": 0.0
+     },
+     "feature_gbt": {
+      "balanced_acc": 1.0,
+      "auc": 1.0
+     },
+     "sequence_gru": {
+      "balanced_acc": 1.0,
+      "auc": 1.0
+     },
+     "best": {
+      "name": "feature_gbt",
+      "balanced_acc": 1.0,
+      "auc": 1.0
+     }
+    },
+    "timescales": {
+     "reaction_ks": 0.8981784006412914,
+     "gap_ks": 0.5249971402683951,
+     "gap_autocorr_bot": 0.06733813136816025,
+     "gap_autocorr_human": 0.09625310450792313,
+     "progress_per_h_bot_median": 19480.503191048443,
+     "progress_per_h_human_iqr": [
+      18773.961883932527,
+      25880.627097121975
+     ],
+     "progress_in_human_iqr_frac": 0.42,
+     "camera_per_h_bot": 3.5707739849810274,
+     "camera_per_h_human": 14.786886154647544,
+     "frac_gaps_over_60s_bot": 0.008879983653796194,
+     "frac_gaps_over_60s_human": 0.034208945574861885
+    },
+    "progress_per_h_median": 20110.22550292018,
+    "actions_per_session": 218.43
+   }
+  },
+  "rl_curve": [
+   {
+    "ticks": 46008,
+    "progress_per_h": 22293.71760774873,
+    "kl_per_episode": 0.0,
+    "actions_per_episode": 68.0
+   },
+   {
+    "ticks": 91176,
+    "progress_per_h": 23803.661505865854,
+    "kl_per_episode": 0.16944698773716627,
+    "actions_per_episode": 79.0
+   },
+   {
+    "ticks": 141571,
+    "progress_per_h": 22194.10599533553,
+    "kl_per_episode": 1.242593974340707,
+    "actions_per_episode": 79.78125
+   },
+   {
+    "ticks": 189751,
+    "progress_per_h": 20308.367075433278,
+    "kl_per_episode": 2.9344706984702498,
+    "actions_per_episode": 77.28125
+   },
+   {
+    "ticks": 241026,
+    "progress_per_h": 19691.410769626127,
+    "kl_per_episode": 4.931603029137477,
+    "actions_per_episode": 75.09375
+   },
+   {
+    "ticks": 288123,
+    "progress_per_h": 20038.248056261167,
+    "kl_per_episode": 4.7925997788552195,
+    "actions_per_episode": 77.59375
+   },
+   {
+    "ticks": 335762,
+    "progress_per_h": 20583.727853075354,
+    "kl_per_episode": 4.139620214002207,
+    "actions_per_episode": 78.5625
+   },
+   {
+    "ticks": 381445,
+    "progress_per_h": 19779.231743983582,
+    "kl_per_episode": 4.976563845993951,
+    "actions_per_episode": 78.34375
+   },
+   {
+    "ticks": 425007,
+    "progress_per_h": 20155.043415618216,
+    "kl_per_episode": 4.457268329337239,
+    "actions_per_episode": 81.15625
+   },
+   {
+    "ticks": 469666,
+    "progress_per_h": 20450.023704397652,
+    "kl_per_episode": 3.403405647026375,
+    "actions_per_episode": 82.65625
+   },
+   {
+    "ticks": 514630,
+    "progress_per_h": 21382.780818404135,
+    "kl_per_episode": 4.080103921703994,
+    "actions_per_episode": 82.9375
+   },
+   {
+    "ticks": 558963,
+    "progress_per_h": 21694.151560223458,
+    "kl_per_episode": 4.176073846174404,
+    "actions_per_episode": 81.28125
+   },
+   {
+    "ticks": 600954,
+    "progress_per_h": 23372.317465983455,
+    "kl_per_episode": 4.722840769216418,
+    "actions_per_episode": 84.0625
+   },
+   {
+    "ticks": 641790,
+    "progress_per_h": 24050.059680819002,
+    "kl_per_episode": 5.22469478554558,
+    "actions_per_episode": 88.09375
+   },
+   {
+    "ticks": 682818,
+    "progress_per_h": 24182.853662340458,
+    "kl_per_episode": 5.368563771713525,
+    "actions_per_episode": 88.125
+   },
+   {
+    "ticks": 726577,
+    "progress_per_h": 23329.698774043132,
+    "kl_per_episode": 4.590973859652877,
+    "actions_per_episode": 85.75
+   },
+   {
+    "ticks": 770280,
+    "progress_per_h": 21960.814876745768,
+    "kl_per_episode": 4.784458031179383,
+    "actions_per_episode": 84.375
+   },
+   {
+    "ticks": 813605,
+    "progress_per_h": 23090.43640926884,
+    "kl_per_episode": 5.5115406510885805,
+    "actions_per_episode": 84.53125
+   },
+   {
+    "ticks": 858093,
+    "progress_per_h": 24194.802173110184,
+    "kl_per_episode": 5.7901509867515415,
+    "actions_per_episode": 86.71875
+   },
+   {
+    "ticks": 901644,
+    "progress_per_h": 23026.27011173823,
+    "kl_per_episode": 5.118024927796796,
+    "actions_per_episode": 85.09375
+   },
+   {
+    "ticks": 945104,
+    "progress_per_h": 23182.406393126654,
+    "kl_per_episode": 5.3559003714472055,
+    "actions_per_episode": 84.1875
+   },
+   {
+    "ticks": 987355,
+    "progress_per_h": 23737.241763782935,
+    "kl_per_episode": 5.590257446514443,
+    "actions_per_episode": 87.1875
+   },
+   {
+    "ticks": 1030865,
+    "progress_per_h": 23126.500625437817,
+    "kl_per_episode": 5.1180879593594,
+    "actions_per_episode": 88.90625
+   },
+   {
+    "ticks": 1073201,
+    "progress_per_h": 23498.752977998818,
+    "kl_per_episode": 4.484709872747771,
+    "actions_per_episode": 87.1875
+   },
+   {
+    "ticks": 1116430,
+    "progress_per_h": 23592.21670119569,
+    "kl_per_episode": 3.7830112105002627,
+    "actions_per_episode": 85.75
+   },
+   {
+    "ticks": 1159941,
+    "progress_per_h": 23637.90616246552,
+    "kl_per_episode": 4.037090477766469,
+    "actions_per_episode": 85.40625
+   },
+   {
+    "ticks": 1205051,
+    "progress_per_h": 22605.79516106283,
+    "kl_per_episode": 3.851484544808045,
+    "actions_per_episode": 81.5
+   },
+   {
+    "ticks": 1246490,
+    "progress_per_h": 21607.086512823913,
+    "kl_per_episode": 3.447967432322912,
+    "actions_per_episode": 82.4375
+   },
+   {
+    "ticks": 1288363,
+    "progress_per_h": 22459.96871492875,
+    "kl_per_episode": 4.318098639487289,
+    "actions_per_episode": 85.625
+   },
+   {
+    "ticks": 1330236,
+    "progress_per_h": 24565.0474258517,
+    "kl_per_episode": 4.9412600711220875,
+    "actions_per_episode": 89.46875
+   },
+   {
+    "ticks": 1371578,
+    "progress_per_h": 24848.33756563662,
+    "kl_per_episode": 4.446188165107742,
+    "actions_per_episode": 88.6875
+   },
+   {
+    "ticks": 1412854,
+    "progress_per_h": 24109.152452447965,
+    "kl_per_episode": 3.933581135235727,
+    "actions_per_episode": 87.5
+   },
+   {
+    "ticks": 1453404,
+    "progress_per_h": 24200.76259841618,
+    "kl_per_episode": 3.4813447988126427,
+    "actions_per_episode": 90.3125
+   },
+   {
+    "ticks": 1495368,
+    "progress_per_h": 24143.058078969123,
+    "kl_per_episode": 4.348523774184287,
+    "actions_per_episode": 89.375
+   },
+   {
+    "ticks": 1540098,
+    "progress_per_h": 23362.484849820947,
+    "kl_per_episode": 3.8421281680930406,
+    "actions_per_episode": 85.09375
+   },
+   {
+    "ticks": 1581570,
+    "progress_per_h": 22084.761438790247,
+    "kl_per_episode": 3.4330682419240475,
+    "actions_per_episode": 84.28125
+   },
+   {
+    "ticks": 1623152,
+    "progress_per_h": 22177.14959215317,
+    "kl_per_episode": 3.6055426055099815,
+    "actions_per_episode": 87.09375
+   },
+   {
+    "ticks": 1665661,
+    "progress_per_h": 23351.780690560667,
+    "kl_per_episode": 3.0737388234119862,
+    "actions_per_episode": 87.625
+   },
+   {
+    "ticks": 1707163,
+    "progress_per_h": 23450.71671929163,
+    "kl_per_episode": 3.576869440265,
+    "actions_per_episode": 87.4375
+   },
+   {
+    "ticks": 1749322,
+    "progress_per_h": 22517.14973549436,
+    "kl_per_episode": 3.9259352567605674,
+    "actions_per_episode": 85.625
+   },
+   {
+    "ticks": 1792014,
+    "progress_per_h": 23011.568205662617,
+    "kl_per_episode": 3.4399999575689435,
+    "actions_per_episode": 85.625
+   },
+   {
+    "ticks": 1835739,
+    "progress_per_h": 23642.86425613323,
+    "kl_per_episode": 3.021344015141949,
+    "actions_per_episode": 86.0
+   },
+   {
+    "ticks": 1882698,
+    "progress_per_h": 23300.17096233763,
+    "kl_per_episode": 3.34675772045739,
+    "actions_per_episode": 83.09375
+   },
+   {
+    "ticks": 1927755,
+    "progress_per_h": 22851.238426465476,
+    "kl_per_episode": 3.676202306523919,
+    "actions_per_episode": 79.375
+   },
+   {
+    "ticks": 1969828,
+    "progress_per_h": 23265.849561114646,
+    "kl_per_episode": 3.332643615314737,
+    "actions_per_episode": 77.65625
+   },
+   {
+    "ticks": 2013560,
+    "progress_per_h": 23892.009571513987,
+    "kl_per_episode": 3.3102788848336786,
+    "actions_per_episode": 82.34375
+   },
+   {
+    "ticks": 2055621,
+    "progress_per_h": 23723.70725322393,
+    "kl_per_episode": 3.408007944235578,
+    "actions_per_episode": 85.96875
+   },
+   {
+    "ticks": 2094515,
+    "progress_per_h": 23548.36333442272,
+    "kl_per_episode": 3.5757974644657224,
+    "actions_per_episode": 86.34375
+   },
+   {
+    "ticks": 2136668,
+    "progress_per_h": 24630.668319651086,
+    "kl_per_episode": 4.578448053216562,
+    "actions_per_episode": 88.46875
+   },
+   {
+    "ticks": 2179522,
+    "progress_per_h": 24194.99776175643,
+    "kl_per_episode": 4.407690233318135,
+    "actions_per_episode": 86.1875
+   },
+   {
+    "ticks": 2221911,
+    "progress_per_h": 24438.788755223053,
+    "kl_per_episode": 4.246707168640569,
+    "actions_per_episode": 84.25
+   },
+   {
+    "ticks": 2264668,
+    "progress_per_h": 25534.514510643825,
+    "kl_per_episode": 4.677694237791002,
+    "actions_per_episode": 84.375
+   },
+   {
+    "ticks": 2307237,
+    "progress_per_h": 25078.74477053405,
+    "kl_per_episode": 4.978711796342395,
+    "actions_per_episode": 86.0625
+   },
+   {
+    "ticks": 2346778,
+    "progress_per_h": 24521.03517849118,
+    "kl_per_episode": 4.99607960076537,
+    "actions_per_episode": 90.3125
+   },
+   {
+    "ticks": 2386614,
+    "progress_per_h": 24602.325597453022,
+    "kl_per_episode": 4.6240008311579,
+    "actions_per_episode": 91.5
+   },
+   {
+    "ticks": 2428295,
+    "progress_per_h": 25214.60590773848,
+    "kl_per_episode": 4.633899567765184,
+    "actions_per_episode": 91.3125
+   },
+   {
+    "ticks": 2473047,
+    "progress_per_h": 24302.792036795814,
+    "kl_per_episode": 4.304772595292889,
+    "actions_per_episode": 86.3125
+   },
+   {
+    "ticks": 2515681,
+    "progress_per_h": 23907.243185395346,
+    "kl_per_episode": 3.901785154361278,
+    "actions_per_episode": 84.65625
+   },
+   {
+    "ticks": 2557109,
+    "progress_per_h": 23299.906493296265,
+    "kl_per_episode": 3.719486018642783,
+    "actions_per_episode": 84.0625
+   },
+   {
+    "ticks": 2598617,
+    "progress_per_h": 23762.49176085379,
+    "kl_per_episode": 4.589352076640353,
+    "actions_per_episode": 87.75
+   },
+   {
+    "ticks": 2640353,
+    "progress_per_h": 23675.91568626082,
+    "kl_per_episode": 4.584645124152303,
+    "actions_per_episode": 90.03125
+   },
+   {
+    "ticks": 2683443,
+    "progress_per_h": 22729.08501441867,
+    "kl_per_episode": 4.234627598896623,
+    "actions_per_episode": 87.3125
+   },
+   {
+    "ticks": 2724323,
+    "progress_per_h": 23153.103089175493,
+    "kl_per_episode": 3.8740670075640082,
+    "actions_per_episode": 87.375
+   },
+   {
+    "ticks": 2766696,
+    "progress_per_h": 22534.395945318138,
+    "kl_per_episode": 3.563845653552562,
+    "actions_per_episode": 88.375
+   },
+   {
+    "ticks": 2807767,
+    "progress_per_h": 23350.646054784163,
+    "kl_per_episode": 3.5942217772826552,
+    "actions_per_episode": 88.25
+   },
+   {
+    "ticks": 2848811,
+    "progress_per_h": 22359.418948584396,
+    "kl_per_episode": 3.6660140932071954,
+    "actions_per_episode": 85.90625
+   },
+   {
+    "ticks": 2891303,
+    "progress_per_h": 21904.8844737966,
+    "kl_per_episode": 3.162439408013597,
+    "actions_per_episode": 84.59375
+   },
+   {
+    "ticks": 2931738,
+    "progress_per_h": 23423.920414165426,
+    "kl_per_episode": 3.5809561184141785,
+    "actions_per_episode": 85.46875
+   },
+   {
+    "ticks": 2974827,
+    "progress_per_h": 23924.357664920863,
+    "kl_per_episode": 3.9169467769097537,
+    "actions_per_episode": 86.0
+   },
+   {
+    "ticks": 3016535,
+    "progress_per_h": 23550.69599934356,
+    "kl_per_episode": 3.9077985384501517,
+    "actions_per_episode": 87.0625
+   },
+   {
+    "ticks": 3057328,
+    "progress_per_h": 22704.788690153026,
+    "kl_per_episode": 3.888598300749436,
+    "actions_per_episode": 84.15625
+   },
+   {
+    "ticks": 3100020,
+    "progress_per_h": 23137.105811703153,
+    "kl_per_episode": 4.210088905878365,
+    "actions_per_episode": 88.21875
+   },
+   {
+    "ticks": 3140821,
+    "progress_per_h": 22675.86057768616,
+    "kl_per_episode": 4.487058154074475,
+    "actions_per_episode": 87.9375
+   },
+   {
+    "ticks": 3182352,
+    "progress_per_h": 24119.750722389486,
+    "kl_per_episode": 4.246059347409755,
+    "actions_per_episode": 88.5625
+   },
+   {
+    "ticks": 3222526,
+    "progress_per_h": 24350.6332946838,
+    "kl_per_episode": 4.3052273949142545,
+    "actions_per_episode": 91.21875
+   },
+   {
+    "ticks": 3264130,
+    "progress_per_h": 23384.00237906795,
+    "kl_per_episode": 4.25111652398482,
+    "actions_per_episode": 90.40625
+   },
+   {
+    "ticks": 3305651,
+    "progress_per_h": 24374.91215144476,
+    "kl_per_episode": 4.376913548680022,
+    "actions_per_episode": 89.40625
+   },
+   {
+    "ticks": 3345739,
+    "progress_per_h": 24759.736973380674,
+    "kl_per_episode": 4.068671521032229,
+    "actions_per_episode": 89.625
+   },
+   {
+    "ticks": 3386180,
+    "progress_per_h": 24880.655883029773,
+    "kl_per_episode": 4.117633354384452,
+    "actions_per_episode": 91.3125
+   },
+   {
+    "ticks": 3427294,
+    "progress_per_h": 25288.882840905302,
+    "kl_per_episode": 3.746442669071257,
+    "actions_per_episode": 89.1875
+   },
+   {
+    "ticks": 3467663,
+    "progress_per_h": 24884.8796230128,
+    "kl_per_episode": 3.445084511535242,
+    "actions_per_episode": 89.53125
+   },
+   {
+    "ticks": 3510325,
+    "progress_per_h": 23032.60342321531,
+    "kl_per_episode": 2.873135053901933,
+    "actions_per_episode": 88.875
+   },
+   {
+    "ticks": 3551003,
+    "progress_per_h": 24167.557218952177,
+    "kl_per_episode": 2.9453496480127797,
+    "actions_per_episode": 90.4375
+   },
+   {
+    "ticks": 3591957,
+    "progress_per_h": 24440.962493897125,
+    "kl_per_episode": 3.7956260212231427,
+    "actions_per_episode": 90.75
+   },
+   {
+    "ticks": 3632973,
+    "progress_per_h": 23835.547159767506,
+    "kl_per_episode": 4.545826389454305,
+    "actions_per_episode": 91.75
+   },
+   {
+    "ticks": 3673631,
+    "progress_per_h": 24415.945177550944,
+    "kl_per_episode": 4.3483929123030975,
+    "actions_per_episode": 91.375
+   },
+   {
+    "ticks": 3713591,
+    "progress_per_h": 25380.946321945143,
+    "kl_per_episode": 4.298131045070477,
+    "actions_per_episode": 90.625
+   },
+   {
+    "ticks": 3756033,
+    "progress_per_h": 24674.767374419698,
+    "kl_per_episode": 4.552460119826719,
+    "actions_per_episode": 88.71875
+   },
+   {
+    "ticks": 3799246,
+    "progress_per_h": 23024.90983782352,
+    "kl_per_episode": 3.7753952713683248,
+    "actions_per_episode": 88.0625
+   },
+   {
+    "ticks": 3841273,
+    "progress_per_h": 21882.652441711605,
+    "kl_per_episode": 3.638571135001257,
+    "actions_per_episode": 87.375
+   },
+   {
+    "ticks": 3884166,
+    "progress_per_h": 22944.64067578198,
+    "kl_per_episode": 4.6144225602038205,
+    "actions_per_episode": 87.3125
+   },
+   {
+    "ticks": 3927980,
+    "progress_per_h": 24209.579762162502,
+    "kl_per_episode": 5.128134748199955,
+    "actions_per_episode": 84.5625
+   },
+   {
+    "ticks": 3969237,
+    "progress_per_h": 24766.055680512876,
+    "kl_per_episode": 4.709936712635681,
+    "actions_per_episode": 83.96875
+   },
+   {
+    "ticks": 4011038,
+    "progress_per_h": 24622.27430359959,
+    "kl_per_episode": 4.633668155642226,
+    "actions_per_episode": 84.15625
+   },
+   {
+    "ticks": 4053197,
+    "progress_per_h": 24134.876514668373,
+    "kl_per_episode": 4.794811624335125,
+    "actions_per_episode": 84.78125
+   },
+   {
+    "ticks": 4095198,
+    "progress_per_h": 23883.270580891374,
+    "kl_per_episode": 3.6367510692216456,
+    "actions_per_episode": 86.625
+   },
+   {
+    "ticks": 4136921,
+    "progress_per_h": 23324.251583555673,
+    "kl_per_episode": 3.6172848232090473,
+    "actions_per_episode": 88.3125
+   },
+   {
+    "ticks": 4179734,
+    "progress_per_h": 23891.900357353916,
+    "kl_per_episode": 3.6824874395970255,
+    "actions_per_episode": 87.0625
+   },
+   {
+    "ticks": 4221701,
+    "progress_per_h": 22912.967304447586,
+    "kl_per_episode": 4.056691849604249,
+    "actions_per_episode": 85.5625
+   },
+   {
+    "ticks": 4263216,
+    "progress_per_h": 23237.817305644967,
+    "kl_per_episode": 3.7955168519401923,
+    "actions_per_episode": 85.84375
+   },
+   {
+    "ticks": 4304394,
+    "progress_per_h": 22954.686852767183,
+    "kl_per_episode": 3.2256660951534286,
+    "actions_per_episode": 86.25
+   },
+   {
+    "ticks": 4348436,
+    "progress_per_h": 22967.510600898804,
+    "kl_per_episode": 3.3174721284303814,
+    "actions_per_episode": 86.875
+   },
+   {
+    "ticks": 4390919,
+    "progress_per_h": 23361.149777350314,
+    "kl_per_episode": 3.8490221842657775,
+    "actions_per_episode": 84.09375
+   },
+   {
+    "ticks": 4432773,
+    "progress_per_h": 23064.84956118322,
+    "kl_per_episode": 3.8176160093862563,
+    "actions_per_episode": 81.25
+   },
+   {
+    "ticks": 4473623,
+    "progress_per_h": 23584.98342594072,
+    "kl_per_episode": 3.9921237828675658,
+    "actions_per_episode": 83.40625
+   },
+   {
+    "ticks": 4515984,
+    "progress_per_h": 23603.90417832923,
+    "kl_per_episode": 3.419929121970199,
+    "actions_per_episode": 86.46875
+   },
+   {
+    "ticks": 4557299,
+    "progress_per_h": 24422.486866333893,
+    "kl_per_episode": 3.8399372786516324,
+    "actions_per_episode": 87.5
+   },
+   {
+    "ticks": 4597610,
+    "progress_per_h": 25441.0704077203,
+    "kl_per_episode": 4.901828408124857,
+    "actions_per_episode": 91.25
+   },
+   {
+    "ticks": 4639561,
+    "progress_per_h": 24874.23356389953,
+    "kl_per_episode": 4.895910084946081,
+    "actions_per_episode": 91.25
+   },
+   {
+    "ticks": 4682148,
+    "progress_per_h": 25498.40605685715,
+    "kl_per_episode": 4.6599460549186915,
+    "actions_per_episode": 89.75
+   },
+   {
+    "ticks": 4721849,
+    "progress_per_h": 25461.65761120083,
+    "kl_per_episode": 4.37655616668053,
+    "actions_per_episode": 89.875
+   },
+   {
+    "ticks": 4764544,
+    "progress_per_h": 26228.89801435227,
+    "kl_per_episode": 4.637817243812606,
+    "actions_per_episode": 91.1875
+   },
+   {
+    "ticks": 4807062,
+    "progress_per_h": 26025.376946666427,
+    "kl_per_episode": 4.418543443433009,
+    "actions_per_episode": 89.15625
+   },
+   {
+    "ticks": 4848875,
+    "progress_per_h": 24299.18706472121,
+    "kl_per_episode": 4.138975308160298,
+    "actions_per_episode": 84.875
+   },
+   {
+    "ticks": 4890070,
+    "progress_per_h": 23305.682440019445,
+    "kl_per_episode": 3.6465201298706234,
+    "actions_per_episode": 85.75
+   },
+   {
+    "ticks": 4932514,
+    "progress_per_h": 24298.25714436172,
+    "kl_per_episode": 4.168993280502036,
+    "actions_per_episode": 88.25
+   },
+   {
+    "ticks": 4974512,
+    "progress_per_h": 23779.69120170657,
+    "kl_per_episode": 4.924008689355105,
+    "actions_per_episode": 86.09375
+   },
+   {
+    "ticks": 5015741,
+    "progress_per_h": 23591.115137222972,
+    "kl_per_episode": 4.123421370983124,
+    "actions_per_episode": 86.71875
+   }
+  ],
+  "pure_rl_curve": [
+   {
+    "ticks": 41007,
+    "progress_per_h": 14850.0,
+    "actions_per_episode": 417.0
+   },
+   {
+    "ticks": 53263,
+    "progress_per_h": 16446.581539826533,
+    "actions_per_episode": 490.92857142857144
+   },
+   {
+    "ticks": 67262,
+    "progress_per_h": 16668.805019451196,
+    "actions_per_episode": 504.125
+   },
+   {
+    "ticks": 82712,
+    "progress_per_h": 16668.805019451196,
+    "actions_per_episode": 504.125
+   },
+   {
+    "ticks": 98874,
+    "progress_per_h": 18661.335510172325,
+    "actions_per_episode": 448.9259259259259
+   },
+   {
+    "ticks": 115243,
+    "progress_per_h": 19693.543332270907,
+    "actions_per_episode": 442.03125
+   },
+   {
+    "ticks": 135406,
+    "progress_per_h": 20229.633424699245,
+    "actions_per_episode": 423.09375
+   },
+   {
+    "ticks": 155366,
+    "progress_per_h": 22649.885871373714,
+    "actions_per_episode": 375.03125
+   },
+   {
+    "ticks": 177450,
+    "progress_per_h": 23467.62576339202,
+    "actions_per_episode": 347.90625
+   },
+   {
+    "ticks": 201857,
+    "progress_per_h": 23840.120186409724,
+    "actions_per_episode": 318.8125
+   },
+   {
+    "ticks": 226684,
+    "progress_per_h": 24201.789423282706,
+    "actions_per_episode": 288.375
+   },
+   {
+    "ticks": 251676,
+    "progress_per_h": 24321.858556284576,
+    "actions_per_episode": 265.65625
+   },
+   {
+    "ticks": 279192,
+    "progress_per_h": 24377.86520267037,
+    "actions_per_episode": 244.9375
+   },
+   {
+    "ticks": 306482,
+    "progress_per_h": 23956.431005547915,
+    "actions_per_episode": 229.90625
+   },
+   {
+    "ticks": 336002,
+    "progress_per_h": 24838.189177336026,
+    "actions_per_episode": 224.0625
+   },
+   {
+    "ticks": 366928,
+    "progress_per_h": 25197.05948597401,
+    "actions_per_episode": 211.28125
+   },
+   {
+    "ticks": 398220,
+    "progress_per_h": 26100.61255923457,
+    "actions_per_episode": 199.6875
+   },
+   {
+    "ticks": 429958,
+    "progress_per_h": 26443.874350683334,
+    "actions_per_episode": 192.03125
+   },
+   {
+    "ticks": 462141,
+    "progress_per_h": 26393.310078626295,
+    "actions_per_episode": 186.34375
+   },
+   {
+    "ticks": 495211,
+    "progress_per_h": 27462.64231061164,
+    "actions_per_episode": 181.78125
+   },
+   {
+    "ticks": 528021,
+    "progress_per_h": 27840.1115330142,
+    "actions_per_episode": 180.25
+   },
+   {
+    "ticks": 562621,
+    "progress_per_h": 27446.759567435565,
+    "actions_per_episode": 175.5
+   },
+   {
+    "ticks": 597042,
+    "progress_per_h": 27844.255261056933,
+    "actions_per_episode": 175.53125
+   },
+   {
+    "ticks": 631833,
+    "progress_per_h": 27317.5075310147,
+    "actions_per_episode": 171.875
+   },
+   {
+    "ticks": 668496,
+    "progress_per_h": 27499.779571034545,
+    "actions_per_episode": 171.3125
+   },
+   {
+    "ticks": 704913,
+    "progress_per_h": 27972.190035926124,
+    "actions_per_episode": 165.3125
+   },
+   {
+    "ticks": 741060,
+    "progress_per_h": 27445.79799120955,
+    "actions_per_episode": 161.375
+   },
+   {
+    "ticks": 776015,
+    "progress_per_h": 28293.063065681803,
+    "actions_per_episode": 162.46875
+   },
+   {
+    "ticks": 813195,
+    "progress_per_h": 25535.459188794048,
+    "actions_per_episode": 161.9375
+   },
+   {
+    "ticks": 849759,
+    "progress_per_h": 26662.873781245078,
+    "actions_per_episode": 164.21875
+   },
+   {
+    "ticks": 886362,
+    "progress_per_h": 26366.418206135197,
+    "actions_per_episode": 161.28125
+   },
+   {
+    "ticks": 924473,
+    "progress_per_h": 27258.791397129877,
+    "actions_per_episode": 161.53125
+   },
+   {
+    "ticks": 963777,
+    "progress_per_h": 26432.597400082046,
+    "actions_per_episode": 157.0625
+   },
+   {
+    "ticks": 1001063,
+    "progress_per_h": 24605.36436787859,
+    "actions_per_episode": 153.125
+   },
+   {
+    "ticks": 1036438,
+    "progress_per_h": 25543.400808027036,
+    "actions_per_episode": 156.125
+   },
+   {
+    "ticks": 1073967,
+    "progress_per_h": 25720.579332770692,
+    "actions_per_episode": 158.15625
+   },
+   {
+    "ticks": 1111054,
+    "progress_per_h": 28152.12225397101,
+    "actions_per_episode": 160.3125
+   },
+   {
+    "ticks": 1149872,
+    "progress_per_h": 28063.602653711725,
+    "actions_per_episode": 158.375
+   },
+   {
+    "ticks": 1186348,
+    "progress_per_h": 28068.818530751552,
+    "actions_per_episode": 158.53125
+   },
+   {
+    "ticks": 1223653,
+    "progress_per_h": 27719.341393965005,
+    "actions_per_episode": 159.375
+   },
+   {
+    "ticks": 1259958,
+    "progress_per_h": 28348.37621253833,
+    "actions_per_episode": 158.0
+   },
+   {
+    "ticks": 1296084,
+    "progress_per_h": 30079.450882139507,
+    "actions_per_episode": 162.8125
+   },
+   {
+    "ticks": 1332060,
+    "progress_per_h": 30668.2406348189,
+    "actions_per_episode": 165.15625
+   },
+   {
+    "ticks": 1367702,
+    "progress_per_h": 30720.926074851508,
+    "actions_per_episode": 163.875
+   },
+   {
+    "ticks": 1404622,
+    "progress_per_h": 30041.86227822332,
+    "actions_per_episode": 165.03125
+   },
+   {
+    "ticks": 1442378,
+    "progress_per_h": 30302.234865923172,
+    "actions_per_episode": 163.59375
+   },
+   {
+    "ticks": 1480709,
+    "progress_per_h": 28480.58240260603,
+    "actions_per_episode": 158.53125
+   },
+   {
+    "ticks": 1518732,
+    "progress_per_h": 27664.125637039262,
+    "actions_per_episode": 156.0625
+   },
+   {
+    "ticks": 1557047,
+    "progress_per_h": 28195.78289281881,
+    "actions_per_episode": 157.46875
+   },
+   {
+    "ticks": 1594821,
+    "progress_per_h": 28819.983498955706,
+    "actions_per_episode": 156.0
+   },
+   {
+    "ticks": 1633415,
+    "progress_per_h": 29026.266200876144,
+    "actions_per_episode": 157.6875
+   },
+   {
+    "ticks": 1672148,
+    "progress_per_h": 29018.63642055795,
+    "actions_per_episode": 155.0625
+   },
+   {
+    "ticks": 1711010,
+    "progress_per_h": 27298.10896085501,
+    "actions_per_episode": 151.40625
+   },
+   {
+    "ticks": 1751283,
+    "progress_per_h": 28202.041150334488,
+    "actions_per_episode": 150.78125
+   },
+   {
+    "ticks": 1792464,
+    "progress_per_h": 28245.405350251083,
+    "actions_per_episode": 149.53125
+   },
+   {
+    "ticks": 1833349,
+    "progress_per_h": 28042.521607664636,
+    "actions_per_episode": 147.4375
+   },
+   {
+    "ticks": 1874110,
+    "progress_per_h": 28177.86909957661,
+    "actions_per_episode": 147.125
+   },
+   {
+    "ticks": 1914073,
+    "progress_per_h": 28336.536344477267,
+    "actions_per_episode": 148.875
+   },
+   {
+    "ticks": 1952377,
+    "progress_per_h": 29051.898686009692,
+    "actions_per_episode": 151.0625
+   },
+   {
+    "ticks": 1992206,
+    "progress_per_h": 29415.396041095228,
+    "actions_per_episode": 151.625
+   },
+   {
+    "ticks": 2031241,
+    "progress_per_h": 29787.147109569254,
+    "actions_per_episode": 152.0
+   },
+   {
+    "ticks": 2070880,
+    "progress_per_h": 30087.225727536308,
+    "actions_per_episode": 152.5
+   },
+   {
+    "ticks": 2112163,
+    "progress_per_h": 30063.126301405602,
+    "actions_per_episode": 152.21875
+   },
+   {
+    "ticks": 2152179,
+    "progress_per_h": 30087.19003032278,
+    "actions_per_episode": 149.875
+   },
+   {
+    "ticks": 2193246,
+    "progress_per_h": 28543.099702470572,
+    "actions_per_episode": 147.53125
+   },
+   {
+    "ticks": 2233591,
+    "progress_per_h": 28294.483076967594,
+    "actions_per_episode": 147.34375
+   },
+   {
+    "ticks": 2273782,
+    "progress_per_h": 28971.994269838568,
+    "actions_per_episode": 148.90625
+   },
+   {
+    "ticks": 2315116,
+    "progress_per_h": 29765.119269838568,
+    "actions_per_episode": 150.28125
+   },
+   {
+    "ticks": 2356150,
+    "progress_per_h": 27319.855789243604,
+    "actions_per_episode": 148.375
+   },
+   {
+    "ticks": 2396345,
+    "progress_per_h": 28705.479531381672,
+    "actions_per_episode": 147.8125
+   },
+   {
+    "ticks": 2435887,
+    "progress_per_h": 30224.855273527286,
+    "actions_per_episode": 150.1875
+   },
+   {
+    "ticks": 2475829,
+    "progress_per_h": 31632.785553849553,
+    "actions_per_episode": 153.40625
+   },
+   {
+    "ticks": 2516002,
+    "progress_per_h": 30570.365294832805,
+    "actions_per_episode": 152.59375
+   },
+   {
+    "ticks": 2555785,
+    "progress_per_h": 30440.226720058843,
+    "actions_per_episode": 152.25
+   },
+   {
+    "ticks": 2596973,
+    "progress_per_h": 30158.256962185736,
+    "actions_per_episode": 152.53125
+   },
+   {
+    "ticks": 2638295,
+    "progress_per_h": 30014.819462185736,
+    "actions_per_episode": 150.71875
+   },
+   {
+    "ticks": 2679241,
+    "progress_per_h": 28457.297084499958,
+    "actions_per_episode": 147.5625
+   },
+   {
+    "ticks": 2720567,
+    "progress_per_h": 29018.390834499958,
+    "actions_per_episode": 147.28125
+   },
+   {
+    "ticks": 2762083,
+    "progress_per_h": 29564.112663452834,
+    "actions_per_episode": 148.53125
+   },
+   {
+    "ticks": 2802002,
+    "progress_per_h": 29203.142986463346,
+    "actions_per_episode": 147.5
+   },
+   {
+    "ticks": 2842301,
+    "progress_per_h": 28928.92552285141,
+    "actions_per_episode": 150.46875
+   },
+   {
+    "ticks": 2881434,
+    "progress_per_h": 28119.150446221487,
+    "actions_per_episode": 151.71875
+   },
+   {
+    "ticks": 2920427,
+    "progress_per_h": 29308.38540736852,
+    "actions_per_episode": 153.78125
+   },
+   {
+    "ticks": 2959224,
+    "progress_per_h": 29216.344264770945,
+    "actions_per_episode": 154.71875
+   },
+   {
+    "ticks": 3001236,
+    "progress_per_h": 29475.21981299774,
+    "actions_per_episode": 153.28125
+   },
+   {
+    "ticks": 3039868,
+    "progress_per_h": 27959.792176873536,
+    "actions_per_episode": 149.1875
+   },
+   {
+    "ticks": 3078341,
+    "progress_per_h": 28227.31381360548,
+    "actions_per_episode": 151.25
+   },
+   {
+    "ticks": 3119128,
+    "progress_per_h": 28613.551576170576,
+    "actions_per_episode": 154.71875
+   },
+   {
+    "ticks": 3161430,
+    "progress_per_h": 27001.499124590257,
+    "actions_per_episode": 147.9375
+   },
+   {
+    "ticks": 3204818,
+    "progress_per_h": 25610.760731200673,
+    "actions_per_episode": 141.75
+   },
+   {
+    "ticks": 3250343,
+    "progress_per_h": 24983.564738794117,
+    "actions_per_episode": 139.5625
+   },
+   {
+    "ticks": 3296786,
+    "progress_per_h": 24028.98668106362,
+    "actions_per_episode": 132.0
+   },
+   {
+    "ticks": 3343527,
+    "progress_per_h": 23276.72085367087,
+    "actions_per_episode": 131.09375
+   },
+   {
+    "ticks": 3392966,
+    "progress_per_h": 22540.04779525638,
+    "actions_per_episode": 129.34375
+   },
+   {
+    "ticks": 3441710,
+    "progress_per_h": 22005.88671639587,
+    "actions_per_episode": 122.65625
+   },
+   {
+    "ticks": 3485160,
+    "progress_per_h": 22602.879516344517,
+    "actions_per_episode": 124.59375
+   },
+   {
+    "ticks": 3529942,
+    "progress_per_h": 22314.252345074565,
+    "actions_per_episode": 130.65625
+   },
+   {
+    "ticks": 3573481,
+    "progress_per_h": 23574.80100970022,
+    "actions_per_episode": 134.65625
+   },
+   {
+    "ticks": 3620240,
+    "progress_per_h": 23124.43150478058,
+    "actions_per_episode": 132.125
+   },
+   {
+    "ticks": 3661271,
+    "progress_per_h": 22559.74783656073,
+    "actions_per_episode": 134.71875
+   },
+   {
+    "ticks": 3707834,
+    "progress_per_h": 22101.042177296506,
+    "actions_per_episode": 138.4375
+   },
+   {
+    "ticks": 3749100,
+    "progress_per_h": 20827.68574760665,
+    "actions_per_episode": 136.8125
+   },
+   {
+    "ticks": 3791044,
+    "progress_per_h": 22951.23746423048,
+    "actions_per_episode": 142.5
+   },
+   {
+    "ticks": 3828353,
+    "progress_per_h": 24184.46721142144,
+    "actions_per_episode": 148.28125
+   },
+   {
+    "ticks": 3863956,
+    "progress_per_h": 24815.68806259129,
+    "actions_per_episode": 154.5625
+   },
+   {
+    "ticks": 3902454,
+    "progress_per_h": 24315.14857591164,
+    "actions_per_episode": 157.375
+   },
+   {
+    "ticks": 3934706,
+    "progress_per_h": 24425.496710384286,
+    "actions_per_episode": 164.875
+   },
+   {
+    "ticks": 3961156,
+    "progress_per_h": 26036.7068295798,
+    "actions_per_episode": 177.28125
+   },
+   {
+    "ticks": 3988099,
+    "progress_per_h": 27216.929820371934,
+    "actions_per_episode": 194.84375
+   },
+   {
+    "ticks": 4015802,
+    "progress_per_h": 26992.348565172593,
+    "actions_per_episode": 209.96875
+   },
+   {
+    "ticks": 4044290,
+    "progress_per_h": 25313.390612645922,
+    "actions_per_episode": 208.03125
+   },
+   {
+    "ticks": 4072997,
+    "progress_per_h": 24616.36050718915,
+    "actions_per_episode": 215.0625
+   },
+   {
+    "ticks": 4105087,
+    "progress_per_h": 25652.768986099552,
+    "actions_per_episode": 210.21875
+   },
+   {
+    "ticks": 4133621,
+    "progress_per_h": 25070.104786614473,
+    "actions_per_episode": 198.40625
+   },
+   {
+    "ticks": 4164188,
+    "progress_per_h": 26680.839223695024,
+    "actions_per_episode": 197.21875
+   },
+   {
+    "ticks": 4187869,
+    "progress_per_h": 25474.276723695024,
+    "actions_per_episode": 192.9375
+   },
+   {
+    "ticks": 4216056,
+    "progress_per_h": 25591.711793009403,
+    "actions_per_episode": 205.625
+   },
+   {
+    "ticks": 4246471,
+    "progress_per_h": 23792.26436282421,
+    "actions_per_episode": 195.8125
+   },
+   {
+    "ticks": 4273715,
+    "progress_per_h": 23572.717605828097,
+    "actions_per_episode": 197.1875
+   },
+   {
+    "ticks": 4300512,
+    "progress_per_h": 23771.03766574293,
+    "actions_per_episode": 185.78125
+   },
+   {
+    "ticks": 4329486,
+    "progress_per_h": 24340.863112591178,
+    "actions_per_episode": 182.4375
+   },
+   {
+    "ticks": 4356452,
+    "progress_per_h": 27741.324095683824,
+    "actions_per_episode": 187.78125
+   },
+   {
+    "ticks": 4383872,
+    "progress_per_h": 28681.803235741045,
+    "actions_per_episode": 184.15625
+   },
+   {
+    "ticks": 4415305,
+    "progress_per_h": 28073.832725685337,
+    "actions_per_episode": 180.0625
+   },
+   {
+    "ticks": 4443394,
+    "progress_per_h": 26112.749001691674,
+    "actions_per_episode": 169.71875
+   },
+   {
+    "ticks": 4472084,
+    "progress_per_h": 25414.39876552396,
+    "actions_per_episode": 165.21875
+   },
+   {
+    "ticks": 4501464,
+    "progress_per_h": 23332.362105492757,
+    "actions_per_episode": 157.53125
+   },
+   {
+    "ticks": 4533135,
+    "progress_per_h": 23879.172519837826,
+    "actions_per_episode": 159.0625
+   },
+   {
+    "ticks": 4564274,
+    "progress_per_h": 23199.647889837044,
+    "actions_per_episode": 156.1875
+   },
+   {
+    "ticks": 4597129,
+    "progress_per_h": 23672.002273554826,
+    "actions_per_episode": 152.9375
+   },
+   {
+    "ticks": 4624911,
+    "progress_per_h": 23982.224706774963,
+    "actions_per_episode": 149.65625
+   },
+   {
+    "ticks": 4653385,
+    "progress_per_h": 24492.66258213712,
+    "actions_per_episode": 152.5
+   },
+   {
+    "ticks": 4681556,
+    "progress_per_h": 26272.502618214567,
+    "actions_per_episode": 161.28125
+   },
+   {
+    "ticks": 4709880,
+    "progress_per_h": 25367.384363245692,
+    "actions_per_episode": 162.875
+   },
+   {
+    "ticks": 4736108,
+    "progress_per_h": 26605.12834810293,
+    "actions_per_episode": 166.46875
+   },
+   {
+    "ticks": 4760976,
+    "progress_per_h": 25849.121911167444,
+    "actions_per_episode": 167.78125
+   },
+   {
+    "ticks": 4790042,
+    "progress_per_h": 24737.869807619412,
+    "actions_per_episode": 167.78125
+   },
+   {
+    "ticks": 4813443,
+    "progress_per_h": 25153.215233368497,
+    "actions_per_episode": 169.1875
+   },
+   {
+    "ticks": 4837014,
+    "progress_per_h": 24377.526205965267,
+    "actions_per_episode": 168.0625
+   },
+   {
+    "ticks": 4855874,
+    "progress_per_h": 24822.158517642663,
+    "actions_per_episode": 170.40625
+   },
+   {
+    "ticks": 4875334,
+    "progress_per_h": 23877.158517642667,
+    "actions_per_episode": 167.5
+   },
+   {
+    "ticks": 4893041,
+    "progress_per_h": 23442.286748764513,
+    "actions_per_episode": 175.15625
+   },
+   {
+    "ticks": 4911239,
+    "progress_per_h": 24741.661748764513,
+    "actions_per_episode": 183.53125
+   },
+   {
+    "ticks": 4926894,
+    "progress_per_h": 25280.416858170094,
+    "actions_per_episode": 197.5625
+   },
+   {
+    "ticks": 4950713,
+    "progress_per_h": 25052.50736280586,
+    "actions_per_episode": 211.09375
+   },
+   {
+    "ticks": 4973937,
+    "progress_per_h": 25174.026937791088,
+    "actions_per_episode": 214.6875
+   },
+   {
+    "ticks": 4995923,
+    "progress_per_h": 25288.035024988916,
+    "actions_per_episode": 217.9375
+   },
+   {
+    "ticks": 5017893,
+    "progress_per_h": 23184.88892544096,
+    "actions_per_episode": 204.75
+   }
+  ],
+  "bc_history": [
+   {
+    "epoch": 0,
+    "train_nll": 3.760607821860942,
+    "val_nll": 2.7404212951660156,
+    "val_intent_acc": 0.7659248113632202
+   },
+   {
+    "epoch": 1,
+    "train_nll": 2.5993772922441405,
+    "val_nll": 2.3269686698913574,
+    "val_intent_acc": 0.7989255785942078
+   },
+   {
+    "epoch": 2,
+    "train_nll": 2.319293661783284,
+    "val_nll": 2.154021978378296,
+    "val_intent_acc": 0.8066001534461975
+   },
+   {
+    "epoch": 3,
+    "train_nll": 2.221388451491044,
+    "val_nll": 2.06492280960083,
+    "val_intent_acc": 0.8066001534461975
+   },
+   {
+    "epoch": 4,
+    "train_nll": 2.1554619564312976,
+    "val_nll": 2.107943058013916,
+    "val_intent_acc": 0.8073676228523254
+   },
+   {
+    "epoch": 5,
+    "train_nll": 2.1291716883902385,
+    "val_nll": 2.045081377029419,
+    "val_intent_acc": 0.8073676228523254
+   },
+   {
+    "epoch": 6,
+    "train_nll": 2.1095085592753513,
+    "val_nll": 2.064486026763916,
+    "val_intent_acc": 0.8073676228523254
+   },
+   {
+    "epoch": 7,
+    "train_nll": 2.1005041465975793,
+    "val_nll": 2.061581611633301,
+    "val_intent_acc": 0.7989255785942078
+   },
+   {
+    "epoch": 8,
+    "train_nll": 2.089533896651613,
+    "val_nll": 2.0796051025390625,
+    "val_intent_acc": 0.8081350922584534
+   },
+   {
+    "epoch": 9,
+    "train_nll": 2.0852801183619216,
+    "val_nll": 2.0244643688201904,
+    "val_intent_acc": 0.8073676228523254
+   },
+   {
+    "epoch": 10,
+    "train_nll": 2.0862057832252088,
+    "val_nll": 2.076683521270752,
+    "val_intent_acc": 0.7989255785942078
+   },
+   {
+    "epoch": 11,
+    "train_nll": 2.0855610945815117,
+    "val_nll": 2.0153567790985107,
+    "val_intent_acc": 0.7889485955238342
+   },
+   {
+    "epoch": 12,
+    "train_nll": 2.0760505076504905,
+    "val_nll": 1.9991285800933838,
+    "val_intent_acc": 0.8073676228523254
+   },
+   {
+    "epoch": 13,
+    "train_nll": 2.0753585497032376,
+    "val_nll": 2.0329349040985107,
+    "val_intent_acc": 0.8081350922584534
+   },
+   {
+    "epoch": 14,
+    "train_nll": 2.067515814251235,
+    "val_nll": 2.085498571395874,
+    "val_intent_acc": 0.8081350922584534
+   },
+   {
+    "epoch": 15,
+    "train_nll": 2.0715010429728746,
+    "val_nll": 2.113340139389038,
+    "val_intent_acc": 0.8019953966140747
+   },
+   {
+    "epoch": 16,
+    "train_nll": 2.0719988771034306,
+    "val_nll": 2.0817360877990723,
+    "val_intent_acc": 0.8042977452278137
+   },
+   {
+    "epoch": 17,
+    "train_nll": 2.068408360229337,
+    "val_nll": 2.067559003829956,
+    "val_intent_acc": 0.8081350922584534
+   },
+   {
+    "epoch": 18,
+    "train_nll": 2.0636242865099663,
+    "val_nll": 2.061474561691284,
+    "val_intent_acc": 0.7981581091880798
+   },
+   {
+    "epoch": 19,
+    "train_nll": 2.0562484850682146,
+    "val_nll": 2.043447256088257,
+    "val_intent_acc": 0.8081350922584534
+   },
+   {
+    "epoch": 20,
+    "train_nll": 2.0632689749893554,
+    "val_nll": 2.036820650100708,
+    "val_intent_acc": 0.8019953966140747
+   },
+   {
+    "epoch": 21,
+    "train_nll": 2.062215890394713,
+    "val_nll": 2.057461977005005,
+    "val_intent_acc": 0.8089025616645813
+   },
+   {
+    "epoch": 22,
+    "train_nll": 2.0523905581333266,
+    "val_nll": 2.027501106262207,
+    "val_intent_acc": 0.8081350922584534
+   },
+   {
+    "epoch": 23,
+    "train_nll": 2.055154554408345,
+    "val_nll": 2.0351855754852295,
+    "val_intent_acc": 0.7927858829498291
+   },
+   {
+    "epoch": 24,
+    "train_nll": 2.0521427389165536,
+    "val_nll": 2.042144775390625,
+    "val_intent_acc": 0.8073676228523254
+   },
+   {
+    "epoch": 25,
+    "train_nll": 2.0514513885243897,
+    "val_nll": 2.070302963256836,
+    "val_intent_acc": 0.8058326840400696
+   },
+   {
+    "epoch": 26,
+    "train_nll": 2.042840057387616,
+    "val_nll": 2.0164761543273926,
+    "val_intent_acc": 0.8050652146339417
+   },
+   {
+    "epoch": 27,
+    "train_nll": 2.0529641486418213,
+    "val_nll": 2.051978826522827,
+    "val_intent_acc": 0.8019953966140747
+   },
+   {
+    "epoch": 28,
+    "train_nll": 2.0525371967140034,
+    "val_nll": 2.085500955581665,
+    "val_intent_acc": 0.8058326840400696
+   },
+   {
+    "epoch": 29,
+    "train_nll": 2.044916990580843,
+    "val_nll": 2.0835773944854736,
+    "val_intent_acc": 0.8073676228523254
+   },
+   {
+    "epoch": 30,
+    "train_nll": 2.0467395738459637,
+    "val_nll": 2.010104179382324,
+    "val_intent_acc": 0.8081350922584534
+   },
+   {
+    "epoch": 31,
+    "train_nll": 2.037470575909743,
+    "val_nll": 2.011209011077881,
+    "val_intent_acc": 0.7805065512657166
+   },
+   {
+    "epoch": 32,
+    "train_nll": 2.036673167595154,
+    "val_nll": 2.0318121910095215,
+    "val_intent_acc": 0.7973906397819519
+   },
+   {
+    "epoch": 33,
+    "train_nll": 2.0377522585828567,
+    "val_nll": 2.005873918533325,
+    "val_intent_acc": 0.7950882315635681
+   },
+   {
+    "epoch": 34,
+    "train_nll": 2.039368866685341,
+    "val_nll": 1.9995735883712769,
+    "val_intent_acc": 0.8050652146339417
+   },
+   {
+    "epoch": 35,
+    "train_nll": 2.034397387641164,
+    "val_nll": 1.990134358406067,
+    "val_intent_acc": 0.7950882315635681
+   },
+   {
+    "epoch": 36,
+    "train_nll": 2.0359405176214116,
+    "val_nll": 2.011171579360962,
+    "val_intent_acc": 0.7981581091880798
+   },
+   {
+    "epoch": 37,
+    "train_nll": 2.031640349237777,
+    "val_nll": 2.023179054260254,
+    "val_intent_acc": 0.8058326840400696
+   },
+   {
+    "epoch": 38,
+    "train_nll": 2.032299380279159,
+    "val_nll": 2.0152719020843506,
+    "val_intent_acc": 0.8019953966140747
+   },
+   {
+    "epoch": 39,
+    "train_nll": 2.0301375885361854,
+    "val_nll": 2.0777857303619385,
+    "val_intent_acc": 0.796623170375824
+   }
+  ]
+ }
+}

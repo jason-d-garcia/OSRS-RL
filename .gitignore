@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+results/*/policies.pt
+recorder/.gradle/
+recorder/build/
+results/*/sample_sessions.json
+results/log.txt
