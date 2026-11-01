@@ -78,7 +78,7 @@ import net.runelite.client.util.Text;
 )
 public class RecorderPlugin extends Plugin
 {
-	static final int SCHEMA_VERSION = 2;
+	static final int SCHEMA_VERSION = 3;
 	static final File OUT_DIR = new File(RuneLite.RUNELITE_DIR, "osrs-rl-recordings");
 
 	@Inject
@@ -572,29 +572,44 @@ public class RecorderPlugin extends Plugin
 					{
 						for (GameObject go : gos)
 						{
-							addObject(objects, seen, go, me, "game");
+							addObject(objects, seen, go, me, "game", wv);
 						}
 					}
-					addObject(objects, seen, t.getWallObject(), me, "wall");
-					addObject(objects, seen, t.getGroundObject(), me, "ground");
+					addObject(objects, seen, t.getWallObject(), me, "wall", wv);
+					addObject(objects, seen, t.getGroundObject(), me, "ground", wv);
 				}
 			}
 		}
 		r.put("objects", objects);
 	}
 
-	private static void addObject(List<Object> out, Set<TileObject> seen, TileObject o, WorldPoint me, String kind)
+	private static void addObject(List<Object> out, Set<TileObject> seen, TileObject o, WorldPoint me, String kind, WorldView wv)
 	{
 		if (o == null || !seen.add(o))
 		{
 			return;
 		}
 		WorldPoint p = o.getWorldLocation();
+		int w = 1;
+		int h = 1;
+		if (o instanceof GameObject)
+		{
+			// Large objects: use the south-west corner, the tile a click on the object reports.
+			GameObject go = (GameObject) o;
+			p = WorldPoint.fromScene(wv, go.getSceneMinLocation().getX(), go.getSceneMinLocation().getY(), wv.getPlane());
+			w = go.sizeX();
+			h = go.sizeY();
+		}
 		Map<String, Object> m = new LinkedHashMap<>();
 		m.put("id", o.getId());
 		m.put("kind", kind);
 		m.put("dx", p.getX() - me.getX());
 		m.put("dy", p.getY() - me.getY());
+		if (w != 1 || h != 1)
+		{
+			m.put("w", w);
+			m.put("h", h);
+		}
 		out.add(m);
 	}
 
