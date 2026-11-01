@@ -4,3 +4,5 @@ __pycache__/
 results/*/policies.pt
 recorder/.gradle/
 recorder/build/
+results/*/sample_sessions.json
+results/log.txt

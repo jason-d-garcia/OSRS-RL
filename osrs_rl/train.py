@@ -158,9 +158,11 @@ def train_ppo(
                     loss = v_loss
                 else:
                     lp_new, _ = Policy.log_prob(out, I[idx], T[idx], Dl[idx])
-                    ratio = (lp_new - LP[idx]).exp()
+                    ratio = (lp_new - LP[idx]).clamp(-20.0, 20.0).exp()
                     pg = -torch.min(ratio * A[idx], ratio.clamp(1 - clip, 1 + clip) * A[idx]).mean()
                     loss = pg + 0.5 * v_loss - ent_coef * Policy.entropy_proxy(out).mean()
+                if not torch.isfinite(loss):
+                    continue
                 opt.zero_grad()
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(pol.parameters(), 0.5)

@@ -30,14 +30,14 @@ def rules_floor(sess) -> bool:
     g = gaps(log)
     rd = reaction_delays(log)
     tells = 0
-    if len(g) > 5 and g.std() / max(g.mean(), 1) < 0.35:
-        tells += 1  # metronome timing
-    if not any(r["intent"] in (CAMERA, CHECK_TAB) for r in log):
-        tells += 1  # never touches the camera or a tab in 30 minutes
-    if len(g) > 5 and g.max() < 20_000:
-        tells += 1  # never once looks away
+    if len(rd) > 3 and rd.std() / max(rd.mean(), 1) < 0.4:
+        tells += 1  # reaction times too even (uniform random sleeps)
+    if len(rd) > 3 and np.percentile(rd, 90) < 3000:
+        tells += 1  # never slow to notice that something changed
     if len(rd) > 3 and np.percentile(rd, 10) < 250:
         tells += 1  # reacts faster than people do
+    if not any(r["intent"] in (CAMERA, CHECK_TAB) for r in log):
+        tells += 1  # never touches the camera or a tab in 30 minutes
     return tells >= 2
 
 
