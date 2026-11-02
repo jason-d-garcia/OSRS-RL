@@ -84,7 +84,11 @@ def train_ppo(
     ent_coef: float = 0.0,
     seed: int = 0,
     log=print,
+    detector_reward=None,
 ):
+    """PPO with a KL leash to ``ref``. ``detector_reward`` (osrs_rl.adversarial.DetectorReward) adds a
+    bonus at the end of each episode for looking human to the current detectors, which are retrained
+    every few updates on the agent's latest play."""
     torch.manual_seed(seed)
     pol = copy.deepcopy(init) if init is not None else Policy()
     ref = ref.eval() if ref is not None else None
@@ -119,8 +123,14 @@ def train_ppo(
                 ep_ret[k] += r
                 ep_kl[k] += kl[k]
                 if done:
+                    bonus = 0.0
+                    if detector_reward is not None:
+                        bonus = detector_reward.bonus({"log": e.log, "progress": info["episode_progress"],
+                                                       "ms": info["episode_ms"], "activity": e.activity_name})
+                        rews[k] += bonus
                     finished.append({"progress": info["episode_progress"], "ms": info["episode_ms"], "ret": ep_ret[k],
-                                     "kl": ep_kl[k], "decisions": e.n_decisions, "actions": len(e.log)})
+                                     "kl": ep_kl[k], "decisions": e.n_decisions, "actions": len(e.log),
+                                     "bonus": bonus})
                     ep_ret[k] = ep_kl[k] = 0
                     o, _ = e.reset(seed=int(np.random.randint(1 << 30)))
                 dones[k] = done
@@ -168,6 +178,8 @@ def train_ppo(
                 torch.nn.utils.clip_grad_norm_(pol.parameters(), 0.5)
                 opt.step()
         upd += 1
+        if detector_reward is not None:
+            detector_reward.maybe_retrain(upd)
         if finished:
             recent = finished[-32:]
             row = {
@@ -178,6 +190,7 @@ def train_ppo(
                 "kl_per_episode": float(np.mean([f["kl"] for f in recent])),
                 "actions_per_episode": float(np.mean([f["actions"] for f in recent])),
                 "decisions_per_episode": float(np.mean([f["decisions"] for f in recent])),
+                "detector_bonus": float(np.mean([f["bonus"] for f in recent])),
                 "wall_s": time.time() - t0,
             }
             curve.append(row)
@@ -185,6 +198,6 @@ def train_ppo(
                 log(
                     f"  ppo upd {upd:4d} ticks {ticks_done / 1e6:5.2f}M prog/h {row['progress_per_h']:8.0f} "
                     f"ret {row['return']:6.2f} kl/ep {row['kl_per_episode']:6.2f} actions/ep {row['actions_per_episode']:5.0f} "
-                    f"({row['wall_s']:.0f}s)"
+                    f"det {row['detector_bonus']:+.2f} ({row['wall_s']:.0f}s)"
                 )
     return pol, curve

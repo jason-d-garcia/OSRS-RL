@@ -147,6 +147,10 @@ def main():
     ap.add_argument("--out", default="results/real")
     ap.add_argument("--bc", default="synthetic", choices=["synthetic", "real", "mixed"],
                     help="what behaviour cloning copies: the synthetic players, Jason's recordings, or both")
+    ap.add_argument("--adv-weight", type=float, default=0.0,
+                    help="also train PPO with the detectors in the reward (GAIL-style) at this weight; 0 = off")
+    ap.add_argument("--adv-retrain", type=int, default=10, help="retrain the in-loop detectors every N PPO updates")
+    ap.add_argument("--skip-pure", action="store_true", help="skip the pure-RL baseline (for leash sweeps)")
     args = ap.parse_args()
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -210,21 +214,37 @@ def main():
     log(f"ppo from bc, kl {args.kl}, {args.ticks / 1e6:.1f}M ticks")
     rl, rl_curve = train_ppo("gemcrab", bc, bc, reward_cfg, total_ticks=args.ticks, kl_coef=args.kl,
                              seed=args.seed, log=log)
-    raw_cfg = {"human_median_rate_per_hour": reward_cfg["human_median_rate_per_hour"], "reward_scale": 10.0}
-    pure, _ = train_ppo("gemcrab", None, None, raw_cfg, total_ticks=args.ticks, kl_coef=0.0, lr=3e-4,
-                        ent_coef=0.01, seed=args.seed + 1, log=log)
 
-    def pol(p, base):
+    def pol(p, base, n=N_BOT_EPISODES):
         torch.manual_seed(base)
-        return gen(lambda sd: PolicyController(p), range(base, base + N_BOT_EPISODES))[0]
+        return gen(lambda sd: PolicyController(p), range(base, base + n))[0]
+
+    adv = adv_curve = None
+    if args.adv_weight > 0:
+        from osrs_rl.adversarial import DetectorReward
+        dr = DetectorReward(real, weight=args.adv_weight, retrain_every=args.adv_retrain, seed=args.seed, log=log)
+        dr.fit(pol(bc, 8_000_000, n=24))  # start from detectors that already know the BC agent
+        log(f"ppo from bc with detector reward, weight {args.adv_weight}, kl {args.kl}")
+        adv, adv_curve = train_ppo("gemcrab", bc, bc, reward_cfg, total_ticks=args.ticks, kl_coef=args.kl,
+                                   seed=args.seed, log=log, detector_reward=dr)
+        adv_history = dr.history
+
+    pure = None
+    if not args.skip_pure:
+        raw_cfg = {"human_median_rate_per_hour": reward_cfg["human_median_rate_per_hour"], "reward_scale": 10.0}
+        pure, _ = train_ppo("gemcrab", None, None, raw_cfg, total_ticks=args.ticks, kl_coef=0.0, lr=3e-4,
+                            ent_coef=0.01, seed=args.seed + 1, log=log)
 
     others = {
         "synthetic_humans": synth,
         "scripted": gen(lambda sd: ScriptedBot(sd), range(9_000_000, 9_000_000 + N_BOT_EPISODES))[0],
         "bc": pol(bc, 9_100_000),
         "rl_kl": pol(rl, 9_200_000),
-        "pure_rl": pol(pure, 9_300_000),
     }
+    if adv is not None:
+        others["rl_adv"] = pol(adv, 9_400_000)
+    if pure is not None:
+        others["pure_rl"] = pol(pure, 9_300_000)
     results = {"window_minutes": WINDOW_TICKS * TICK_MS / 60000, "real_files": sorted(set(groups)),
                "reward_cfg": reward_cfg, "ticks": args.ticks, "kl_coef": args.kl, "bc_source": args.bc,
                "real": describe(real), "vs_real": {}}
@@ -238,6 +258,9 @@ def main():
             f"gbt auc {det['feature_gbt']['auc']:.2f}  gru auc {det['sequence_gru']['auc']:.2f}  "
             f"worst {w['auc']:.2f} [{w['auc_90ci'][0]:.2f}, {w['auc_90ci'][1]:.2f}]  reaction KS {ts['reaction_ks']:.2f}")
     results["rl_curve"] = rl_curve
+    if adv is not None:
+        results["adv"] = {"weight": args.adv_weight, "retrain_every": args.adv_retrain, "curve": adv_curve,
+                          "detector_history": adv_history}
     results["wall_s"] = time.time() - t0
     (out / "results.json").write_text(json.dumps(results, indent=1))
     log(f"wrote {out / 'results.json'}")
