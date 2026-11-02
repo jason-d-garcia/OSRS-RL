@@ -93,7 +93,14 @@ class SyntheticHuman(Controller):
         self.p_close_bank = prof.uniform(0.1, 0.8)
         self.p_misclick = prof.uniform(0.005, 0.03)
         self.break_rate = prof.uniform(1 / 3600, 1 / 900)  # breaks per second of play
-        self.p_try_shell = prof.uniform(0.8, 0.98)
+        # Gem crab habits, set from Jason's recordings (calibrate.py, 9.4 h): after the crab
+        # burrows or the target is lost, the next input comes a median 26-37 s later (p90 ~3-5 min),
+        # because the game window is unfocused 61% of the time; arriving at a new mine is answered
+        # in ~1.4 s; ~12 tab clicks an hour; and the shell is almost never mined.
+        self.p_crab_afk = prof.uniform(0.55, 0.9)
+        self.crab_afk_mu = math.log(prof.uniform(15_000, 60_000))
+        self.p_crab_tab = prof.uniform(0.03, 0.3)
+        self.p_try_shell = prof.uniform(0.0, 0.15) if prof.random() < 0.4 else prof.uniform(0.5, 0.98)
         self.session_seed = session_seed
         self.rng = np.random.default_rng(hash((player_id, session_seed)) % (2**32))
 
@@ -115,6 +122,9 @@ class SyntheticHuman(Controller):
         d *= 1.0 + self.fatigue * env.t_ms / 1_800_000.0
         if self.rng.random() < self.p_afk:
             d += self.afk_scale * (self.rng.pareto(1.6) + 1.0)
+        if (env.activity_name == "gemcrab" and env.trigger in ("target_gone", "shell_ready")
+                and self.rng.random() < self.p_crab_afk):
+            d += math.exp(self.crab_afk_mu + 1.1 * self.rng.standard_normal())  # tabbed out
         return d
 
     def glance(self, env, crab=False) -> float:
@@ -183,6 +193,8 @@ class SyntheticHuman(Controller):
         if sim.attacking:
             if self.rng.random() < self.p_redundant * 0.3:
                 return self._act(env, INTERACT, sim.crab)
+            if self.rng.random() < self.p_crab_tab:
+                return self._act(env, CHECK_TAB)
             return act(WAIT, 0, self.glance(env, crab=True))
         if sim.busy or sim.moving:
             return act(WAIT, 0, self.glance(env) * 0.3)

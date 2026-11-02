@@ -124,7 +124,7 @@ def describe(sessions):
     g = np.concatenate([gaps(s["log"]) for s in sessions]) if sessions else np.zeros(0)
     rd = np.concatenate([reaction_delays(s["log"]) for s in sessions]) if sessions else np.zeros(0)
     feats = np.stack([session_features(s) for s in sessions])
-    f = lambda name: float(np.median(feats[:, FEATURE_NAMES.index(name)]))
+    f = lambda name: float(np.mean(feats[:, FEATURE_NAMES.index(name)]))  # mean: most windows have none
     return {
         "windows": len(sessions),
         "progress_per_h_median": float(np.median([rate(s) for s in sessions])),

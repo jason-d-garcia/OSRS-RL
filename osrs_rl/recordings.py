@@ -86,6 +86,8 @@ def _kind(target: str, option: str) -> str:
     return ""
 
 
+IGNORED_OPTIONS = {"play", "logout", "cancel", "examine", "click here to play"}
+
 UNCUT_GEMS = {1617, 1619, 1621, 1623, 1625, 1627, 1629, 1631}  # diamond..dragonstone, opal, jade, red topaz
 GEM_VALUE = 150.0  # same progress units as osrs_rl/sim/params.py
 
@@ -182,12 +184,16 @@ def records_to_session(recs: list) -> dict:
         elif typ == "menu_click":
             opt = (r.get("option") or "").lower()
             tgt = r.get("target") or ""
+            if opt in IGNORED_OPTIONS:
+                continue  # login screen, logout, cancelling a menu, examine text
             if "deposit" in opt:
                 add(t, DEPOSIT)
             elif opt in ("close",):
                 add(t, CLOSE)
-            elif opt in ("walk here",) or not tgt:
-                add(t, CHECK_TAB if not tgt else INTERACT, "")
+            elif opt == "walk here":
+                add(t, INTERACT, "")
+            elif not tgt:
+                add(t, CHECK_TAB)  # side-panel tabs: Skills, Inventory, Friends List, ...
             else:
                 kind = _kind(tgt, opt)
                 add(t, INTERACT, kind, redundant=bool(prev_interacting) and kind == "crab")
