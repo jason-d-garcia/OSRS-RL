@@ -145,6 +145,8 @@ def main():
     ap.add_argument("--kl", type=float, default=0.1)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="results/real")
+    ap.add_argument("--bc", default="synthetic", choices=["synthetic", "real", "mixed"],
+                    help="what behaviour cloning copies: the synthetic players, Jason's recordings, or both")
     args = ap.parse_args()
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -185,6 +187,25 @@ def main():
 
     tr_train = [t for p in range(TRAIN_PLAYERS - 1) for t in trans[p]]
     tr_val = trans[TRAIN_PLAYERS - 1]
+    real_tr = {}
+    if args.bc != "synthetic":
+        from osrs_rl.real_bc import recording_transitions
+        for p in sorted(Path(args.recordings).expanduser().glob("session-*.jsonl.gz")):
+            tr = recording_transitions(p)
+            if tr:
+                real_tr[p.name] = tr
+        files = sorted(real_tr, key=lambda f: len(real_tr[f]))
+        val_file = files[len(files) // 2]  # a mid-sized file for validation
+        r_train = [t for f in files if f != val_file for t in real_tr[f]]
+        r_val = real_tr[val_file]
+        n_int = sum(a["intent"] != 0 for _, a in r_train)
+        log(f"real bc data: {len(r_train)} decisions ({n_int} inputs) from {len(files) - 1} files, val {val_file}")
+        if args.bc == "real":
+            tr_train, tr_val = r_train, r_val
+        else:
+            # Upweight the real decisions so they are about half of the data.
+            k = max(1, len(tr_train) // max(len(r_train), 1))
+            tr_train, tr_val = tr_train + r_train * k, r_val
     bc, _ = train_bc(tr_train, tr_val, seed=args.seed, log=log)
     log(f"ppo from bc, kl {args.kl}, {args.ticks / 1e6:.1f}M ticks")
     rl, rl_curve = train_ppo("gemcrab", bc, bc, reward_cfg, total_ticks=args.ticks, kl_coef=args.kl,
@@ -205,7 +226,7 @@ def main():
         "pure_rl": pol(pure, 9_300_000),
     }
     results = {"window_minutes": WINDOW_TICKS * TICK_MS / 60000, "real_files": sorted(set(groups)),
-               "reward_cfg": reward_cfg, "ticks": args.ticks, "kl_coef": args.kl,
+               "reward_cfg": reward_cfg, "ticks": args.ticks, "kl_coef": args.kl, "bc_source": args.bc,
                "real": describe(real), "vs_real": {}}
     for name, ss in others.items():
         det = cv_detect(real, groups, ss, seed=args.seed)
