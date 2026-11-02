@@ -31,13 +31,16 @@ KIND_WORDS = [
 
 def load(path):
     with gzip.open(path, "rt", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                try:
-                    yield json.loads(line)
-                except json.JSONDecodeError:
-                    break  # a file cut off mid-line by a crash; keep what we have
+        try:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        yield json.loads(line)
+                    except json.JSONDecodeError:
+                        break  # a file cut off mid-line by a crash; keep what we have
+        except (EOFError, gzip.BadGzipFile):
+            return  # a session still being written, or a client that was killed; keep what we have
 
 
 def summary(path) -> dict:
@@ -83,9 +86,55 @@ def _kind(target: str, option: str) -> str:
     return ""
 
 
+UNCUT_GEMS = {1617, 1619, 1621, 1623, 1625, 1627, 1629, 1631}  # diamond..dragonstone, opal, jade, red topaz
+GEM_VALUE = 150.0  # same progress units as osrs_rl/sim/params.py
+
+# The three gem crab mines and the area between them (world tiles, with a margin).
+CRAB_AREA = (1225, 3025, 1370, 3190)
+
+
+def in_crab_area(r) -> bool:
+    x0, y0, x1, y1 = CRAB_AREA
+    return x0 <= r.get("x", -1) <= x1 and y0 <= r.get("y", -1) <= y1
+
+
+def crab_windows(path, window_ticks: int = 1500, max_gap_ticks: int = 100) -> list[dict]:
+    """Cut a recording into sessions of ``window_ticks`` spent at the gem crab.
+
+    A stretch counts as crab time while the player's tile is in ``CRAB_AREA``; leaving it for up
+    to ``max_gap_ticks`` (a cave hop, a quick bank trip) does not break the stretch. Each full
+    window becomes one session in the simulator's format; leftovers shorter than a window are
+    dropped so every session covers the same length of play.
+    """
+    recs = list(load(path))
+    ticks = [i for i, r in enumerate(recs) if r["type"] == "tick"]
+    runs, start, last_in = [], None, None
+    for n, i in enumerate(ticks):
+        if in_crab_area(recs[i]):
+            if start is None:
+                start = n
+            elif n - last_in > max_gap_ticks:
+                runs.append((start, last_in))
+                start = n
+            last_in = n
+    if start is not None:
+        runs.append((start, last_in))
+    out = []
+    for a, b in runs:
+        for w in range(a, b + 1 - window_ticks + 1, window_ticks):
+            lo, hi = ticks[w], ticks[w + window_ticks - 1]
+            sess = records_to_session(recs[lo : hi + 1])
+            sess["source"] = f"{getattr(path, 'name', str(path))}#{(w - a) // window_ticks}"
+            out.append(sess)
+    return out
+
+
 def to_session(path) -> dict:
     """Map a recording to the simulator's session format (observable actions only)."""
-    recs = list(load(path))
+    return records_to_session(list(load(path)))
+
+
+def records_to_session(recs: list) -> dict:
     log = []
     t0 = recs[0]["t"] if recs else 0
     last_event, last_event_t = "start", t0
@@ -95,6 +144,7 @@ def to_session(path) -> dict:
     shell_seen = False
     prev_bank = False
     xp_first, last = {}, {}
+    gems, prev_gems = 0, None
 
     def add(t, intent, kind="", redundant=False):
         nonlocal last_action_t
@@ -125,6 +175,10 @@ def to_session(path) -> dict:
             if r.get("bank_open") and not prev_bank:
                 last_event, last_event_t = "bank_open", t
             prev_bank = bool(r.get("bank_open"))
+            n_gems = sum(it[1] for it in r.get("inv", []) if it and it[0] in UNCUT_GEMS)
+            if prev_gems is not None and n_gems > prev_gems:
+                gems += n_gems - prev_gems
+            prev_gems = n_gems
         elif typ == "menu_click":
             opt = (r.get("option") or "").lower()
             tgt = r.get("target") or ""
@@ -140,7 +194,7 @@ def to_session(path) -> dict:
         elif typ == "xp":
             xp_first.setdefault(r["skill"], r["xp"])
             last[r["skill"]] = r["xp"]
-    progress = float(sum(last[s] - xp_first[s] for s in last))
+    progress = float(sum(last[s] - xp_first[s] for s in last)) + gems * GEM_VALUE
     ms = (recs[-1]["t"] - t0) if recs else 0
     return {"log": log, "progress": progress, "ms": float(ms), "activity": "recorded"}
 
