@@ -48,3 +48,25 @@ bootstrap 90% intervals.
 
 BC still learns from the synthetic players, because the recordings don't yet carry the
 simulator's observation. Training BC on the recordings directly is the next big step.
+
+## Behaviour cloning on the recordings (`run_real.py --bc ...`)
+
+`osrs_rl/real_bc.py` replays each recording through the env's decision rules and rebuilds
+the simulator's observation from the tick snapshots, so BC can copy what Jason actually did.
+About 9.9 h gave ~2,400 decisions, of which ~295 are inputs (the rest are 15 s waits).
+
+| BC learns from | BC agent worst AUC | PPO + KL worst AUC | BC progress/h |
+|---|---|---|---|
+| Synthetic players only | 0.92 [0.87, 0.95] | 0.99 [0.98, 1.00] | 76,431 |
+| Jason only | 0.97 [0.94, 0.99] | 0.98 [0.95, 1.00] | 31,093 |
+| Both (Jason upweighted to ~half) | **0.90 [0.85, 0.94]** | **0.94 [0.91, 0.97]** | 67,125 |
+
+* Jason-only BC overfits: ~295 inputs isn't enough, and the clone is too passive
+  (31k/h, 29 s median reactions).
+* Mixing helps most after RL. The KL leash to a prior that has seen Jason keeps PPO closer to
+  him (0.94 vs 0.99), and that gap is outside the error bars.
+* Caveat: the detectors' human side uses windows from the same files BC learned from, so
+  these numbers may flatter the Jason-trained agents a little. More hours, and a held-out
+  day, will settle that.
+* Known remaining mismatch: the real crab is a large NPC, so the recorded tile is ~5 tiles
+  from the player while the simulator puts it adjacent.
