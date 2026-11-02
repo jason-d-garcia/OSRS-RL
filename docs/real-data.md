@@ -70,3 +70,30 @@ About 9.9 h gave ~2,400 decisions, of which ~295 are inputs (the rest are 15 s w
   day, will settle that.
 * Known remaining mismatch: the real crab is a large NPC, so the recorded tile is ~5 tiles
   from the player while the simulator puts it adjacent.
+
+## Detector in the reward, and the leash (`--adv-weight`, `--kl`)
+
+`osrs_rl/adversarial.py` adds a GAIL-style bonus: at the end of each PPO episode the current
+GBT and GRU detectors score its 15-minute windows and the agent gets the clipped log-odds of
+"human". The detectors are retrained on the agent's latest windows every 10 updates. All
+agents are then scored by fresh detectors trained after training ends (same 4-fold, by-file
+evaluation as above). Mixed BC, 5M ticks, 37 windows from 10 files.
+
+| Agent | Progress/h | GBT | GRU | Worst AUC vs Jason |
+|---|---|---|---|---|
+| BC (run pair 1) | 68,427 | 0.82 | 0.92 | 0.92 [0.88, 0.96] |
+| PPO, KL 0.03 | 70,229 | 0.98 | 0.99 | 0.99 [0.97, 1.00] |
+| PPO, KL 0.1 | 74,835 | 0.99 | 0.96 | 0.99 [0.98, 1.00] |
+| **PPO + detector reward, KL 0.1** | 72,853 | 0.93 | 0.86 | **0.93 [0.88, 0.97]** |
+| BC (run pair 2) | 75,925 | 0.91 | 0.88 | 0.91 [0.86, 0.95] |
+| PPO, KL 0.3 | 70,635 | 0.92 | 0.88 | 0.92 [0.87, 0.96] |
+| PPO, KL 1.0 | 68,992 | 0.93 | 0.93 | 0.93 [0.89, 0.97] |
+
+* The detector reward undoes most of the damage plain PPO does at the same leash (0.93 vs
+  0.99), but doesn't get below BC.
+* A tighter leash (0.3 or 1.0) does about as well on its own: PPO stays near BC.
+* The in-loop detectors cycle: the agent pushes p(bot) down to ~0.65, the retrain brings it
+  back to ~0.93, and the agent swings between ~10 and ~35 actions per episode.
+* Noise: BC came out different in the two run pairs (recordings were still growing between
+  launches), and PPO at KL 0.1 scored 0.94 in the previous round vs 0.99 here. Gaps under
+  ~0.05 need several seeds on a frozen copy of the recordings.
