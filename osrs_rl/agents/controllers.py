@@ -97,10 +97,10 @@ class SyntheticHuman(Controller):
         # burrows or the target is lost, the next input comes a median 26-37 s later (p90 ~3-5 min),
         # because the game window is unfocused 61% of the time; arriving at a new mine is answered
         # in ~1.4 s; ~12 tab clicks an hour; and the shell is almost never mined.
-        self.p_crab_afk = prof.uniform(0.55, 0.9)
-        self.crab_afk_mu = math.log(prof.uniform(15_000, 60_000))
+        self.p_crab_afk = prof.uniform(0.4, 0.8)
+        self.crab_afk_mu = math.log(prof.uniform(8_000, 35_000))
         self.p_crab_tab = prof.uniform(0.03, 0.3)
-        self.p_burst = prof.uniform(0.3, 0.7)  # REAL: tab clicks come in quick runs (median gap 2.8 s)
+        self.p_burst = prof.uniform(0.5, 0.8)  # REAL: tab clicks come in quick runs (median gap 2.8 s)
         self.burst_mu = math.log(prof.uniform(700, 2000))
         self.p_try_shell = prof.uniform(0.0, 0.15) if prof.random() < 0.4 else prof.uniform(0.5, 0.98)
         self.session_seed = session_seed

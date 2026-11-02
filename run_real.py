@@ -174,7 +174,8 @@ def main():
     reward_cfg = {
         "human_median_rate_per_hour": float(np.median(rr)),
         "cap_rate_per_hour": float(np.percentile(rr, 75)),
-        "reaction_floor_ms": float(np.percentile(rd, 2)) if len(rd) else 250.0,
+        # Clicks queued before an event register as 0 ms; never let the floor drop below 200 ms.
+        "reaction_floor_ms": max(float(np.percentile(rd, 2)), 200.0) if len(rd) else 250.0,
         "shaping_weight": 0.2,
         "camera_weight": 0.05,
         "reward_scale": 10.0,

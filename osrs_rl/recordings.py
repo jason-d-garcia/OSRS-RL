@@ -148,12 +148,12 @@ def records_to_session(recs: list) -> dict:
     xp_first, last = {}, {}
     gems, prev_gems = 0, None
 
-    def add(t, intent, kind="", redundant=False):
+    def add(t, intent, kind="", redundant=False, rank=-1):
         nonlocal last_action_t
         log.append({
             "t_ms": t - t0, "intent": intent, "kind": kind, "uid": -1, "valid": True,
             "trigger": last_event, "since_event_ms": t - last_event_t, "last_event": last_event,
-            "gap_ms": t - last_action_t, "redundant": redundant, "rank": -1,
+            "gap_ms": t - last_action_t, "redundant": redundant, "rank": rank,
         })
         last_action_t = t
 
@@ -202,7 +202,10 @@ def records_to_session(recs: list) -> dict:
                 add(t, CHECK_TAB)  # side-panel tabs: Skills, Inventory, Friends List, ...
             else:
                 kind = _kind(tgt, opt)
-                add(t, INTERACT, kind, redundant=bool(prev_interacting) and kind == "crab")
+                # Each mine has one crab, one shell and one cave, so a click on any of them is a
+                # click on the nearest of its kind, as the simulator records it (rank 0).
+                add(t, INTERACT, kind, redundant=bool(prev_interacting) and kind == "crab",
+                    rank=0 if kind in ("crab", "shell", "cave") else -1)
         elif typ == "xp":
             xp_first.setdefault(r["skill"], r["xp"])
             last[r["skill"]] = r["xp"]
