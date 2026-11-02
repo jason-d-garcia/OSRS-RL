@@ -263,7 +263,10 @@ class OsrsEnv(gym.Env):
         g[o + 5] = min((self.t_ms - self.last_camera_ms) / 600_000.0, 3.0)
         g[o + 6] = min((self.t_ms - self.last_obs_action_ms) / 60_000.0, 5.0)
 
-        ents = sorted(sim.visible_entities(), key=lambda e: (cheb(e.x, e.y, sim.px, sim.py), e.uid))[:MAX_ENTITIES]
+        # Things you can click first, then bystanders, each nearest first. Large NPCs make raw tile
+        # distance a poor guide, and at a busy crab other players would otherwise crowd it out.
+        ents = sorted(sim.visible_entities(),
+                      key=lambda e: (not e.interactable, cheb(e.x, e.y, sim.px, sim.py), e.uid))[:MAX_ENTITIES]
         self._visible = ents
         E = np.zeros((MAX_ENTITIES, ENT_FEATS), dtype=np.float32)
         for i, e in enumerate(ents):

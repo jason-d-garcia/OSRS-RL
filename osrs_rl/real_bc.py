@@ -68,10 +68,12 @@ def _entities(tick, cave_ids):
     if caves:
         c = min(caves, key=lambda o: max(abs(o["dx"]), abs(o["dy"])))
         ents.append(_Ent("cave", c["dx"], c["dy"]))
-    for p in tick.get("players", [])[:6]:
+    others = sorted(tick.get("players", []), key=lambda p: max(abs(p.get("dx", 0)), abs(p.get("dy", 0))))
+    for p in others[:6]:  # the simulator shows at most six bystanders
         ents.append(_Ent("player", p.get("dx", 0), p.get("dy", 0), False))
     ents = [e for e in ents if max(abs(e.dx), abs(e.dy)) <= 20]
-    ents.sort(key=lambda e: (max(abs(e.dx), abs(e.dy)), KIND_INDEX[e.kind]))
+    # Same order as OsrsEnv._obs: clickable things first, then bystanders, nearest first.
+    ents.sort(key=lambda e: (not e.interactable, max(abs(e.dx), abs(e.dy)), KIND_INDEX[e.kind]))
     return ents[:MAX_ENTITIES], attacking
 
 
@@ -186,7 +188,7 @@ def _obs(tick, ents, trigger, t_rel, recent, last_delays, last_input, last_camer
     px, py = tick["x"] - cx, tick["y"] - cy
     g = np.zeros(GLOBAL_DIM, dtype=np.float32)
     g[0], g[1] = px / 20.0, py / 20.0
-    g[2] = min(t_rel / EPISODE_MS, 1.0)
+    g[2] = (t_rel % EPISODE_MS) / EPISODE_MS  # position within a 30-minute episode, as in the sim
     g[3] = float(not tick["_att"] and not tick["_moving"])
     crab = next((e for e in ents if e.kind == "crab"), None)
     hp = 0.0
