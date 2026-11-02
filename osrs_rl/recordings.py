@@ -86,6 +86,8 @@ def _kind(target: str, option: str) -> str:
     return ""
 
 
+IGNORED_OPTIONS = {"play", "logout", "cancel", "examine", "click here to play"}
+
 UNCUT_GEMS = {1617, 1619, 1621, 1623, 1625, 1627, 1629, 1631}  # diamond..dragonstone, opal, jade, red topaz
 GEM_VALUE = 150.0  # same progress units as osrs_rl/sim/params.py
 
@@ -146,18 +148,24 @@ def records_to_session(recs: list) -> dict:
     xp_first, last = {}, {}
     gems, prev_gems = 0, None
 
-    def add(t, intent, kind="", redundant=False):
+    def add(t, intent, kind="", redundant=False, rank=-1):
         nonlocal last_action_t
         log.append({
             "t_ms": t - t0, "intent": intent, "kind": kind, "uid": -1, "valid": True,
             "trigger": last_event, "since_event_ms": t - last_event_t, "last_event": last_event,
-            "gap_ms": t - last_action_t, "redundant": redundant, "rank": -1,
+            "gap_ms": t - last_action_t, "redundant": redundant, "rank": rank,
         })
         last_action_t = t
 
+    prev_xy = None
     for r in recs:
         typ, t = r["type"], r["t"]
         if typ == "tick":
+            xy = (r.get("x"), r.get("y"))
+            if prev_xy is not None and None not in xy and None not in prev_xy \
+                    and max(abs(xy[0] - prev_xy[0]), abs(xy[1] - prev_xy[1])) > 10:
+                last_event, last_event_t = "arrived", t  # came out of the cave at another mine
+            prev_xy = xy
             inter = r.get("interacting")
             if prev_interacting and not inter:
                 last_event, last_event_t = "target_gone", t
@@ -182,15 +190,22 @@ def records_to_session(recs: list) -> dict:
         elif typ == "menu_click":
             opt = (r.get("option") or "").lower()
             tgt = r.get("target") or ""
+            if opt in IGNORED_OPTIONS:
+                continue  # login screen, logout, cancelling a menu, examine text
             if "deposit" in opt:
                 add(t, DEPOSIT)
             elif opt in ("close",):
                 add(t, CLOSE)
-            elif opt in ("walk here",) or not tgt:
-                add(t, CHECK_TAB if not tgt else INTERACT, "")
+            elif opt == "walk here":
+                add(t, INTERACT, "")
+            elif not tgt:
+                add(t, CHECK_TAB)  # side-panel tabs: Skills, Inventory, Friends List, ...
             else:
                 kind = _kind(tgt, opt)
-                add(t, INTERACT, kind, redundant=bool(prev_interacting) and kind == "crab")
+                # Each mine has one crab, one shell and one cave, so a click on any of them is a
+                # click on the nearest of its kind, as the simulator records it (rank 0).
+                add(t, INTERACT, kind, redundant=bool(prev_interacting) and kind == "crab",
+                    rank=0 if kind in ("crab", "shell", "cave") else -1)
         elif typ == "xp":
             xp_first.setdefault(r["skill"], r["xp"])
             last[r["skill"]] = r["xp"]

@@ -124,7 +124,7 @@ def describe(sessions):
     g = np.concatenate([gaps(s["log"]) for s in sessions]) if sessions else np.zeros(0)
     rd = np.concatenate([reaction_delays(s["log"]) for s in sessions]) if sessions else np.zeros(0)
     feats = np.stack([session_features(s) for s in sessions])
-    f = lambda name: float(np.median(feats[:, FEATURE_NAMES.index(name)]))
+    f = lambda name: float(np.mean(feats[:, FEATURE_NAMES.index(name)]))  # mean: most windows have none
     return {
         "windows": len(sessions),
         "progress_per_h_median": float(np.median([rate(s) for s in sessions])),
@@ -174,7 +174,8 @@ def main():
     reward_cfg = {
         "human_median_rate_per_hour": float(np.median(rr)),
         "cap_rate_per_hour": float(np.percentile(rr, 75)),
-        "reaction_floor_ms": float(np.percentile(rd, 2)) if len(rd) else 250.0,
+        # Clicks queued before an event register as 0 ms; never let the floor drop below 200 ms.
+        "reaction_floor_ms": max(float(np.percentile(rd, 2)), 200.0) if len(rd) else 250.0,
         "shaping_weight": 0.2,
         "camera_weight": 0.05,
         "reward_scale": 10.0,

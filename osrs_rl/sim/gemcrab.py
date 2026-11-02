@@ -28,8 +28,10 @@ class GemCrab(Activity):
         self.progress = 0.0
         self.gems = 0
         if self.randomize:
-            self.attack_lvl = int(rng.integers(40, 91))
-            self.max_hit = int(round(0.5 + (self.attack_lvl + 11) * 124 / 640))
+            self.attack_lvl = int(rng.integers(60, 100))
+            # REAL: Jason (98 Str, dragon scimitar) hits 0-26, median 12.75 per hit; a spread of
+            # mid-to-high level melee setups around that.
+            self.max_hit = int(rng.integers(18, 29))
             phase = int(rng.integers(0, P.CRAB_ALIVE_TICKS // 2))
         else:
             self.attack_lvl, self.max_hit, phase = 70, 16, 0
