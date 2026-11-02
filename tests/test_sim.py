@@ -43,3 +43,21 @@ def test_gemcrab_cycle():
     sess, _ = run_episode(env, ScriptedBot(4), seed=4)
     kinds = {r["kind"] for r in sess["log"]}
     assert {"crab", "cave"} <= kinds
+
+
+def test_dialogue_reads():
+    from osrs_rl.recordings import dialogue_reads
+
+    recs = [
+        {"type": "dialogue", "t": 1000, "kind": "npc", "chars": 40, "words": 8},
+        {"type": "mouse_move", "t": 1500},
+        {"type": "menu_click", "t": 3000, "option": "Continue"},
+        {"type": "dialogue", "t": 3100, "kind": "options", "chars": 16, "words": 3, "options": ["a", "b"]},
+        {"type": "menu_click", "t": 4100, "option": "Continue"},
+        {"type": "dialogue", "t": 4200, "kind": "npc", "chars": 10, "words": 2},
+        {"type": "dialogue", "t": 4300, "kind": None},
+        {"type": "menu_click", "t": 5000, "option": "Walk here"},
+    ]
+    reads = dialogue_reads(recs)
+    assert [d["ms"] for d in reads] == [2000, 1000]
+    assert reads[1]["options"] == 2

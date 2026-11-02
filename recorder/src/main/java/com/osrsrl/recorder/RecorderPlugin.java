@@ -47,6 +47,7 @@ import net.runelite.api.events.StatChanged;
 import net.runelite.api.events.WidgetClosed;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.gameval.InventoryID;
+import net.runelite.api.widgets.Widget;
 import net.runelite.client.RuneLite;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -78,7 +79,19 @@ import net.runelite.client.util.Text;
 )
 public class RecorderPlugin extends Plugin
 {
-	static final int SCHEMA_VERSION = 3;
+	static final int SCHEMA_VERSION = 4;
+
+	/** Tutorial Island progress varp (0 at the start, 1000 once the island is done). */
+	static final int VARP_TUTORIAL = 281;
+
+	// Chatbox dialogue interfaces: {group, child holding the text}. Raw ids so the
+	// plugin does not depend on gameval constant names that move between releases.
+	static final int GROUP_NPC_CHAT = 231;
+	static final int GROUP_PLAYER_CHAT = 217;
+	static final int GROUP_OPTIONS = 219;
+	static final int GROUP_SPRITE = 193;
+	static final int GROUP_MESBOX = 229;
+	static final int GROUP_TUTORIAL_TEXT = 263;
 	static final File OUT_DIR = new File(RuneLite.RUNELITE_DIR, "osrs-rl-recordings");
 
 	@Inject
@@ -100,6 +113,7 @@ public class RecorderPlugin extends Plugin
 	private volatile long lastMoveMs;
 	private int lastYaw = -1;
 	private int lastPitch = -1;
+	private String lastDialogue = "";
 
 	private final MouseAdapter mouseListener = new MouseAdapter()
 	{
@@ -496,8 +510,139 @@ public class RecorderPlugin extends Plugin
 		r.put("inv", items(client.getItemContainer(InventoryID.INV)));
 		r.put("worn", items(client.getItemContainer(InventoryID.WORN)));
 		r.put("bank_open", client.getItemContainer(InventoryID.BANK) != null);
+		r.put("tut", client.getVarpValue(VARP_TUTORIAL));
 		scene(r, wp);
 		emit(r);
+		dialogue(me);
+	}
+
+	// --- dialogue ------------------------------------------------------------
+
+	/**
+	 * Emits a "dialogue" record whenever the chatbox dialogue or the Tutorial Island
+	 * instruction text changes. Reading time before "continue" is the main new
+	 * humanness signal on Tutorial Island, so the text length is what matters; the
+	 * text itself is game content, with the player's own name replaced by "<name>".
+	 */
+	private void dialogue(Player me)
+	{
+		String kind = null;
+		String speaker = null;
+		String text = null;
+		List<String> options = null;
+		if (visible(GROUP_NPC_CHAT, 6))
+		{
+			kind = "npc";
+			speaker = widgetText(GROUP_NPC_CHAT, 4);
+			text = widgetText(GROUP_NPC_CHAT, 6);
+		}
+		else if (visible(GROUP_PLAYER_CHAT, 6))
+		{
+			kind = "player";
+			text = widgetText(GROUP_PLAYER_CHAT, 6);
+		}
+		else if (visible(GROUP_OPTIONS, 1))
+		{
+			kind = "options";
+			options = new ArrayList<>();
+			Widget w = client.getWidget(GROUP_OPTIONS, 1);
+			Widget[] kids = w.getDynamicChildren();
+			if (kids != null)
+			{
+				for (Widget k : kids)
+				{
+					String t = clean(k.getText());
+					if (!t.isEmpty())
+					{
+						options.add(t);
+					}
+				}
+			}
+			// the first line is the "Select an option" title
+			text = options.isEmpty() ? "" : options.remove(0);
+		}
+		else if (visible(GROUP_SPRITE, 2))
+		{
+			kind = "sprite";
+			text = widgetText(GROUP_SPRITE, 2);
+		}
+		else if (visible(GROUP_MESBOX, 1))
+		{
+			kind = "message";
+			text = widgetText(GROUP_MESBOX, 1);
+		}
+		else if (groupText(GROUP_TUTORIAL_TEXT) != null)
+		{
+			kind = "tutorial";
+			text = groupText(GROUP_TUTORIAL_TEXT);
+		}
+
+		String name = me.getName();
+		if (text != null && name != null && !name.isEmpty())
+		{
+			text = text.replace(name, "<name>");
+		}
+		String key = kind == null ? "" : kind + "|" + text + "|" + options;
+		if (key.equals(lastDialogue))
+		{
+			return;
+		}
+		lastDialogue = key;
+		Map<String, Object> r = rec("dialogue");
+		r.put("kind", kind); // null: the dialogue closed
+		if (kind != null)
+		{
+			r.put("speaker", speaker);
+			r.put("text", text);
+			r.put("chars", text == null ? 0 : text.length());
+			r.put("words", text == null || text.isEmpty() ? 0 : text.trim().split("\\s+").length);
+			if (options != null)
+			{
+				r.put("options", options);
+			}
+		}
+		emit(r);
+	}
+
+	private boolean visible(int group, int child)
+	{
+		Widget w = client.getWidget(group, child);
+		return w != null && !w.isHidden();
+	}
+
+	private String widgetText(int group, int child)
+	{
+		Widget w = client.getWidget(group, child);
+		return w == null ? "" : clean(w.getText());
+	}
+
+	/** All visible text in a group's static children, joined, or null if there is none. */
+	private String groupText(int group)
+	{
+		StringBuilder sb = new StringBuilder();
+		for (int child = 0; child < 16; child++)
+		{
+			Widget w = client.getWidget(group, child);
+			if (w == null || w.isHidden())
+			{
+				continue;
+			}
+			String t = clean(w.getText());
+			if (!t.isEmpty())
+			{
+				if (sb.length() > 0)
+				{
+					sb.append(' ');
+				}
+				sb.append(t);
+			}
+		}
+		return sb.length() == 0 ? null : sb.toString();
+	}
+
+	private static String clean(String s)
+	{
+		return s == null ? "" : Text.removeTags(s.replace("<br>", " ")).trim();
 	}
 
 	private void scene(Map<String, Object> r, WorldPoint me)
