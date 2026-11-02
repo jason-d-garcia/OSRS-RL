@@ -100,11 +100,14 @@ class SyntheticHuman(Controller):
         self.p_crab_afk = prof.uniform(0.55, 0.9)
         self.crab_afk_mu = math.log(prof.uniform(15_000, 60_000))
         self.p_crab_tab = prof.uniform(0.03, 0.3)
+        self.p_burst = prof.uniform(0.3, 0.7)  # REAL: tab clicks come in quick runs (median gap 2.8 s)
+        self.burst_mu = math.log(prof.uniform(700, 2000))
         self.p_try_shell = prof.uniform(0.0, 0.15) if prof.random() < 0.4 else prof.uniform(0.5, 0.98)
         self.session_seed = session_seed
         self.rng = np.random.default_rng(hash((player_id, session_seed)) % (2**32))
 
     def reset(self, env):
+        self.burst_left = 0
         self.prev_z = 0.0
         self.prev_intent = -1
         self.prev_uid = -1
@@ -193,7 +196,11 @@ class SyntheticHuman(Controller):
         if sim.attacking:
             if self.rng.random() < self.p_redundant * 0.3:
                 return self._act(env, INTERACT, sim.crab)
+            if self.burst_left > 0:
+                self.burst_left -= 1
+                return act(CHECK_TAB, 0, math.exp(self.burst_mu + 0.5 * self.rng.standard_normal()))
             if self.rng.random() < self.p_crab_tab:
+                self.burst_left = int(self.rng.geometric(1 - self.p_burst)) - 1
                 return self._act(env, CHECK_TAB)
             return act(WAIT, 0, self.glance(env, crab=True))
         if sim.busy or sim.moving:

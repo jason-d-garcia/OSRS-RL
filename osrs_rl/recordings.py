@@ -157,9 +157,15 @@ def records_to_session(recs: list) -> dict:
         })
         last_action_t = t
 
+    prev_xy = None
     for r in recs:
         typ, t = r["type"], r["t"]
         if typ == "tick":
+            xy = (r.get("x"), r.get("y"))
+            if prev_xy is not None and None not in xy and None not in prev_xy \
+                    and max(abs(xy[0] - prev_xy[0]), abs(xy[1] - prev_xy[1])) > 10:
+                last_event, last_event_t = "arrived", t  # came out of the cave at another mine
+            prev_xy = xy
             inter = r.get("interacting")
             if prev_interacting and not inter:
                 last_event, last_event_t = "target_gone", t
