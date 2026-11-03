@@ -40,6 +40,10 @@ tasks.register('run', JavaExec) {
 	mainClass = pluginMainClass
 
 	jvmArgs "-ea"
+	// RuneLite's macOS fullscreen support subclasses com.apple.eawt, which JDK 16+ no longer exports by default
+	if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+		jvmArgs "--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED", "--add-opens=java.desktop/com.apple.eawt=ALL-UNNAMED"
+	}
 	args "--developer-mode", "--debug"
 }
 
