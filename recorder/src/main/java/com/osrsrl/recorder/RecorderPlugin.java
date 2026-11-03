@@ -78,7 +78,7 @@ import net.runelite.client.util.Text;
 )
 public class RecorderPlugin extends Plugin
 {
-	static final int SCHEMA_VERSION = 3;
+	static final int SCHEMA_VERSION = 4;
 	static final File OUT_DIR = new File(RuneLite.RUNELITE_DIR, "osrs-rl-recordings");
 
 	@Inject
@@ -100,6 +100,10 @@ public class RecorderPlugin extends Plugin
 	private volatile long lastMoveMs;
 	private int lastYaw = -1;
 	private int lastPitch = -1;
+	// Per-session anonymous ids for other players, so one person can be followed from tick to
+	// tick without storing anything that identifies them. Keyed by the client's player slot and
+	// combat level; both reset when a session starts. Never written anywhere but this map.
+	private final Map<Long, Integer> bystanderIds = new LinkedHashMap<>();
 
 	private final MouseAdapter mouseListener = new MouseAdapter()
 	{
@@ -251,6 +255,7 @@ public class RecorderPlugin extends Plugin
 			String stamp = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
 			File f = new File(OUT_DIR, "session-" + stamp + ".jsonl.gz");
 			writer = new SessionWriter(gson, f);
+			bystanderIds.clear();
 			Map<String, Object> r = rec("session_start");
 			r.put("schema", SCHEMA_VERSION);
 			r.put("world", client.getWorld());
@@ -540,10 +545,20 @@ public class RecorderPlugin extends Plugin
 			}
 			// no names: other players are stored only as anonymous positions
 			Map<String, Object> m = new LinkedHashMap<>();
+			m.put("pid", bystanderId(p));
 			m.put("dx", q.getX() - me.getX());
 			m.put("dy", q.getY() - me.getY());
 			m.put("anim", p.getAnimation());
 			m.put("combat", p.getCombatLevel());
+			Actor t = p.getInteracting();
+			if (t instanceof NPC)
+			{
+				m.put("target_npc", ((NPC) t).getIndex());
+			}
+			else if (t != null)
+			{
+				m.put("target_player", t == client.getLocalPlayer() ? -1 : bystanderId((Player) t));
+			}
 			players.add(m);
 		}
 		r.put("players", players);
@@ -625,6 +640,24 @@ public class RecorderPlugin extends Plugin
 			out.add(new int[]{it.getId(), it.getQuantity()});
 		}
 		return out;
+	}
+
+	/**
+	 * A small integer that stays the same for one other player for the rest of the session.
+	 * The client reuses a player slot when someone logs out and someone else logs in, so the
+	 * key also carries the combat level; a different person in the same slot almost always gets
+	 * a new id. Nothing identifying is stored or derivable from it.
+	 */
+	private int bystanderId(Player p)
+	{
+		long key = ((long) p.getId() << 16) | (p.getCombatLevel() & 0xffff);
+		Integer id = bystanderIds.get(key);
+		if (id == null)
+		{
+			id = bystanderIds.size();
+			bystanderIds.put(key, id);
+		}
+		return id;
 	}
 
 	private Object describe(Actor a)

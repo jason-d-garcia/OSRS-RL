@@ -31,8 +31,10 @@ with `t` (epoch milliseconds) and `type`:
 | `session_end` | `reason` | logout, pause, or plugin stopped |
 
 `npcs[]` has `index` (matches `menu_click.npc_index`), `id`, `name`, `dx`, `dy` (tiles relative to you), `anim`, `hp_ratio`,
-`hp_scale`, `targets_me`. `players[]` are anonymous: offsets, animation and combat
-level, never names. `objects[]` are game, wall and ground objects within the radius,
+`hp_scale`, `targets_me`. `players[]` are anonymous: `pid` (a per-session number that stays
+the same for one person from tick to tick, see below), offsets, animation and combat level,
+plus `target_npc` (the `npcs[].index` they are interacting with) or `target_player` (-1 for
+you, else their `pid`) when they are interacting with something. Never names. `objects[]` are game, wall and ground objects within the radius,
 with `id`, `kind`, `dx`, `dy`; objects bigger than one tile give their south-west
 corner (the tile a click on them reports) plus `w`, `h` in tiles.
 
@@ -41,6 +43,12 @@ to the thing in the tick snapshot; schema 1 files only have scene `p0`/`p1`.
 Schema 3 switched large objects in `objects[]` from their centre tile to their south-west
 corner, so object clicks match exactly; in schema 2 files they are off by about half the
 object's size.
+Schema 4 (Nov 2026) added `pid` and `target_npc` / `target_player` to `players[]`, so the other
+people at the crab can be followed across ticks and their state changes (started attacking,
+hopped, left) used as observation-only trajectories. `pid` is assigned in order of first
+sight within a session from the client's player slot and combat level; a slot reused by a
+different person after a logout gets a new `pid` unless the combat levels match too. Files
+before schema 4 have no `pid`, so bystanders there can only be matched by tile.
 
 Privacy defaults: letters and digits are stored as `"char"` (timing only), other
 players' chat and names are never stored, and the login screen is never recorded.
