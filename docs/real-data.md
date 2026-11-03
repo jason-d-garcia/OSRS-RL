@@ -116,3 +116,42 @@ given seed; PPO still isn't bit-for-bit repeatable.
   29 or none of Jason's inputs. The limit is the simulator and observation: dropped Walk-here
   clicks, the crab adjacent instead of ~5 tiles away, no bystanders or focus flag in the
   observation, and reactions chunked at 15 s.
+
+## How much of Jason's data does BC need? (`run_efficiency.py`)
+
+BC trained on 100 / 50 / 25 / 10 / 5 % of the recording files (5 random file subsets per
+fraction, one mid-sized file always held out), rolled out in the simulator and scored by the
+usual by-file detectors against all 38 real windows from 14 files (11.3 h, 2 Nov snapshot). No
+PPO. "AUC held" is the same score restricted to real windows from files BC never trained on.
+
+| BC learns from | Fraction | Files | Real inputs | Progress/h | Worst AUC (all / held-out files) | Reaction KS |
+|---|---|---|---|---|---|---|
+| Jason only | 100% | 13 | 384 | 39,253 | 0.95 / 0.99 | 0.39 |
+| Jason only | 50% | 6 | 182 | 34,217 | 0.97 / 0.97 | 0.31 |
+| Jason only | 25% | 3 | 115 | 35,394 | 0.99 / 0.99 | 0.28 |
+| Jason only | 10% | 1 | 29 | 8,035 | 0.97 / 0.97 | 0.41 |
+| Jason only | 5% | 1 | 31 | 32,794 | 0.97 / 0.97 | 0.36 |
+| Synthetic + Jason | 100% | 13 | 384 | 75,445 | 0.94 / 0.93 | 0.11 |
+| Synthetic + Jason | 50% | 6 | 182 | 70,019 | 0.92 / 0.92 | 0.11 |
+| Synthetic + Jason | 25% | 3 | 115 | 72,997 | 0.92 / 0.93 | 0.09 |
+| Synthetic + Jason | 10% | 1 | 29 | 76,689 | 0.94 / 0.94 | 0.10 |
+| Synthetic + Jason | 5% | 1 | 31 | 72,581 | 0.94 / 0.94 | 0.12 |
+| Synthetic only | 0% | 0 | 0 | 76,431 | 0.93 / 0.93 | 0.07 |
+
+Means over subsets; single runs at the same fraction range from 0.89 to 0.98, so anything
+under ~0.05 is noise.
+
+* **The curve is flat.** Mixed BC scores 0.92–0.94 whether it sees all of Jason's 384 inputs,
+  29 of them, or none. Another 10 hours of the same kind of recording will not move this
+  number by itself; what the detectors catch is not something BC is failing to learn from
+  too few examples.
+* **Jason-only BC is unstable, not just overfitted.** Subsets of the same size land anywhere
+  between a clone that never clicks (0 progress/h) and one that checks tabs 468 times an
+  hour; the 100 % clone reacts in a median 36 s and makes 39k/h. With one player and mostly
+  WAIT labels, the intent head collapses to whichever habit dominates the chosen files.
+* **Held-out and all-file AUC agree**, so the earlier worry that BC-trained files flatter the
+  score was unfounded at this data size.
+* What stays constant across the curve is the simulator side: the observation that BC sees
+  (walk-here clicks dropped, crab adjacent instead of 5 tiles away, no bystanders, no focus
+  flag) and the cut-off of reactions at 15 s chunks. Those, and the choice of observation
+  features, are the next things to change; see `training-directions/plan.md` in the project.
