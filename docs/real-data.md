@@ -97,3 +97,19 @@ evaluation as above). Mixed BC, 5M ticks, 37 windows from 10 files.
 * Noise: BC came out different in the two run pairs (recordings were still growing between
   launches), and PPO at KL 0.1 scored 0.94 in the previous round vs 0.99 here. Gaps under
   ~0.05 need several seeds on a frozen copy of the recordings.
+
+### Three seeds, frozen recordings, KL 0.3, 8M ticks
+
+Same 37 windows for every run (a snapshot of 10 finished files). BC is now identical for a
+given seed; PPO still isn't bit-for-bit repeatable.
+
+| Agent | Seed 0 | Seed 1 | Seed 2 | Mean worst AUC |
+|---|---|---|---|---|
+| BC | 0.92 | 0.92 | 0.90 | **0.91** |
+| PPO, KL 0.3 (two runs per seed) | 0.96, 0.93 | 0.96, 0.96 | 0.95, 0.97 | 0.955 |
+| PPO, KL 0.3 + detector reward (weight 1, retrain every 5) | 0.94 | 0.94 | 0.97 | 0.95 |
+
+* With seeds averaged, neither PPO variant beats BC, and the detector reward adds nothing
+  over the leash at this weight. The single-run 0.92 above was luck.
+* The in-loop detectors win easily: the agent rarely gets p(bot) below ~0.8 between retrains.
+* The bottleneck looks like the human data (~300 real inputs) rather than RL.
