@@ -22,8 +22,9 @@ with `t` (epoch milliseconds) and `type`:
 | `wheel` | `x`, `y`, `rot` | scroll |
 | `key_press`, `key_release` | `key` (`"char"` for letters/digits unless typed text is on), `code` | every key |
 | `menu_click` | `option`, `target`, `action`, `id`, `p0`, `p1`, `item`, `x`, `y`, `tick`, plus `dx`, `dy` (target tile relative to you) for objects, ground items and NPCs, and `npc_index`, `npc_id` for NPCs | every menu action the client runs |
-| `tick` | `tick`, `x`, `y`, `plane`, `anim`, `interacting`, `hp`, `prayer`, `run`, `yaw`, `pitch`, `camera_moved`, `focused`, `inv`, `worn`, `bank_open`, `npcs[]`, `players[]`, `objects[]` | every 600 ms game tick |
+| `tick` | `tick`, `x`, `y`, `plane`, `anim`, `interacting`, `hp`, `prayer`, `stats`, `prayers`, `spec`, `spec_on`, `hover`, `run`, `yaw`, `pitch`, `camera_moved`, `focused`, `inv`, `worn`, `bank_open`, `npcs[]`, `players[]`, `objects[]` | every 600 ms game tick |
 | `xp` | `skill`, `xp`, `level` | XP drops |
+| `hitsplat` | `on` (the NPC, `me`, or a bystander `pid`), `hit_type`, `amount`, `mine` | damage shown on anyone in view |
 | `game_message` | `msg` | game/engine messages only, never player chat |
 | `focus` | `focused` | alt-tab in or out |
 | `widget_open`, `widget_close` | `group` | interfaces |
@@ -34,7 +35,16 @@ with `t` (epoch milliseconds) and `type`:
 `hp_scale`, `targets_me`. `players[]` are anonymous: `pid` (a per-session number that stays
 the same for one person from tick to tick, see below), offsets, animation and combat level,
 plus `target_npc` (the `npcs[].index` they are interacting with) or `target_player` (-1 for
-you, else their `pid`) when they are interacting with something. Never names. `objects[]` are game, wall and ground objects within the radius,
+you, else their `pid`) when they are interacting with something, and from schema 5 what
+everyone can see on them: `equip` (item ids for head, cape, amulet, weapon, torso, shield,
+legs, hands, boots; 0 when empty), `overhead` (protect/overhead prayer icon), `skull`,
+`hp_ratio`/`hp_scale` while their health bar shows, and `spot` (spot animations such as
+spell impacts). Never names.
+
+Own state added in schema 5: `stats` (boosted and real Attack, Strength, Defence, Ranged,
+Magic), `prayers` (the active prayers by name), `spec` (special attack percent), `spec_on`,
+and `hover`: the left-click action under the mouse at that tick (`option`, `target`, `id`
+or `npc_index`, `item`, `kind`), with other players reduced to their `pid`. `objects[]` are game, wall and ground objects within the radius,
 with `id`, `kind`, `dx`, `dy`; objects bigger than one tile give their south-west
 corner (the tile a click on them reports) plus `w`, `h` in tiles.
 
@@ -49,6 +59,9 @@ hopped, left) used as observation-only trajectories. `pid` is assigned in order 
 sight within a session from the client's player slot and combat level; a slot reused by a
 different person after a logout gets a new `pid` unless the combat levels match too. Files
 before schema 4 have no `pid`, so bystanders there can only be matched by tile.
+Schema 5 (Nov 2026) added the visible state of other players (`equip`, `overhead`, `skull`,
+health bar, `spot`), `hitsplat` records, and the player's own `stats`, `prayers`, `spec` and
+`hover`. Every new field is optional, so readers written for earlier schemas still work.
 
 Privacy defaults: letters and digits are stored as `"char"` (timing only), other
 players' chat and names are never stored, and the login screen is never recorded.

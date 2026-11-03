@@ -24,12 +24,18 @@ import net.runelite.api.Client;
 import net.runelite.api.GameObject;
 import net.runelite.api.GameState;
 import net.runelite.api.GroundObject;
+import net.runelite.api.HeadIcon;
+import net.runelite.api.Hitsplat;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
+import net.runelite.api.MenuEntry;
 import net.runelite.api.NPC;
 import net.runelite.api.Player;
+import net.runelite.api.PlayerComposition;
+import net.runelite.api.Prayer;
 import net.runelite.api.Scene;
 import net.runelite.api.Skill;
+import net.runelite.api.VarPlayer;
 import net.runelite.api.Tile;
 import net.runelite.api.TileObject;
 import net.runelite.api.WallObject;
@@ -41,11 +47,13 @@ import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.FocusChanged;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.events.HitsplatApplied;
 import net.runelite.api.events.InteractingChanged;
 import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.StatChanged;
 import net.runelite.api.events.WidgetClosed;
 import net.runelite.api.events.WidgetLoaded;
+import net.runelite.api.ActorSpotAnim;
 import net.runelite.api.gameval.InventoryID;
 import net.runelite.client.RuneLite;
 import net.runelite.client.config.ConfigManager;
@@ -78,7 +86,7 @@ import net.runelite.client.util.Text;
 )
 public class RecorderPlugin extends Plugin
 {
-	static final int SCHEMA_VERSION = 4;
+	static final int SCHEMA_VERSION = 5;
 	static final File OUT_DIR = new File(RuneLite.RUNELITE_DIR, "osrs-rl-recordings");
 
 	@Inject
@@ -104,6 +112,10 @@ public class RecorderPlugin extends Plugin
 	// tick without storing anything that identifies them. Keyed by the client's player slot and
 	// combat level; both reset when a session starts. Never written anywhere but this map.
 	private final Map<Long, Integer> bystanderIds = new LinkedHashMap<>();
+	private static final Skill[] COMBAT_STATS = {Skill.ATTACK, Skill.STRENGTH, Skill.DEFENCE, Skill.RANGED, Skill.MAGIC};
+	// KitType ordinals of the slots whose item is visible on another player, in the order written to equip[]:
+	// head, cape, amulet, weapon, torso, shield, legs, hands, boots.
+	private static final int[] EQUIP_SLOTS = {0, 1, 2, 3, 4, 5, 7, 9, 10};
 
 	private final MouseAdapter mouseListener = new MouseAdapter()
 	{
@@ -486,6 +498,32 @@ public class RecorderPlugin extends Plugin
 		r.put("interacting", describe(me.getInteracting()));
 		r.put("hp", client.getBoostedSkillLevel(Skill.HITPOINTS));
 		r.put("prayer", client.getBoostedSkillLevel(Skill.PRAYER));
+		// schema 5: boosted/real combat stats, active prayers, special attack, and what the mouse hovers
+		Map<String, Object> stats = new LinkedHashMap<>();
+		for (Skill sk : COMBAT_STATS)
+		{
+			stats.put(sk.getName().toLowerCase(), new int[]{client.getBoostedSkillLevel(sk), client.getRealSkillLevel(sk)});
+		}
+		r.put("stats", stats);
+		List<String> prayers = new ArrayList<>();
+		for (Prayer pr : Prayer.values())
+		{
+			if (client.isPrayerActive(pr))
+			{
+				prayers.add(pr.name().toLowerCase());
+			}
+		}
+		r.put("prayers", prayers);
+		r.put("spec", client.getVarpValue(VarPlayer.SPECIAL_ATTACK_PERCENT) / 10);
+		if (client.getVarpValue(VarPlayer.SPECIAL_ATTACK_ENABLED) == 1)
+		{
+			r.put("spec_on", true);
+		}
+		Object hover = hover();
+		if (hover != null)
+		{
+			r.put("hover", hover);
+		}
 		r.put("run", client.getEnergy() / 100);
 		int yaw = client.getCameraYaw();
 		int pitch = client.getCameraPitch();
@@ -550,6 +588,38 @@ public class RecorderPlugin extends Plugin
 			m.put("dy", q.getY() - me.getY());
 			m.put("anim", p.getAnimation());
 			m.put("combat", p.getCombatLevel());
+			// schema 5: what everyone can see on them
+			PlayerComposition comp = p.getPlayerComposition();
+			if (comp != null)
+			{
+				int[] ids = comp.getEquipmentIds();
+				int[] equip = new int[EQUIP_SLOTS.length];
+				for (int i = 0; i < EQUIP_SLOTS.length; i++)
+				{
+					int id = EQUIP_SLOTS[i] < ids.length ? ids[EQUIP_SLOTS[i]] : 0;
+					equip[i] = id >= PlayerComposition.ITEM_OFFSET ? id - PlayerComposition.ITEM_OFFSET : 0;
+				}
+				m.put("equip", equip);
+			}
+			HeadIcon icon = p.getOverheadIcon();
+			if (icon != null)
+			{
+				m.put("overhead", icon.name().toLowerCase());
+			}
+			if (p.getSkullIcon() != -1)
+			{
+				m.put("skull", p.getSkullIcon());
+			}
+			if (p.getHealthRatio() >= 0)
+			{
+				m.put("hp_ratio", p.getHealthRatio());
+				m.put("hp_scale", p.getHealthScale());
+			}
+			List<Integer> spots = spotAnims(p);
+			if (!spots.isEmpty())
+			{
+				m.put("spot", spots);
+			}
 			Actor t = p.getInteracting();
 			if (t instanceof NPC)
 			{
@@ -642,6 +712,71 @@ public class RecorderPlugin extends Plugin
 		return out;
 	}
 
+	/** Damage shown on anyone in the scene: ties hits to the player or NPC that took them. */
+	@Subscribe
+	public void onHitsplatApplied(HitsplatApplied e)
+	{
+		if (writer == null)
+		{
+			return;
+		}
+		Hitsplat h = e.getHitsplat();
+		Map<String, Object> r = rec("hitsplat");
+		r.put("on", describe(e.getActor()));
+		r.put("hit_type", h.getHitsplatType());
+		r.put("amount", h.getAmount());
+		r.put("mine", h.isMine());
+		emit(r);
+	}
+
+	/** The left-click action the mouse is over right now (what a click would do), name-free. */
+	private Object hover()
+	{
+		MenuEntry[] entries = client.getMenuEntries();
+		if (entries == null || entries.length == 0)
+		{
+			return null;
+		}
+		MenuEntry top = entries[entries.length - 1];
+		String option = top.getOption();
+		if (option == null || option.isEmpty() || "Cancel".equals(option))
+		{
+			return null;
+		}
+		Map<String, Object> m = new LinkedHashMap<>();
+		m.put("option", Text.removeTags(option));
+		if (top.getPlayer() != null)
+		{
+			m.put("player", top.getPlayer() == client.getLocalPlayer() ? -1 : bystanderId(top.getPlayer()));
+		}
+		else if (top.getNpc() != null)
+		{
+			m.put("npc_index", top.getNpc().getIndex());
+			m.put("target", Text.removeTags(top.getTarget()));
+		}
+		else
+		{
+			m.put("target", Text.removeTags(top.getTarget()));
+			m.put("id", top.getIdentifier());
+		}
+		if (top.getItemId() > 0)
+		{
+			m.put("item", top.getItemId());
+		}
+		m.put("kind", top.getType().name().toLowerCase());
+		return m;
+	}
+
+	private static List<Integer> spotAnims(Actor a)
+	{
+		List<Integer> out = new ArrayList<>();
+		for (ActorSpotAnim sa : a.getSpotAnims())
+		{
+			out.add(sa.getId());
+		}
+		return out;
+	}
+
 	/**
 	 * A small integer that stays the same for one other player for the rest of the session.
 	 * The client reuses a player slot when someone logs out and someone else logs in, so the
@@ -672,9 +807,15 @@ public class RecorderPlugin extends Plugin
 			m.put("npc", ((NPC) a).getId());
 			m.put("name", a.getName());
 		}
+		else if (a == client.getLocalPlayer())
+		{
+			m.put("player", true);
+			m.put("me", true);
+		}
 		else
 		{
 			m.put("player", true);
+			m.put("pid", bystanderId((Player) a));
 		}
 		return m;
 	}
