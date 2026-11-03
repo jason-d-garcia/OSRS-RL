@@ -112,4 +112,7 @@ given seed; PPO still isn't bit-for-bit repeatable.
 * With seeds averaged, neither PPO variant beats BC, and the detector reward adds nothing
   over the leash at this weight. The single-run 0.92 above was luck.
 * The in-loop detectors win easily: the agent rarely gets p(bot) below ~0.8 between retrains.
-* The bottleneck looks like the human data (~300 real inputs) rather than RL.
+* Not more data: a data-efficiency check (PR #12) found mixed BC scores 0.92–0.94 with all,
+  29 or none of Jason's inputs. The limit is the simulator and observation: dropped Walk-here
+  clicks, the crab adjacent instead of ~5 tiles away, no bystanders or focus flag in the
+  observation, and reactions chunked at 15 s.
