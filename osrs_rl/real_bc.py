@@ -5,16 +5,20 @@ points. This module replays a gem crab recording through the same decision rules
 
 * a decision happens at the start, after every input, when the crab burrows or a shell appears
   (``target_gone`` / ``shell_ready``), on arriving at a mine after a cave hop (``arrived``), and
-  every 15 s while a fight continues (``busy_check``);
-* if Jason's next input comes within ``WAIT_CHUNK_MS`` of a decision, the label is that input
-  with ``delay_ms`` = the time from the decision to the input;
-* otherwise the label is WAIT for ``WAIT_CHUNK_MS`` and the next decision is ``wait_done``.
+  when a walk ends (``idle``);
+* if Jason's next input comes before the next such event (and within ``MAX_DELAY_MS``), the label
+  is that input with ``delay_ms`` = the time from the decision to the input;
+* if an event comes first, the label is WAIT until the event: the env cuts a pending delay short
+  at the same events, so "wait, then decide again at the burrow" is exactly what the clone does;
+* only a stretch longer than ``MAX_DELAY_MS`` with nothing happening is cut, into WAITs of that
+  length followed by a ``wait_done`` decision.
 
 The observation is rebuilt from the tick snapshot at the decision: the player's tile relative
 to the nearest mine's crab tile (the simulator's local frame), the crab, its shell, the cave and
 up to six other players as entities, the crab's HP bar, and the same timing context the env
 keeps (last three delays, inputs in the last minute, time since a camera move, a break, the last
-input). Clicks on things the simulator doesn't have (Walk here) are dropped.
+input, and the last input's intent). "Walk here" clicks become WALK towards the nearest clickable
+thing, the simulator's stand-in for repositioning.
 """
 
 from __future__ import annotations
@@ -25,13 +29,11 @@ from collections import deque
 import numpy as np
 
 from .env import (CAMERA, CHECK_TAB, ENT_FEATS, GLOBAL_DIM, INTERACT, MAX_ENTITIES, MAX_DELAY_MS, MIN_DELAY_MS,
-                  WAIT)
+                  N_INTENTS, WAIT, WALK)
 from .recordings import IGNORED_OPTIONS, in_crab_area, load
 from .sim.base import EVENT_INDEX, EVENTS, KIND_INDEX, KINDS, N_SELF_EXTRA
 
 TICK_MS = 600
-BUSY_MS = 25 * TICK_MS
-WAIT_CHUNK_MS = 15_000.0
 EPISODE_MS = 3000 * TICK_MS
 ATTACK_LVL = 80  # Jason's Attack level
 
@@ -105,6 +107,8 @@ def recording_transitions(path) -> list[tuple[np.ndarray, dict]]:
                     events.append((t, "shell_ready"))
                 if max(abs(xy[0] - prev_xy[0]), abs(xy[1] - prev_xy[1])) > 10:
                     events.append((t, "arrived"))
+                elif prev["_moving"] and not r["_moving"] and not attacking:
+                    events.append((t, "idle"))  # a walk ended with nothing in progress
             ticks.append((t, r))
             prev, prev_xy = r, xy
             if r.get("camera_moved"):
@@ -112,9 +116,11 @@ def recording_transitions(path) -> list[tuple[np.ndarray, dict]]:
         elif r["type"] == "menu_click":
             opt = (r.get("option") or "").strip().lower()
             tgt = _name(r.get("target"))
-            if opt in IGNORED_OPTIONS or opt == "walk here":
+            if opt in IGNORED_OPTIONS:
                 continue
-            if not tgt:
+            if opt == "walk here":
+                inputs.append((t, WALK, None))
+            elif not tgt:
                 inputs.append((t, CHECK_TAB, None))
             elif "gemstone crab" in tgt or tgt == "cave" or opt == "crawl-through":
                 kind = "shell" if "shell" in tgt else "crab" if "gemstone crab" in tgt else "cave"
@@ -134,6 +140,7 @@ def recording_transitions(path) -> list[tuple[np.ndarray, dict]]:
     last_delays = deque([800.0, 800.0, 800.0], maxlen=3)
     recent = deque()
     last_input = last_camera = last_break = t_d
+    last_intent = -1
     ii = int(np.searchsorted([x[0] for x in inputs], t_d))
     ev_times = [e[0] for e in events]
     end_t = ticks[-1][0]
@@ -143,9 +150,12 @@ def recording_transitions(path) -> list[tuple[np.ndarray, dict]]:
         if not in_crab_area(tick):
             break
         ents = tick["_ents"]
-        obs = _obs(tick, ents, trigger, t_d - session_start, recent, last_delays, last_input, last_camera, last_break, t_d)
+        obs = _obs(tick, ents, trigger, t_d - session_start, recent, last_delays, last_input, last_camera, last_break,
+                   last_intent, t_d)
         nxt = inputs[ii] if ii < len(inputs) else None
-        if nxt is not None and nxt[0] - t_d <= WAIT_CHUNK_MS:
+        k = int(np.searchsorted(ev_times, t_d, side="right"))
+        nxt_ev = events[k] if k < len(events) else None  # first event strictly after the decision
+        if nxt is not None and nxt[0] - t_d <= MAX_DELAY_MS and (nxt_ev is None or nxt[0] <= nxt_ev[0]):
             t_a, intent, kind = nxt
             ii += 1
             slot = 0
@@ -155,34 +165,39 @@ def recording_transitions(path) -> list[tuple[np.ndarray, dict]]:
                     t_d, trigger = t_a, "busy_check"  # clicked something outside the snapshot
                     continue
                 slot = slots[0]
+            elif intent == WALK and not ents:
+                t_d, trigger = t_a, "busy_check"
+                continue
             delay = float(np.clip(t_a - t_d, MIN_DELAY_MS, MAX_DELAY_MS))
             out.append((obs, {"intent": intent, "target": slot, "delay_ms": delay}))
             last_delays.append(delay)
             if t_a - last_input > 60_000:
                 last_break = t_a
             last_input = t_a
+            last_intent = intent
             recent.append(t_a)
             if intent == CAMERA:
                 last_camera = t_a
-            if intent == INTERACT:
-                k = int(np.searchsorted(ev_times, t_a, side="right"))
-                nxt_ev = events[k] if k < len(events) else None
-                if nxt_ev is not None and nxt_ev[0] - t_a <= BUSY_MS:
-                    t_d, trigger = float(nxt_ev[0]), nxt_ev[1]
-                else:
-                    t_d, trigger = t_a + BUSY_MS, "busy_check"
+            if intent in (INTERACT, WALK):
+                t_d, trigger = t_a, "busy_check"  # the click is in; decide the next input now
             else:
                 t_d, trigger = t_a, ("busy_check" if tick["_att"] else "idle")
+        elif nxt_ev is not None and nxt_ev[0] - t_d <= MAX_DELAY_MS:
+            # Nothing from Jason before the next event: wait until it, as the env would.
+            delay = float(np.clip(nxt_ev[0] - t_d, MIN_DELAY_MS, MAX_DELAY_MS))
+            out.append((obs, {"intent": WAIT, "target": 0, "delay_ms": delay}))
+            last_delays.append(delay)
+            t_d, trigger = float(nxt_ev[0]), nxt_ev[1]
         else:
-            out.append((obs, {"intent": WAIT, "target": 0, "delay_ms": WAIT_CHUNK_MS}))
-            last_delays.append(WAIT_CHUNK_MS)
-            t_d, trigger = t_d + WAIT_CHUNK_MS, "wait_done"
+            out.append((obs, {"intent": WAIT, "target": 0, "delay_ms": MAX_DELAY_MS}))
+            last_delays.append(MAX_DELAY_MS)
+            t_d, trigger = t_d + MAX_DELAY_MS, "wait_done"
         while recent and t_d - recent[0] > 60_000:
             recent.popleft()
     return out
 
 
-def _obs(tick, ents, trigger, t_rel, recent, last_delays, last_input, last_camera, last_break, t):
+def _obs(tick, ents, trigger, t_rel, recent, last_delays, last_input, last_camera, last_break, last_intent, t):
     mi = _nearest_mine(tick["x"], tick["y"])
     cx, cy = MINES[mi]
     px, py = tick["x"] - cx, tick["y"] - cy
@@ -217,6 +232,9 @@ def _obs(tick, ents, trigger, t_rel, recent, last_delays, last_input, last_camer
         g[o + 2 + i] = (math.log(d) - 7.0) / 2.0
     g[o + 5] = min((t - last_camera) / 600_000.0, 3.0)
     g[o + 6] = min((t - last_input) / 60_000.0, 5.0)
+    g[o + 7] = (math.log(max(t - last_input, 1.0)) - 7.0) / 2.0
+    if last_intent >= 0:
+        g[o + 8 + last_intent] = 1.0
     E = np.zeros((MAX_ENTITIES, ENT_FEATS), dtype=np.float32)
     for i, e in enumerate(ents):
         E[i, KIND_INDEX[e.kind]] = 1.0

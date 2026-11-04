@@ -110,6 +110,11 @@ class GemCrab(Activity):
         self.attacking = False
         self.mining_until = -1
 
+    def walk_near(self, ent) -> bool:
+        if self.transit_until > self.tick_count:
+            return False
+        return super().walk_near(ent)
+
     def _start_attack(self, crab):
         if self.crab is None:
             return ["target_gone"]
