@@ -20,6 +20,13 @@ What changes from run_experiment.py:
 from __future__ import annotations
 
 import argparse
+import os
+import sys
+
+# Cap BLAS/OpenMP threads before numpy, torch and sklearn load (sklearn's tree models use OpenMP).
+_t = next((sys.argv[i + 1] for i, a in enumerate(sys.argv[:-1]) if a == "--threads"), "2")
+for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
+    os.environ.setdefault(_v, _t)
 import json
 import time
 from pathlib import Path
@@ -160,11 +167,13 @@ def main():
                          "bystanders, on the inputs a bystander's IDM can see")
     ap.add_argument("--adv-population", action="store_true",
                     help="with --adv-weight and --bystanders: the in-loop detectors' human side is Jason + bystanders")
+    ap.add_argument("--threads", type=int, default=2,
+                    help="CPU threads for torch and the tree models (keep low when the machine is shared)")
     ap.add_argument("--skip-pure", action="store_true", help="skip the pure-RL baseline (for leash sweeps)")
     args = ap.parse_args()
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    torch.set_num_threads(4)
+    torch.set_num_threads(args.threads)
     t0 = time.time()
     log = lambda m: print(f"[{time.time() - t0:6.0f}s] {m}", flush=True)
 
