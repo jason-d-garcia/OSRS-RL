@@ -233,8 +233,9 @@ def _obs(tick, ents, trigger, t_rel, recent, last_delays, last_input, last_camer
     g[o + 5] = min((t - last_camera) / 600_000.0, 3.0)
     g[o + 6] = min((t - last_input) / 60_000.0, 5.0)
     g[o + 7] = (math.log(max(t - last_input, 1.0)) - 7.0) / 2.0
+    g[o + 8] = float(tick.get("focused", True))
     if last_intent >= 0:
-        g[o + 8 + last_intent] = 1.0
+        g[o + 9 + last_intent] = 1.0
     E = np.zeros((MAX_ENTITIES, ENT_FEATS), dtype=np.float32)
     for i, e in enumerate(ents):
         E[i, KIND_INDEX[e.kind]] = 1.0

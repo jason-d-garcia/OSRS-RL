@@ -217,3 +217,20 @@ def records_to_session(recs: list) -> dict:
 if __name__ == "__main__":
     for p in sys.argv[1:]:
         print(json.dumps(summary(p), indent=1))
+
+
+def focus_after_input_ms(path) -> list[float]:
+    """For each input in the crab area, ms until the game window lost focus (when it did so before
+    the next input). Sets the env's attention model (``env.set_focus_model``)."""
+    out, t_input, prev_in_area = [], None, False
+    for r in load(path):
+        typ = r["type"]
+        if typ == "tick":
+            prev_in_area = in_crab_area(r)
+        elif typ == "menu_click" and prev_in_area:
+            if (r.get("option") or "").strip().lower() not in IGNORED_OPTIONS:
+                t_input = r["t"]
+        elif typ == "focus" and not r.get("focused", True) and t_input is not None:
+            out.append(float(r["t"] - t_input))
+            t_input = None
+    return out
