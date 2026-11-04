@@ -31,11 +31,11 @@ gradlew install --console=plain
 gradlew run --console=plain
 ```
 
-The log says `Agent bridge listening on 127.0.0.1:43600`. Environment variables:
+The log says `Agent bridge listening on 127.0.0.1:45600`. Environment variables:
 
 | Variable | Default | |
 |---|---|---|
-| `OSRSRL_AGENT_PORT` | `43600` | socket port |
+| `OSRSRL_AGENT_PORT` | `45600` | socket port (not 43600: RSProx uses that one for its local web server) |
 | `OSRSRL_AGENT_BIND` | `127.0.0.1` | keep it on localhost |
 | `OSRSRL_LOCKSTEP_TIMEOUT_MS` | `30000` | a lockstep agent that goes quiet this long is switched to real time, so the server never hangs |
 | `OSRSRL_AGENT_BRIDGE` | | `off` disables the module |

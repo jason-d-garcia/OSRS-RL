@@ -62,7 +62,7 @@ def main():
     ap.add_argument("--attach", help="drive this logged-in player instead of spawning a headless bot")
     ap.add_argument("--realtime", action="store_true", help="don't hold the server in lockstep")
     ap.add_argument("--host", default="127.0.0.1")
-    ap.add_argument("--port", type=int, default=43600)
+    ap.add_argument("--port", type=int, default=45600)
     ap.add_argument("--recordings", help="your RuneLite recordings, to score the bot against")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="results/server")
