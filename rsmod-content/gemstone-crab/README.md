@@ -46,9 +46,14 @@ the square, so that is (1273, 3173).
   the crab, mining the shell and the tunnels are still untested.
 * **Spawns from the cache.** No cache-placed crab showed up in the headless run. If
   one ever does, the script deletes any crab it didn't spawn on that crab's first timer tick.
-* **Approximate coordinates.** The tunnel exit tile is set to one tile south of each
-  tunnel, and the crab is centred on the mine coordinates from the RuneLite plugins.
-  Both may be off by a tile or two.
+* **Played by a headless bot (Nov 2026).** With the `agent-bridge` module, a scripted bot
+  hit the crab, got the burrow and eligibility messages, mined the shell for three gems and
+  took the tunnel to the next mine, over several 30-minute runs at all three mines. That
+  run found the first tunnel exits (one tile south of each tunnel) were cut off from the crab
+  at the north and south mines ("I can't reach that!"). The exits are now the tiles a player
+  walks to when using each tunnel from the crab's side, measured on the server.
+* **Approximate coordinates.** The crab is centred on the mine coordinates from the RuneLite
+  plugins and may be off by a tile or two.
 * **Health bar.** Hitpoints are set from the timer every tick. Whether the client's bar
   follows that without a separate health-bar update is unchecked.
 * **Not modelled.** The crab's own 1-damage attacks, the "pushed out of the way" message

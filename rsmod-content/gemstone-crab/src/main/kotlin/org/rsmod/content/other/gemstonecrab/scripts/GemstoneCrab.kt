@@ -15,6 +15,7 @@ import org.rsmod.api.script.onOpLoc1
 import org.rsmod.api.script.onOpNpc1
 import org.rsmod.content.other.gemstonecrab.GemstoneCrabRules
 import org.rsmod.content.other.gemstonecrab.GemstoneCrabRules.Gem
+import org.rsmod.content.other.gemstonecrab.GemstoneCrabStatus
 import org.rsmod.content.other.gemstonecrab.configs.gem_crab_locs
 import org.rsmod.content.other.gemstonecrab.configs.gem_crab_npcs
 import org.rsmod.content.other.gemstonecrab.configs.gem_crab_objs
@@ -36,10 +37,10 @@ import org.rsmod.plugin.scripts.ScriptContext
  * Gemstone crab in the Tlati Rainforest.
  *
  * One crab is up at a time, at one of three mines. It lives for [GemstoneCrabRules.ALIVE_TICKS],
- * its health bar drains with time rather than damage, and it never dies to players. When it
- * burrows it leaves a shell for [GemstoneCrabRules.SHELL_TICKS]; the top 16 players by damage can
- * mine the shell once each for three uncut gems. The crab then surfaces at another mine, and the
- * tunnel at each mine takes players to wherever the crab is now.
+ * its health bar drains with time rather than damage, and it never dies to players. When it burrows
+ * it leaves a shell for [GemstoneCrabRules.SHELL_TICKS]; the top 16 players by damage can mine the
+ * shell once each for three uncut gems. The crab then surfaces at another mine, and the tunnel at
+ * each mine takes players to wherever the crab is now.
  *
  * Players are keyed by display name for the length of one crab, because [Player.uid] is not stable
  * across a relog.
@@ -57,12 +58,18 @@ constructor(
     private var mineIndex = 0
     private var crab: Npc? = null
     private var crabSpawnCycle = 0
-    private val damage = mutableMapOf<String, Int>()
+    // Shared with GemstoneCrabStatus so other modules (the agent bridge) can read them.
+    private val damage = GemstoneCrabStatus.mutableDamage
     private val firstHitCycle = mutableMapOf<String, Int>()
     private val shells = mutableMapOf<Npc, ShellState>()
 
-    private class ShellState(val eligible: Set<String>, val spawnCycle: Int) {
-        val mined = mutableSetOf<String>()
+    private class ShellState(
+        val eligible: Set<String>,
+        val spawnCycle: Int,
+        val status: GemstoneCrabStatus.Shell,
+    ) {
+        val mined: MutableSet<String>
+            get() = status.mutableMined
     }
 
     private class Pickaxe(val obj: ObjType, val level: Int, val seq: SeqType)
@@ -101,6 +108,10 @@ constructor(
         crabSpawnCycle = mapClock.cycle
         damage.clear()
         firstHitCycle.clear()
+        GemstoneCrabStatus.mutableLastHit.clear()
+        GemstoneCrabStatus.mineIndex = index
+        GemstoneCrabStatus.crab = npc
+        GemstoneCrabStatus.spawnCycle = crabSpawnCycle
         npc.aiTimer(GemstoneCrabRules.TIMER_INTERVAL)
     }
 
@@ -134,6 +145,7 @@ constructor(
         val key = player.displayName
         damage[key] = (damage[key] ?: 0) + hit.damage
         firstHitCycle.putIfAbsent(key, mapClock.cycle)
+        GemstoneCrabStatus.mutableLastHit[key] = mapClock.cycle
     }
 
     private fun burrow(npc: Npc) {
@@ -143,8 +155,15 @@ constructor(
 
         val shell = Npc(npcTypes[gem_crab_npcs.shell], npc.coords)
         npcRepo.add(shell, GemstoneCrabRules.SHELL_TICKS)
-        shells.entries.removeIf { mapClock.cycle - it.value.spawnCycle > GemstoneCrabRules.SHELL_TICKS }
-        shells[shell] = ShellState(eligible, mapClock.cycle)
+        shells.entries.removeIf {
+            mapClock.cycle - it.value.spawnCycle > GemstoneCrabRules.SHELL_TICKS
+        }
+        val status = GemstoneCrabStatus.Shell(shell, mineIndex, eligible, mapClock.cycle)
+        shells[shell] = ShellState(eligible, mapClock.cycle, status)
+        GemstoneCrabStatus.mutableShells.removeIf {
+            mapClock.cycle - it.spawnCycle > GemstoneCrabRules.SHELL_TICKS
+        }
+        GemstoneCrabStatus.mutableShells += status
 
         val crushers = GemstoneCrabRules.msgTopCrushers(GemstoneCrabRules.announced(ranked))
         for (player in nearby) {
@@ -161,11 +180,16 @@ constructor(
 
         npcRepo.del(npc, Int.MAX_VALUE)
         crab = null
-        spawnCrab(GemstoneCrabRules.nextMine(mineIndex, random.of(GemstoneCrabRules.MINES.size - 1)))
+        GemstoneCrabStatus.crab = null
+        spawnCrab(
+            GemstoneCrabRules.nextMine(mineIndex, random.of(GemstoneCrabRules.MINES.size - 1))
+        )
     }
 
     private fun playersNear(coords: CoordGrid, radius: Int): List<Player> =
-        playerList.filter { it.coords.level == coords.level && it.coords.chebyshevDistance(coords) <= radius }
+        playerList.filter {
+            it.coords.level == coords.level && it.coords.chebyshevDistance(coords) <= radius
+        }
 
     // ---- shell ----
 
@@ -225,7 +249,7 @@ constructor(
 
     private suspend fun ProtectedAccess.useTunnel() {
         val target = GemstoneCrabRules.MINES[mineIndex]
-        val dest = CoordGrid(target.tunnelX, target.tunnelZ - 1, 0)
+        val dest = CoordGrid(target.exitX, target.exitZ, 0)
         if (coords.chebyshevDistance(dest) <= NEARBY_RADIUS) {
             mes("The crab is already at this mine.")
             return

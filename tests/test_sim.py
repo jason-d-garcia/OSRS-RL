@@ -61,3 +61,35 @@ def test_dialogue_reads():
     reads = dialogue_reads(recs)
     assert [d["ms"] for d in reads] == [2000, 1000]
     assert reads[1]["options"] == 2
+
+
+def test_delay_interrupted_by_event():
+    """A long delay is cut short when the crab burrows, and the pending intent is dropped."""
+    from osrs_rl.env import INTERACT, WAIT
+    env = OsrsEnv("gemcrab", seed=5, randomize=False)
+    env.reset(seed=5)
+    env.step({"intent": INTERACT, "target": env.slot_of(env.sim.crab), "delay_ms": 600.0})
+    env.sim.crab_timer = 50  # burrows in 30 s
+    n_log = len(env.log)
+    env.step({"intent": INTERACT, "target": 0, "delay_ms": 299_000.0})  # would click long after the burrow
+    assert env.trigger in ("target_gone", "shell_ready")
+    assert len(env.log) == n_log, "the interrupted click must not be logged"
+    assert env.t_ms < 299_000.0 + 1200.0
+    env.step({"intent": WAIT, "target": 0, "delay_ms": 5_000.0})
+    assert env.trigger == "wait_done"
+
+
+def test_walk_intent():
+    from osrs_rl.env import WALK
+    env = OsrsEnv("gemcrab", seed=6)
+    env.reset(seed=6)
+    cave = env.slot_of(env.sim.cave)
+    start = (env.sim.px, env.sim.py)
+    env.step({"intent": WALK, "target": cave, "delay_ms": 600.0})
+    rec = env.log[-1]
+    assert rec["intent"] == WALK and rec["kind"] == "" and rec["rank"] == -1
+    assert env.trigger == "busy_check"
+    env.step({"intent": 0, "target": 0, "delay_ms": 60_000.0})  # wait; the walk ends with "idle"
+    assert env.trigger == "idle"
+    assert (env.sim.px, env.sim.py) != start
+    assert not env.sim.attacking

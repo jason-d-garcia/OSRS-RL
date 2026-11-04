@@ -46,14 +46,54 @@ object GemstoneCrabRules {
     /** Ticks of swinging a pick before the shell gives its gems. */
     const val MINE_TICKS = 4
 
-    /** A mine in the Tlati Rainforest: where the crab surfaces and where its tunnel comes out. */
-    data class Mine(val name: String, val crabX: Int, val crabZ: Int, val tunnelX: Int, val tunnelZ: Int)
+    /**
+     * A mine in the Tlati Rainforest: where the crab surfaces, where its tunnel is, and where the
+     * tunnel puts you ([exitX], [exitZ]).
+     *
+     * The exits are the tiles a player walks to when they click the tunnel from the crab's side,
+     * measured on the server with a bot (Nov 2026). The first guess, one tile south of each tunnel,
+     * is cut off from the crab at the north and south mines: a bot dropped there got "I can't reach
+     * that!" on every click.
+     */
+    data class Mine(
+        val name: String,
+        val crabX: Int,
+        val crabZ: Int,
+        val tunnelX: Int,
+        val tunnelZ: Int,
+        val exitX: Int,
+        val exitZ: Int,
+    )
 
     val MINES: List<Mine> =
         listOf(
-            Mine("north", crabX = 1273, crabZ = 3173, tunnelX = 1278, tunnelZ = 3168),
-            Mine("east", crabX = 1353, crabZ = 3112, tunnelX = 1351, tunnelZ = 3124),
-            Mine("south", crabX = 1239, crabZ = 3043, tunnelX = 1246, tunnelZ = 3036),
+            Mine(
+                "north",
+                crabX = 1273,
+                crabZ = 3173,
+                tunnelX = 1278,
+                tunnelZ = 3168,
+                exitX = 1277,
+                exitZ = 3169,
+            ),
+            Mine(
+                "east",
+                crabX = 1353,
+                crabZ = 3112,
+                tunnelX = 1351,
+                tunnelZ = 3124,
+                exitX = 1352,
+                exitZ = 3122,
+            ),
+            Mine(
+                "south",
+                crabX = 1239,
+                crabZ = 3043,
+                tunnelX = 1246,
+                tunnelZ = 3036,
+                exitX = 1246,
+                exitZ = 3038,
+            ),
         )
 
     /** The crab moves to one of the other two mines. [roll] is a random int in 0 until 2. */
@@ -80,7 +120,10 @@ object GemstoneCrabRules {
     fun <K> eligible(damage: Map<K, Int>, firstHitCycle: Map<K, Int>): List<K> =
         damage.entries
             .filter { it.value > 0 }
-            .sortedWith(compareByDescending<Map.Entry<K, Int>> { it.value }.thenBy { firstHitCycle[it.key] ?: Int.MAX_VALUE })
+            .sortedWith(
+                compareByDescending<Map.Entry<K, Int>> { it.value }
+                    .thenBy { firstHitCycle[it.key] ?: Int.MAX_VALUE }
+            )
             .take(TOP_N)
             .map { it.key }
 
@@ -113,9 +156,7 @@ object GemstoneCrabRules {
 
     const val DRAGONSTONE_ONE_IN = 500
 
-    /**
-     * Rolls one gem. [random] returns a uniform int in `0 until n` for the n it is given.
-     */
+    /** Rolls one gem. [random] returns a uniform int in `0 until n` for the n it is given. */
     fun rollGem(random: (Int) -> Int): Gem {
         if (random(DRAGONSTONE_ONE_IN) == 0) {
             return Gem.DRAGONSTONE
@@ -133,10 +174,12 @@ object GemstoneCrabRules {
     // Messages, as the live game words them.
     const val MSG_BURROW = "The gemstone crab burrows away, leaving a piece of its shell behind."
     const val MSG_ELIGIBLE = "You gained enough understanding of the crab to mine from its remains."
-    const val MSG_NOT_ELIGIBLE = "Your understanding of the gemstone crab is not great enough to mine its shell."
+    const val MSG_NOT_ELIGIBLE =
+        "Your understanding of the gemstone crab is not great enough to mine its shell."
     const val MSG_SWING = "You swing your pick at the crab shell."
     const val MSG_NO_PICK = "You need a pickaxe to mine the shell."
-    const val MSG_NO_PICK_LEVEL = "You do not have a pickaxe which you have the Mining level to use."
+    const val MSG_NO_PICK_LEVEL =
+        "You do not have a pickaxe which you have the Mining level to use."
     const val MSG_ALREADY_MINED = "You have already mined this shell."
     const val MSG_PUSHED = "The burrowing crab forces you out of its way.."
 

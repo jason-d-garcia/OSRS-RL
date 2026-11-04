@@ -12,7 +12,8 @@ scored by a bot detector trained on the same server's sessions.
 | Detectors (rules floor, gradient-boosted features, GRU) | `osrs_rl/detector.py`, `osrs_rl/metrics.py` | working |
 | RuneLite recording plugin (passive) | `recorder/` | ready to try |
 | Recording reader / converter | `osrs_rl/recordings.py` | first pass |
-| RSMod server + agent plugin | — | next |
+| RSMod gem crab + agent plugin (bots over a socket, lockstep) | `rsmod-content/`, `osrs_rl/rsmod_bridge.py`, `run_server.py` | runs headless; watched from RuneLite via RSProx (Nov 2026) |
+| RSMod dev helpers: `::pvp`, autosave | `rsmod-content/pvp-toggle`, `rsmod-content/autosave` | in use on the OptiPlex server |
 
 Scope: your own private server only. Recordings of your own play may come from
 the live game; bots never connect to it.

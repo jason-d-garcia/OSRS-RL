@@ -154,6 +154,11 @@ class Activity:
         """Left-click an entity. Returns False when it does nothing."""
         raise NotImplementedError
 
+    def walk_near(self, ent: Entity) -> bool:
+        """Walk to a tile next to ``ent`` without interacting with it ("Walk here")."""
+        self.walk_to(ent, lambda dest: ["idle"])
+        return True
+
     def deposit_all(self) -> bool:
         return False
 
