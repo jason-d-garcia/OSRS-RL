@@ -57,9 +57,11 @@ def test_dialogue_reads():
         {"type": "dialogue", "t": 4200, "kind": "npc", "chars": 10, "words": 2},
         {"type": "dialogue", "t": 4300, "kind": None},
         {"type": "menu_click", "t": 5000, "option": "Walk here"},
+        {"type": "dialogue", "t": 6000, "kind": "npc", "chars": 10, "words": 2},
+        {"type": "key_press", "t": 6400, "key": "\u2423"},
     ]
     reads = dialogue_reads(recs)
-    assert [d["ms"] for d in reads] == [2000, 1000]
+    assert [d["ms"] for d in reads] == [2000, 1000, 400]
     assert reads[1]["options"] == 2
 
 

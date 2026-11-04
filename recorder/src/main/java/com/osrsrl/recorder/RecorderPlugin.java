@@ -659,28 +659,43 @@ public class RecorderPlugin extends Plugin
 		return w == null ? "" : clean(w.getText());
 	}
 
-	/** All visible text in a group's static children, joined, or null if there is none. */
+	/**
+	 * All visible text in an interface group, joined, or null if there is none. Walks every
+	 * component's static, dynamic and nested children, because the Tutorial Island
+	 * instruction text (group 263) is not a direct static child.
+	 */
 	private String groupText(int group)
 	{
-		StringBuilder sb = new StringBuilder();
-		for (int child = 0; child < 16; child++)
+		List<String> parts = new ArrayList<>();
+		Set<Widget> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+		for (int child = 0; child < 64; child++)
 		{
-			Widget w = client.getWidget(group, child);
-			if (w == null || w.isHidden())
+			collectText(client.getWidget(group, child), parts, seen, 0);
+		}
+		return parts.isEmpty() ? null : String.join(" ", parts);
+	}
+
+	private void collectText(Widget w, List<String> parts, Set<Widget> seen, int depth)
+	{
+		if (w == null || depth > 6 || !seen.add(w) || w.isHidden())
+		{
+			return;
+		}
+		String t = clean(w.getText());
+		if (!t.isEmpty() && !parts.contains(t))
+		{
+			parts.add(t);
+		}
+		for (Widget[] kids : new Widget[][]{w.getStaticChildren(), w.getDynamicChildren(), w.getNestedChildren()})
+		{
+			if (kids != null)
 			{
-				continue;
-			}
-			String t = clean(w.getText());
-			if (!t.isEmpty())
-			{
-				if (sb.length() > 0)
+				for (Widget k : kids)
 				{
-					sb.append(' ');
+					collectText(k, parts, seen, depth + 1);
 				}
-				sb.append(t);
 			}
 		}
-		return sb.length() == 0 ? null : sb.toString();
 	}
 
 	private static String clean(String s)
