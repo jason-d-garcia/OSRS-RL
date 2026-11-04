@@ -359,6 +359,13 @@ def main():
                           "detector_history": adv_history}
     results["wall_s"] = time.time() - t0
     (out / "results.json").write_text(json.dumps(results, indent=1))
+    # Checkpoints, in run_experiment.py's format, so run_server.py can play them on RSMod.
+    ckpt = {"bc": bc.state_dict(), "rl_kl": rl.state_dict(), "reward_cfg": reward_cfg}
+    if adv is not None:
+        ckpt["rl_adv"] = adv.state_dict()
+    if pure is not None:
+        ckpt["pure_rl"] = pure.state_dict()
+    torch.save(ckpt, out / "policies.pt")
     log(f"wrote {out / 'results.json'}")
 
 
