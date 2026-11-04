@@ -137,6 +137,12 @@ constructor(
                 iterator.remove()
                 continue
             }
+            conn.pendingReset?.let { deferred ->
+                if (conn.player?.isDelayed == false) {
+                    conn.pendingReset = null
+                    reset(conn, deferred)
+                }
+            }
             applyPending(conn)
         }
     }
@@ -159,6 +165,11 @@ constructor(
 
     /** Blocks the game thread until [conn] sends `step` (lockstep), handling other commands. */
     private fun awaitStep(conn: AgentConnection) {
+        // The agent is blocked waiting for `reset_done`, so it will not send `step`: let the
+        // cycle run until the delay ends and the deferred reset goes through.
+        if (conn.pendingReset != null) {
+            return
+        }
         val deadline = System.currentTimeMillis() + lockstepTimeoutMs
         while (true) {
             val left = deadline - System.currentTimeMillis()
@@ -169,7 +180,7 @@ constructor(
                 return
             }
             val cmd = conn.take(left) ?: continue
-            if (handle(conn, cmd)) {
+            if (handle(conn, cmd) || conn.pendingReset != null) {
                 return
             }
             if (!conn.open || !conn.lockstep || conn.player == null) {
@@ -481,6 +492,10 @@ constructor(
         val player = conn.player
         if (player == null) {
             conn.send(event("error").put("error", "no player to reset"))
+            return
+        }
+        if (player.isDelayed) {
+            conn.pendingReset = cmd
             return
         }
         conn.pending.clear()
