@@ -90,10 +90,12 @@ class OsrsEnv(gym.Env):
     metadata = {"render_modes": []}
 
     def __init__(self, activity: str = "gemcrab", seed: int | None = None, episode_ticks: int = EPISODE_TICKS,
-                 reward_cfg: dict | None = None, randomize: bool = True):
+                 reward_cfg: dict | None = None, randomize: bool = True, sim=None):
         self.activity_name = activity
         self.rng = np.random.default_rng(seed)
-        self.sim = ACTIVITIES[activity](self.rng, randomize=randomize)
+        # ``sim`` swaps the simulator for another world with the same interface, such as
+        # ``rsmod_bridge.RemoteGemCrab`` (the real server).
+        self.sim = sim if sim is not None else ACTIVITIES[activity](self.rng, randomize=randomize)
         self.episode_ticks = episode_ticks
         self.reward_cfg = reward_cfg or {}
         self.observation_space = spaces.Box(-5, 5, shape=(OBS_DIM,), dtype=np.float32)
@@ -201,6 +203,13 @@ class OsrsEnv(gym.Env):
     def _execute(self, intent: int, target: int):
         sim = self.sim
         ent = None
+        set_clock = getattr(sim, "set_clock", None)
+        if set_clock is not None:
+            set_clock(self.t_ms)  # a remote world timestamps the input it is about to send
+        if intent in (CAMERA, CHECK_TAB):
+            note = getattr(sim, "note_input", None)
+            if note is not None:
+                note(intent)  # invisible to the simulator; a remote world logs it
         if intent == INTERACT:
             if target < len(self._visible):
                 ent = self._visible[target]
