@@ -37,7 +37,7 @@ from .env import CAMERA, CHECK_TAB, INTERACT, WALK
 from .sim import params as P
 from .sim.base import Activity, Entity, cheb
 
-DEFAULT_PORT = 43600
+DEFAULT_PORT = 45600
 COMBAT_SKILLS = ("attack", "strength", "defence", "hitpoints", "ranged", "magic")
 VIEW = 20
 

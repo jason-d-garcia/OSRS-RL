@@ -66,7 +66,7 @@ import org.rsmod.routefinder.flag.CollisionFlag
 /**
  * Lets a trained policy drive players on this server over a local socket.
  *
- * An agent connects to `127.0.0.1:43600` (set `OSRSRL_AGENT_PORT` to change it), then either spawns
+ * An agent connects to `127.0.0.1:45600` (set `OSRSRL_AGENT_PORT` to change it), then either spawns
  * a headless bot (`spawn`) or takes over a player who is already logged in through a real client
  * (`attach`). Every game cycle the bridge sends that player's state as one JSON line; the agent
  * answers with the inputs to apply on the next cycle. In lockstep mode the game waits for the
@@ -833,7 +833,7 @@ constructor(
 
     private companion object {
         const val PROTOCOL_VERSION = 1
-        const val DEFAULT_PORT = 43600
+        const val DEFAULT_PORT = 45600
 
         /** How far the agent can see and click, in tiles (the simulator uses 20 too). */
         const val VIEW_RADIUS = 20
