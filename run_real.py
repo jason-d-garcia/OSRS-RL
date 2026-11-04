@@ -150,8 +150,9 @@ def main():
     ap.add_argument("--adv-weight", type=float, default=0.0,
                     help="also train PPO with the detectors in the reward (GAIL-style) at this weight; 0 = off")
     ap.add_argument("--adv-retrain", type=int, default=10, help="retrain the in-loop detectors every N PPO updates")
-    ap.add_argument("--bc-val-files", type=int, default=3,
-                    help="hold out this many of the most recent recordings to validate BC and pick its best epoch")
+    ap.add_argument("--bc-val-frac", type=float, default=0.15,
+                    help="hold out the newest recordings holding this share of real decisions to validate BC "
+                         "and pick its best epoch")
     ap.add_argument("--skip-pure", action="store_true", help="skip the pure-RL baseline (for leash sweeps)")
     args = ap.parse_args()
     out = Path(args.out)
@@ -202,9 +203,16 @@ def main():
                 real_tr[p.name] = tr
         # Hold out the most recent recordings (file names sort by date) for validation: they are the
         # current recorder schema and Jason's current habits. Keep at least 3 files for training.
+        # Take newest files until they hold --bc-val-frac of all decisions (short sessions alone are too few).
         files = sorted(real_tr)
-        n_val = min(args.bc_val_files, max(len(files) - 3, 1))
-        val_files = files[-n_val:]
+        total = sum(len(real_tr[f]) for f in files)
+        val_files, n_v = [], 0
+        for f in reversed(files[3:]):
+            if n_v >= args.bc_val_frac * total:
+                break
+            val_files.append(f)
+            n_v += len(real_tr[f])
+        n_val = len(val_files)
         r_train = [t for f in files if f not in val_files for t in real_tr[f]]
         r_val = [t for f in val_files for t in real_tr[f]]
         n_int = sum(a["intent"] != 0 for _, a in r_train)
