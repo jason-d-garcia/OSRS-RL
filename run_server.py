@@ -54,8 +54,8 @@ def make_controller(args, seed):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--controller", default="scripted", choices=["scripted", "human", "policy"])
-    ap.add_argument("--policy", help="policies.pt from run_experiment.py")
-    ap.add_argument("--which", default="rl_kl", help="which policy in the checkpoint: bc, rl_kl, pure_rl")
+    ap.add_argument("--policy", help="policies.pt from run_experiment.py or run_real.py")
+    ap.add_argument("--which", default="rl_kl", help="which policy in the checkpoint: bc, rl_kl, pure_rl (rl_adv from run_real.py --adv-weight)")
     ap.add_argument("--episodes", type=int, default=4)
     ap.add_argument("--ticks", type=int, default=3000, help="game ticks per episode (3000 = 30 min)")
     ap.add_argument("--name", default="agent1", help="bot account name on the server")
@@ -64,6 +64,9 @@ def main():
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--port", type=int, default=45600)
     ap.add_argument("--recordings", help="your RuneLite recordings, to score the bot against")
+    ap.add_argument("--observable", action="store_true",
+                    help="also score on server-visible inputs only (attack/shell/cave/walk, tick-quantised, "
+                         "no progress), as a server-side anti-cheat would see them")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="results/server")
     args = ap.parse_args()
@@ -109,6 +112,12 @@ def main():
         results["real"] = describe(real)
         results["detect_real_vs_server_bot"] = cv_detect(real, groups, windows, seed=args.seed)
         log(f"detectors, real vs server bot: {json.dumps(results['detect_real_vs_server_bot']['worst_case'])}")
+        if args.observable:
+            from osrs_rl.bystanders import observable
+
+            obs = cv_detect([observable(w) for w in real], groups, [observable(w) for w in windows], seed=args.seed)
+            results["detect_real_vs_server_bot_observable"] = obs
+            log(f"detectors, observable inputs only: {json.dumps(obs['worst_case'])}")
     (out / "results.json").write_text(json.dumps(results, indent=1))
     log(f"wrote {out / 'results.json'}")
 
