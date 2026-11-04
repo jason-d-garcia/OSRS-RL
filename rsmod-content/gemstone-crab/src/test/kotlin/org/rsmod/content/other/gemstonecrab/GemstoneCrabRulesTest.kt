@@ -10,18 +10,42 @@ class GemstoneCrabRulesTest {
     @Test
     fun `next mine is always a different mine and both others are reachable`() {
         for (current in GemstoneCrabRules.MINES.indices) {
-            val next = (0 until GemstoneCrabRules.MINES.size - 1).map { GemstoneCrabRules.nextMine(current, it) }.toSet()
+            val next =
+                (0 until GemstoneCrabRules.MINES.size - 1)
+                    .map { GemstoneCrabRules.nextMine(current, it) }
+                    .toSet()
             assertFalse(current in next)
             assertEquals(GemstoneCrabRules.MINES.size - 1, next.size)
         }
     }
 
     @Test
+    fun `tunnel exits are beside the tunnel, on the crab's side`() {
+        for (mine in GemstoneCrabRules.MINES) {
+            val fromTunnel =
+                maxOf(Math.abs(mine.exitX - mine.tunnelX), Math.abs(mine.exitZ - mine.tunnelZ))
+            val exitToCrab = sq(mine.exitX - mine.crabX) + sq(mine.exitZ - mine.crabZ)
+            val tunnelToCrab = sq(mine.tunnelX - mine.crabX) + sq(mine.tunnelZ - mine.crabZ)
+            assertTrue(fromTunnel in 1..2, "${mine.name} exit is $fromTunnel tiles from its tunnel")
+            assertTrue(exitToCrab < tunnelToCrab, "${mine.name} exit is not on the crab's side")
+        }
+    }
+
+    @Test
     fun `health bar drains with age and never reaches zero`() {
         assertEquals(GemstoneCrabRules.HITPOINTS_POOL, GemstoneCrabRules.hitpointsForAge(0))
-        assertEquals(GemstoneCrabRules.HITPOINTS_POOL / 2, GemstoneCrabRules.hitpointsForAge(GemstoneCrabRules.ALIVE_TICKS / 2))
-        assertEquals(GemstoneCrabRules.MIN_HITPOINTS, GemstoneCrabRules.hitpointsForAge(GemstoneCrabRules.ALIVE_TICKS))
-        assertEquals(GemstoneCrabRules.MIN_HITPOINTS, GemstoneCrabRules.hitpointsForAge(GemstoneCrabRules.ALIVE_TICKS * 3))
+        assertEquals(
+            GemstoneCrabRules.HITPOINTS_POOL / 2,
+            GemstoneCrabRules.hitpointsForAge(GemstoneCrabRules.ALIVE_TICKS / 2),
+        )
+        assertEquals(
+            GemstoneCrabRules.MIN_HITPOINTS,
+            GemstoneCrabRules.hitpointsForAge(GemstoneCrabRules.ALIVE_TICKS),
+        )
+        assertEquals(
+            GemstoneCrabRules.MIN_HITPOINTS,
+            GemstoneCrabRules.hitpointsForAge(GemstoneCrabRules.ALIVE_TICKS * 3),
+        )
         assertEquals(GemstoneCrabRules.HITPOINTS_POOL, GemstoneCrabRules.hitpointsForAge(-5))
     }
 
@@ -38,16 +62,23 @@ class GemstoneCrabRulesTest {
 
     @Test
     fun `higher damage beats an earlier first hit`() {
-        val ranked = GemstoneCrabRules.eligible(mapOf("a" to 5, "b" to 9), mapOf("a" to 1, "b" to 50))
+        val ranked =
+            GemstoneCrabRules.eligible(mapOf("a" to 5, "b" to 9), mapOf("a" to 1, "b" to 50))
         assertEquals(listOf("b", "a"), ranked)
     }
 
     @Test
     fun `announcement names one player in small fights and three otherwise`() {
         assertEquals(listOf("a"), GemstoneCrabRules.announced(listOf("a", "b", "c", "d")))
-        assertEquals(listOf("a", "b", "c"), GemstoneCrabRules.announced(listOf("a", "b", "c", "d", "e")))
+        assertEquals(
+            listOf("a", "b", "c"),
+            GemstoneCrabRules.announced(listOf("a", "b", "c", "d", "e")),
+        )
         assertEquals("Top crab crusher: a.", GemstoneCrabRules.msgTopCrushers(listOf("a")))
-        assertEquals("Top crab crushers: a, b, c.", GemstoneCrabRules.msgTopCrushers(listOf("a", "b", "c")))
+        assertEquals(
+            "Top crab crushers: a, b, c.",
+            GemstoneCrabRules.msgTopCrushers(listOf("a", "b", "c")),
+        )
     }
 
     @Test
@@ -59,11 +90,18 @@ class GemstoneCrabRulesTest {
             val gem = GemstoneCrabRules.rollGem { n -> if (call++ == 0) n - 1 else v }
             counts[gem] = (counts[gem] ?: 0) + 1
         }
-        assertEquals(mapOf(
-            GemstoneCrabRules.Gem.OPAL to 9, GemstoneCrabRules.Gem.JADE to 9, GemstoneCrabRules.Gem.RED_TOPAZ to 6,
-            GemstoneCrabRules.Gem.SAPPHIRE to 3, GemstoneCrabRules.Gem.EMERALD to 2, GemstoneCrabRules.Gem.RUBY to 2,
-            GemstoneCrabRules.Gem.DIAMOND to 1,
-        ), counts)
+        assertEquals(
+            mapOf(
+                GemstoneCrabRules.Gem.OPAL to 9,
+                GemstoneCrabRules.Gem.JADE to 9,
+                GemstoneCrabRules.Gem.RED_TOPAZ to 6,
+                GemstoneCrabRules.Gem.SAPPHIRE to 3,
+                GemstoneCrabRules.Gem.EMERALD to 2,
+                GemstoneCrabRules.Gem.RUBY to 2,
+                GemstoneCrabRules.Gem.DIAMOND to 1,
+            ),
+            counts,
+        )
         assertEquals(GemstoneCrabRules.Gem.DRAGONSTONE, GemstoneCrabRules.rollGem { 0 })
     }
 
@@ -71,12 +109,21 @@ class GemstoneCrabRulesTest {
     fun `dragonstone rate is close to one in five hundred`() {
         val rng = Random(1)
         val n = 500_000
-        val dragons = (0 until n).count { GemstoneCrabRules.rollGem { k -> rng.nextInt(k) } == GemstoneCrabRules.Gem.DRAGONSTONE }
+        val dragons =
+            (0 until n).count {
+                GemstoneCrabRules.rollGem { k -> rng.nextInt(k) } ==
+                    GemstoneCrabRules.Gem.DRAGONSTONE
+            }
         assertTrue(dragons in 850..1150) { "got $dragons" }
     }
 
     @Test
     fun `gem message matches the game`() {
-        assertEquals("You mine an uncut red topaz from the crab shell.", GemstoneCrabRules.msgGem(GemstoneCrabRules.Gem.RED_TOPAZ))
+        assertEquals(
+            "You mine an uncut red topaz from the crab shell.",
+            GemstoneCrabRules.msgGem(GemstoneCrabRules.Gem.RED_TOPAZ),
+        )
     }
+
+    private fun sq(v: Int) = v * v
 }

@@ -76,9 +76,26 @@ From a look at RSMod's `content/` folder (late 2025 snapshot):
 | Mining skill | not implemented, and not needed: the shell only needs a pickaxe |
 
 So Draynor willows can run on the server as soon as it is up, and gem crabs once
-the `gemstone-crab` module is copied in. The next server task is the headless agent
-plugin that lets the trainer drive bot players over a socket with the same
-observation and action schema as `osrs_rl/env.py`.
+the `gemstone-crab` module is copied in. The agent plugin that lets the trainer drive
+players over a socket is `rsmod-content/agent-bridge`; see its README.
+
+## Bots on your server, and watching them in RuneLite
+
+The agent plugin runs inside the server, not in RuneLite. RuneLite stays an ordinary client
+that you use to look at the world:
+
+* Install `rsmod-content/agent-bridge` next to `gemstone-crab` and run the server.
+* `python run_server.py --controller policy --policy <policies.pt> --realtime` spawns a bot
+  called `agent1` at the crab and plays it at normal speed.
+* Connect RuneLite through RSProx as above, log in as anyone, and walk or `::tele` to the
+  crab; you see the bot fighting like any other player. With `--attach <your name>` the
+  policy drives your own character instead.
+
+For training and scoring you don't need a client at all: run the server with
+`RSMOD_TICK_MS=0` (after applying `rsmod-content/patches/tick-interval.patch`) and the agent in
+lockstep, and 30 minutes of game time take a few seconds. `run_server.py` writes each bot
+session in the recorder's format itself, so it is scored with the same code as your
+recordings.
 
 ## Notes
 
@@ -86,6 +103,7 @@ observation and action schema as `osrs_rl/env.py`.
   research use.
 * RSProx launches RuneLite with its own bootstrap. Whether it can also load the
   developer-mode recorder from `recorder/` is not checked yet. Until it is, record
-  mouse data on live (which you already do), and the server-side agent plugin will
-  log every connected player's ticks and clicks from the server side. Mouse
-  movement can only come from the client.
+  mouse data on live (which you already do). Bot sessions don't need it: the recorder
+  only sees the client's own player, and a bot's inputs come from the server, so
+  `run_server.py` writes the bot's session in the recorder format from the server side.
+  Mouse movement can only come from a client, and the policy produces none.
