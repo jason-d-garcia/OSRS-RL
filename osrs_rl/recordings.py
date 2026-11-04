@@ -43,6 +43,32 @@ def load(path):
             return  # a session still being written, or a client that was killed; keep what we have
 
 
+def dialogue_reads(recs) -> list[dict]:
+    """Time from each dialogue appearing to the click that moved past it.
+
+    Schema 4 recordings log a ``dialogue`` record whenever the chatbox dialogue
+    changes. The reading time of a line is the gap between it appearing and the
+    first menu click after it (usually "Continue", or an option pick). Dialogues
+    that close without a click (walked away) are dropped.
+    """
+    reads, open_d = [], None
+    for r in recs:
+        typ = r["type"]
+        if typ == "dialogue":
+            open_d = r if r.get("kind") else None
+        elif typ == "menu_click" and open_d is not None:
+            reads.append({
+                "kind": open_d["kind"],
+                "chars": open_d.get("chars", 0),
+                "words": open_d.get("words", 0),
+                "options": len(open_d.get("options") or []),
+                "ms": r["t"] - open_d["t"],
+                "option": r.get("option"),
+            })
+            open_d = None
+    return reads
+
+
 def summary(path) -> dict:
     recs = list(load(path))
     if not recs:
@@ -65,6 +91,9 @@ def summary(path) -> dict:
                 unfocused += r["t"] - last_off
                 last_off = None
     moves = [r["t"] for r in recs if r["type"] in ("mouse_move", "mouse_drag")]
+    tut = [r["tut"] for r in recs if r["type"] == "tick" and "tut" in r]
+    reads = [d for d in dialogue_reads(recs) if d["words"] > 0]
+    per_word = sorted(d["ms"] / d["words"] for d in reads)
     return {
         "file": str(path),
         "minutes": round((t1 - t0) / 60000, 1),
@@ -74,6 +103,9 @@ def summary(path) -> dict:
         "mouse_samples": len(moves),
         "unfocused_minutes": round(unfocused / 60000, 1),
         "xp_gained": dict(gained),
+        "tutorial_progress": [min(tut), max(tut)] if tut else None,
+        "dialogues_read": len(reads),
+        "median_ms_per_word": round(per_word[len(per_word) // 2]) if per_word else None,
         "types": dict(types),
     }
 

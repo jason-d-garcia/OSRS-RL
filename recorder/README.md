@@ -22,7 +22,8 @@ with `t` (epoch milliseconds) and `type`:
 | `wheel` | `x`, `y`, `rot` | scroll |
 | `key_press`, `key_release` | `key` (`"char"` for letters/digits unless typed text is on), `code` | every key |
 | `menu_click` | `option`, `target`, `action`, `id`, `p0`, `p1`, `item`, `x`, `y`, `tick`, plus `dx`, `dy` (target tile relative to you) for objects, ground items and NPCs, and `npc_index`, `npc_id` for NPCs | every menu action the client runs |
-| `tick` | `tick`, `x`, `y`, `plane`, `anim`, `interacting`, `hp`, `prayer`, `stats`, `prayers`, `spec`, `spec_on`, `hover`, `run`, `yaw`, `pitch`, `camera_moved`, `focused`, `inv`, `worn`, `bank_open`, `npcs[]`, `players[]`, `objects[]` | every 600 ms game tick |
+| `tick` | `tick`, `x`, `y`, `plane`, `anim`, `interacting`, `hp`, `prayer`, `stats`, `prayers`, `spec`, `spec_on`, `hover`, `run`, `yaw`, `pitch`, `camera_moved`, `focused`, `inv`, `worn`, `bank_open`, `tut`, `npcs[]`, `players[]`, `objects[]` | every 600 ms game tick |
+| `dialogue` | `kind` (`npc`, `player`, `options`, `sprite`, `message`, `tutorial`, or null when it closes), `speaker`, `text`, `chars`, `words`, `options[]` | whenever the chatbox dialogue or Tutorial Island instruction changes |
 | `xp` | `skill`, `xp`, `level` | XP drops |
 | `hitsplat` | `on` (the NPC, `me`, or a bystander `pid`), `hit_type`, `amount`, `mine` | damage shown on anyone in view |
 | `game_message` | `msg` | game/engine messages only, never player chat |
@@ -62,6 +63,9 @@ before schema 4 have no `pid`, so bystanders there can only be matched by tile.
 Schema 5 (Nov 2026) added the visible state of other players (`equip`, `overhead`, `skull`,
 health bar, `spot`), `hitsplat` records, and the player's own `stats`, `prayers`, `spec` and
 `hover`. Every new field is optional, so readers written for earlier schemas still work.
+Schema 6 (Nov 2026) added `tut` (the Tutorial Island progress varp, 1000 once done) and
+the `dialogue` record, so the time spent reading each line before clicking on can be
+measured. Dialogue text is game content; your own name in it is replaced by `<name>`.
 
 Privacy defaults: letters and digits are stored as `"char"` (timing only), other
 players' chat and names are never stored, and the login screen is never recorded.
@@ -91,6 +95,19 @@ to session-....jsonl.gz" appears after login; a file appears in the folder above
 and grows while you play; logging out closes it. The plugin is passive and
 follows RuneLite's plugin rules (no input injection, no menu changes, nothing
 sent over the network, no other players' names).
+
+## Recording Tutorial Island runs
+
+Each run needs a fresh account on the live game. Create a new character under your Jagex
+account, launch it once from the Jagex launcher with `--insecure-write-credentials` as above
+so `gradlew run` logs into that character, turn the recorder on, and play the island
+straight through the way you normally would. One run per sitting at a time (no second client
+open); back-to-back runs are fine. `python -m osrs_rl.recordings <file>` shows the
+tutorial progress reached and your median reading time per word.
+
+The dialogue widget ids are raw ids (`231`, `217`, `219`, `193`, `229`, `263`) and have not
+been checked on a live client yet. After the first run, check that the summary shows
+`dialogues_read` above zero.
 
 ## What to record first
 
