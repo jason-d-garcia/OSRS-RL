@@ -43,27 +43,33 @@ def load(path):
             return  # a session still being written, or a client that was killed; keep what we have
 
 
+# Keys that move a dialogue on. Java's key text for space is "Space" on Windows and
+# Linux and "␣" on macOS; letters and digits are stored as "char" unless typed text is on.
+CONTINUE_KEYS = ("Space", "\u2423", "char")
+
+
 def dialogue_reads(recs) -> list[dict]:
     """Time from each dialogue appearing to the click that moved past it.
 
     Schema 4 recordings log a ``dialogue`` record whenever the chatbox dialogue
     changes. The reading time of a line is the gap between it appearing and the
-    first menu click after it (usually "Continue", or an option pick). Dialogues
-    that close without a click (walked away) are dropped.
+    first input that moves past it: a menu click ("Continue", an option pick), the
+    space bar, or a number key for an option (stored as "char"). Dialogues that
+    close without one (walked away) are dropped.
     """
     reads, open_d = [], None
     for r in recs:
         typ = r["type"]
         if typ == "dialogue":
             open_d = r if r.get("kind") else None
-        elif typ == "menu_click" and open_d is not None:
+        elif open_d is not None and (typ == "menu_click" or (typ == "key_press" and r.get("key") in CONTINUE_KEYS)):
             reads.append({
                 "kind": open_d["kind"],
                 "chars": open_d.get("chars", 0),
                 "words": open_d.get("words", 0),
                 "options": len(open_d.get("options") or []),
                 "ms": r["t"] - open_d["t"],
-                "option": r.get("option"),
+                "option": r.get("option") if typ == "menu_click" else "key",
             })
             open_d = None
     return reads
