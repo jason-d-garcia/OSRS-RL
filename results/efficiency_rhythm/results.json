@@ -1,0 +1,281 @@
+{
+ "recordings": [
+  "session-20261101-100854.jsonl.gz",
+  "session-20261101-104658.jsonl.gz",
+  "session-20261101-125113.jsonl.gz",
+  "session-20261101-142210.jsonl.gz",
+  "session-20261101-152829.jsonl.gz",
+  "session-20261101-202901.jsonl.gz",
+  "session-20261101-230633.jsonl.gz",
+  "session-20261102-095735.jsonl.gz",
+  "session-20261102-152323.jsonl.gz",
+  "session-20261102-155339.jsonl.gz",
+  "session-20261102-162741.jsonl.gz"
+ ],
+ "val_file": "session-20261102-152323.jsonl.gz",
+ "fractions": [
+  1.0
+ ],
+ "subsets": 1,
+ "real": {
+  "windows": 38,
+  "progress_per_h_median": 83336.49421068054,
+  "actions_per_15min_median": 9.0,
+  "reaction_ms_median": 2804.0,
+  "gap_s_median": 2.406,
+  "frac_gaps_over_60s": 0.21680216802168023,
+  "camera_per_h": 6.0942606925964355,
+  "check_tab_per_h": 13.220329284667969,
+  "rules_floor_flag_rate": 0.0
+ },
+ "runs": [
+  {
+   "mode": "real",
+   "fraction": 1.0,
+   "subset": 0,
+   "files": [
+    "session-20261101-145819.jsonl.gz",
+    "session-20261102-111536.jsonl.gz",
+    "session-20261101-225429.jsonl.gz",
+    "session-20261102-162741.jsonl.gz",
+    "session-20261101-104658.jsonl.gz",
+    "session-20261101-100854.jsonl.gz",
+    "session-20261102-155339.jsonl.gz",
+    "session-20261101-125113.jsonl.gz",
+    "session-20261101-142210.jsonl.gz",
+    "session-20261102-095735.jsonl.gz",
+    "session-20261101-152829.jsonl.gz",
+    "session-20261101-230633.jsonl.gz",
+    "session-20261101-202901.jsonl.gz"
+   ],
+   "n_real_decisions": 863,
+   "n_real_inputs": 411,
+   "n_train_decisions": 863,
+   "val_nll": 3.4677956104278564,
+   "val_intent_acc": 0.38333332538604736,
+   "describe": {
+    "windows": 80,
+    "progress_per_h_median": 52341.333333333314,
+    "actions_per_15min_median": 21.0,
+    "reaction_ms_median": 6916.10512871691,
+    "gap_s_median": 1.7090144646796734,
+    "frac_gaps_over_60s": 0.1162227602905569,
+    "camera_per_h": 12.449999809265137,
+    "check_tab_per_h": 32.349998474121094,
+    "rules_floor_flag_rate": 0.0
+   },
+   "detectors_all": {
+    "feature_gbt": {
+     "auc": 0.9213815789473684,
+     "auc_90ci": [
+      0.8730180921052632,
+      0.9601973684210526
+     ]
+    },
+    "sequence_gru": {
+     "auc": 0.8315789473684211,
+     "auc_90ci": [
+      0.7475,
+      0.9042927631578946
+     ]
+    },
+    "worst_case": {
+     "name": "feature_gbt",
+     "auc": 0.9213815789473684,
+     "auc_90ci": [
+      0.8730180921052632,
+      0.9601973684210526
+     ]
+    }
+   },
+   "detectors_heldout_files": {
+    "feature_gbt": {
+     "auc": 1.0,
+     "auc_90ci": [
+      1.0,
+      1.0
+     ]
+    },
+    "sequence_gru": {
+     "auc": 0.2,
+     "auc_90ci": [
+      0.125,
+      0.275
+     ]
+    },
+    "worst_case": {
+     "name": "feature_gbt",
+     "auc": 1.0,
+     "auc_90ci": [
+      1.0,
+      1.0
+     ]
+    }
+   },
+   "n_heldout_real_windows": 1,
+   "reaction_ks": 0.17431299827702013,
+   "gap_ks": 0.1032894348313943
+  },
+  {
+   "mode": "mixed",
+   "fraction": 1.0,
+   "subset": 0,
+   "files": [
+    "session-20261101-145819.jsonl.gz",
+    "session-20261102-111536.jsonl.gz",
+    "session-20261101-225429.jsonl.gz",
+    "session-20261102-162741.jsonl.gz",
+    "session-20261101-104658.jsonl.gz",
+    "session-20261101-100854.jsonl.gz",
+    "session-20261102-155339.jsonl.gz",
+    "session-20261101-125113.jsonl.gz",
+    "session-20261101-142210.jsonl.gz",
+    "session-20261102-095735.jsonl.gz",
+    "session-20261101-152829.jsonl.gz",
+    "session-20261101-230633.jsonl.gz",
+    "session-20261101-202901.jsonl.gz"
+   ],
+   "n_real_decisions": 863,
+   "n_real_inputs": 411,
+   "n_train_decisions": 8972,
+   "val_nll": 2.319849967956543,
+   "val_intent_acc": 0.5666666626930237,
+   "describe": {
+    "windows": 80,
+    "progress_per_h_median": 80234.66666666663,
+    "actions_per_15min_median": 9.5,
+    "reaction_ms_median": 2722.8883292938117,
+    "gap_s_median": 3.210672926455438,
+    "frac_gaps_over_60s": 0.240620957309185,
+    "camera_per_h": 6.699999809265137,
+    "check_tab_per_h": 17.799999237060547,
+    "rules_floor_flag_rate": 0.0
+   },
+   "detectors_all": {
+    "feature_gbt": {
+     "auc": 0.8333881578947367,
+     "auc_90ci": [
+      0.7657894736842106,
+      0.8960690789473684
+     ]
+    },
+    "sequence_gru": {
+     "auc": 0.8429276315789473,
+     "auc_90ci": [
+      0.7805674342105263,
+      0.9029769736842105
+     ]
+    },
+    "worst_case": {
+     "name": "sequence_gru",
+     "auc": 0.8429276315789473,
+     "auc_90ci": [
+      0.7805674342105263,
+      0.9029769736842105
+     ]
+    }
+   },
+   "detectors_heldout_files": {
+    "feature_gbt": {
+     "auc": 0.35,
+     "auc_90ci": [
+      0.2625,
+      0.4375
+     ]
+    },
+    "sequence_gru": {
+     "auc": 0.775,
+     "auc_90ci": [
+      0.7,
+      0.85
+     ]
+    },
+    "worst_case": {
+     "name": "sequence_gru",
+     "auc": 0.775,
+     "auc_90ci": [
+      0.7,
+      0.85
+     ]
+    }
+   },
+   "n_heldout_real_windows": 1,
+   "reaction_ks": 0.10118927635557351,
+   "gap_ks": 0.0807013115409291
+  },
+  {
+   "mode": "mixed",
+   "fraction": 0.0,
+   "subset": 0,
+   "files": [],
+   "n_real_decisions": 0,
+   "n_real_inputs": 0,
+   "n_train_decisions": 4657,
+   "val_nll": 5.366377830505371,
+   "val_intent_acc": 0.3333333432674408,
+   "describe": {
+    "windows": 80,
+    "progress_per_h_median": 83812.0,
+    "actions_per_15min_median": 14.0,
+    "reaction_ms_median": 1983.1969147182535,
+    "gap_s_median": 3.258986086607096,
+    "frac_gaps_over_60s": 0.24550898203592814,
+    "camera_per_h": 9.050000190734863,
+    "check_tab_per_h": 30.399999618530273,
+    "rules_floor_flag_rate": 0.0375
+   },
+   "detectors_all": {
+    "feature_gbt": {
+     "auc": 0.8855263157894736,
+     "auc_90ci": [
+      0.8210526315789475,
+      0.9394901315789473
+     ]
+    },
+    "sequence_gru": {
+     "auc": 0.9269736842105264,
+     "auc_90ci": [
+      0.8832072368421052,
+      0.9648026315789474
+     ]
+    },
+    "worst_case": {
+     "name": "sequence_gru",
+     "auc": 0.9269736842105264,
+     "auc_90ci": [
+      0.8832072368421052,
+      0.9648026315789474
+     ]
+    }
+   },
+   "detectors_heldout_files": {
+    "feature_gbt": {
+     "auc": 0.8855263157894736,
+     "auc_90ci": [
+      0.8210526315789475,
+      0.9394901315789473
+     ]
+    },
+    "sequence_gru": {
+     "auc": 0.9269736842105264,
+     "auc_90ci": [
+      0.8832072368421052,
+      0.9648026315789474
+     ]
+    },
+    "worst_case": {
+     "name": "sequence_gru",
+     "auc": 0.9269736842105264,
+     "auc_90ci": [
+      0.8832072368421052,
+      0.9648026315789474
+     ]
+    }
+   },
+   "n_heldout_real_windows": 38,
+   "reaction_ks": 0.14017800381436746,
+   "gap_ks": 0.10879286722721807
+  }
+ ],
+ "wall_s": 144.69419813156128
+}

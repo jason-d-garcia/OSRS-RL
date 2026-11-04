@@ -10,13 +10,26 @@ the player has been busy for a while (a chance to do something else, such as a
 redundant click or a camera move), or when a chosen wait ends.
 
 At each decision point the policy picks
-  * an intent (wait, interact, deposit all, close interface, camera, check tab),
-  * a target, as a pointer into the visible-entity list (used by interact),
+  * an intent (wait, interact, deposit all, close interface, camera, check tab, walk),
+  * a target, as a pointer into the visible-entity list (used by interact and walk),
   * a delay in milliseconds before the intent is carried out.
+
+There is no fixed clock: after an input the policy immediately picks the delay to
+its next one, so decision points only come from the policy's own delays and from
+the world's events. (An earlier version woke the policy every 15 s during a fight,
+and that cadence showed up in the clone's gap distribution.)
 
 The world keeps ticking during the delay. Waits are invisible to the server and
 to the detector; every other intent is an observable input event and is logged
 with its timestamp so sessions can be scored for humanness.
+
+A delay is "do this unless something happens": if the world raises an event that
+needs a response (the crab burrows, a shell appears, you arrive at a mine, the
+inventory fills, the bank opens) before the delay is up, the pending intent is
+dropped and the policy decides again with that event as the trigger. So a long
+delay means "nothing until something changes", which is what a person tabbed
+out is doing, and the recorded human waits can be labelled the same way
+(``real_bc.py``) without cutting them into fixed chunks.
 
 The server-side agent plugin for RSMod is meant to speak this same
 observation/action schema, so the trainer will not change when the simulator is
@@ -36,13 +49,20 @@ from .sim.base import EVENT_INDEX, EVENTS, KIND_INDEX, KINDS, N_SELF_EXTRA, TICK
 from .sim.gemcrab import GemCrab
 from .sim.willows import Willows
 
-INTENTS = ("wait", "interact", "deposit_all", "close_interface", "camera", "check_tab")
-WAIT, INTERACT, DEPOSIT, CLOSE, CAMERA, CHECK_TAB = range(len(INTENTS))
+INTENTS = ("wait", "interact", "deposit_all", "close_interface", "camera", "check_tab", "walk")
+WAIT, INTERACT, DEPOSIT, CLOSE, CAMERA, CHECK_TAB, WALK = range(len(INTENTS))
 N_INTENTS = len(INTENTS)
+TARGETED = (INTERACT, WALK)  # intents that use the target pointer
+
+# Events that cut a pending delay short (see the module docstring). "idle" is the end of a walk
+# or of mining the shell: the player is standing still with nothing in progress.
+INTERRUPTS = {"inv_full", "target_gone", "bank_open", "shell_ready", "arrived", "idle"}
 
 MAX_ENTITIES = 12
 ENT_FEATS = len(KINDS) + 6
-N_CTX = 7
+# Timing context: time since break, inputs in the last minute, last three delays, time since
+# a camera move, time since the last input (linear and log), and the last input's intent.
+N_CTX = 8 + N_INTENTS
 GLOBAL_DIM = 4 + N_SELF_EXTRA + len(EVENTS) + N_CTX
 OBS_DIM = GLOBAL_DIM + MAX_ENTITIES * ENT_FEATS
 
@@ -88,6 +108,7 @@ class OsrsEnv(gym.Env):
         self.last_break_ms = 0.0
         self.recent_actions: deque = deque()
         self.last_delays = deque([800.0, 800.0, 800.0], maxlen=3)
+        self.last_intent = -1
         self.log: list[dict] = []
         self.events_log: list[tuple[float, str]] = []
         self.cum_progress = 0.0
@@ -98,16 +119,23 @@ class OsrsEnv(gym.Env):
         return self._obs(), {}
 
     # ------------------------------------------------------------------
-    def _advance_to(self, t_ms: float) -> bool:
-        """Tick the world until the clock reaches t_ms. Returns True at episode end."""
+    def _advance_to(self, t_ms: float, interruptible: bool = False):
+        """Tick the world until the clock reaches t_ms.
+
+        Returns ``(done, interrupt)``: ``done`` at episode end, ``interrupt`` the event that cut
+        the advance short (the clock then stands at that tick), or None.
+        """
         target_tick = int(t_ms // TICK_MS)
         while self.sim.tick_count < target_tick:
             if self.sim.tick_count >= self.episode_ticks:
-                return True
+                return True, None
             evs = self.sim.tick()
             for e in evs:
                 self._note_event(e)
-        return self.sim.tick_count >= self.episode_ticks
+            hit = [e for e in evs if e in INTERRUPTS] if interruptible else []
+            if hit:
+                return self.sim.tick_count >= self.episode_ticks, hit[-1]
+        return self.sim.tick_count >= self.episode_ticks, None
 
     def _note_event(self, e: str) -> None:
         self.last_event = e
@@ -121,11 +149,17 @@ class OsrsEnv(gym.Env):
         self.n_decisions += 1
         progress_before = self.sim.progress
         decision_trigger = self.trigger
-        self.t_ms += delay
-        self.last_delays.append(delay)
-        done = self._advance_to(self.t_ms)
+        planned = self.t_ms + delay
+        done, interrupt = self._advance_to(planned, interruptible=True)
+        if interrupt is not None:
+            self.t_ms = self.sim.tick_count * TICK_MS  # the world moved on; decide again
+        else:
+            self.t_ms = planned
+        self.last_delays.append(self.t_ms - (planned - delay))
         shaping = 0.0
-        if not done:
+        if interrupt is not None:
+            self.trigger = interrupt
+        elif not done:
             if intent == WAIT:
                 self.trigger = "wait_done"
             else:
@@ -133,8 +167,9 @@ class OsrsEnv(gym.Env):
                 shaping += self._log_action(intent, ent, valid, decision_trigger)
                 if not valid:
                     self.trigger = "invalid"
-                elif intent == INTERACT:
-                    done = self._run_until_decision()
+                elif intent in TARGETED:
+                    # The click is in. Decide the next input straight away; events interrupt it.
+                    self.trigger = "busy_check"
                 else:
                     self.trigger = "idle" if self.sim.idle else "busy_check"
         reward, info = self._reward(progress_before, shaping)
@@ -151,6 +186,11 @@ class OsrsEnv(gym.Env):
                 ent = self._visible[target]
                 return sim.interact(ent), ent
             return False, None
+        if intent == WALK:
+            # Walk towards something without interacting with it ("Walk here" in the client).
+            if target < len(self._visible):
+                return sim.walk_near(self._visible[target]), None
+            return False, None
         if intent == DEPOSIT:
             return sim.deposit_all(), None
         if intent == CLOSE:
@@ -161,26 +201,6 @@ class OsrsEnv(gym.Env):
         if intent == CHECK_TAB:
             return True, None
         return False, None
-
-    def _run_until_decision(self) -> bool:
-        start = self.sim.tick_count
-        while True:
-            if self.sim.tick_count >= self.episode_ticks:
-                return True
-            evs = self.sim.tick()
-            for e in evs:
-                self._note_event(e)
-            self.t_ms = max(self.t_ms, self.sim.tick_count * TICK_MS)
-            if evs:
-                self.trigger = evs[-1]
-                return False
-            if self.sim.idle:
-                self.trigger = "idle"
-                self._note_event("idle")
-                return False
-            if self.sim.tick_count - start >= BUSY_CHECK_TICKS:
-                self.trigger = "busy_check"
-                return False
 
     def _log_action(self, intent, ent, valid, decision_trigger) -> float:
         t = self.t_ms
@@ -202,6 +222,7 @@ class OsrsEnv(gym.Env):
         }
         self.log.append(rec)
         self.last_obs_action_ms = t
+        self.last_intent = intent
         self.recent_actions.append(t)
         # humanness shaping: reacting faster than the human floor for this context
         pen = 0.0
@@ -262,6 +283,9 @@ class OsrsEnv(gym.Env):
             g[o + 2 + i] = (math.log(d) - 7.0) / 2.0
         g[o + 5] = min((self.t_ms - self.last_camera_ms) / 600_000.0, 3.0)
         g[o + 6] = min((self.t_ms - self.last_obs_action_ms) / 60_000.0, 5.0)
+        g[o + 7] = (math.log(max(self.t_ms - self.last_obs_action_ms, 1.0)) - 7.0) / 2.0
+        if self.last_intent >= 0:
+            g[o + 8 + self.last_intent] = 1.0
 
         # Things you can click first, then bystanders, each nearest first. Large NPCs make raw tile
         # distance a poor guide, and at a busy crab other players would otherwise crowd it out.

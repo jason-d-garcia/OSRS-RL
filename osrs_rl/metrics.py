@@ -10,7 +10,7 @@ from __future__ import annotations
 import numpy as np
 from scipy.stats import ks_2samp
 
-from .env import CAMERA, CHECK_TAB, CLOSE, DEPOSIT, INTENTS, INTERACT
+from .env import CAMERA, CHECK_TAB, CLOSE, DEPOSIT, INTENTS, INTERACT, WALK
 from .sim.base import KINDS
 
 CHANGE = {"start", "inv_full", "target_gone", "bank_open", "shell_ready", "arrived", "invalid"}
@@ -68,6 +68,7 @@ def session_features(sess) -> np.ndarray:
         rate(CLOSE),
         rate(DEPOSIT),
         rate(INTERACT),
+        rate(WALK),
         red,
         inval,
         nearest,
@@ -81,7 +82,7 @@ FEATURE_NAMES = (
     + [f"gap_{s}" for s in ("logmean", "logstd", "p10", "p50", "p90", "n")]
     + [f"react_{s}" for s in ("logmean", "logstd", "p10", "p50", "p90", "n")]
     + ["gap_cv", "gap_autocorr", "frac_gap_over_60s", "log_max_gap"]
-    + [f"{INTENTS[k]}_per_h" for k in (CAMERA, CHECK_TAB, CLOSE, DEPOSIT, INTERACT)]
+    + [f"{INTENTS[k]}_per_h" for k in (CAMERA, CHECK_TAB, CLOSE, DEPOSIT, INTERACT, WALK)]
     + ["redundant_click_rate", "invalid_rate", "nearest_target_rate"]
     + [f"gap_hist_{i}" for i in range(10)]
 )

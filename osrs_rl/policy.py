@@ -22,7 +22,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .env import ENT_FEATS, GLOBAL_DIM, INTERACT, MAX_ENTITIES, MAX_DELAY_MS, MIN_DELAY_MS, N_INTENTS
+from .env import ENT_FEATS, GLOBAL_DIM, MAX_ENTITIES, MAX_DELAY_MS, MIN_DELAY_MS, N_INTENTS, TARGETED
 
 N_MIX = 3
 LOG_MIN, LOG_MAX = math.log(MIN_DELAY_MS), math.log(MAX_DELAY_MS)
@@ -62,7 +62,10 @@ class Policy(nn.Module):
     def log_prob(out, intent, target, log_delay):
         lp_i = F.log_softmax(out["intent"], -1).gather(1, intent[:, None]).squeeze(1)
         lp_t = F.log_softmax(out["target"], -1).gather(1, target[:, None]).squeeze(1)
-        lp_t = torch.where(intent == INTERACT, lp_t, torch.zeros_like(lp_t))
+        targeted = torch.zeros_like(intent, dtype=torch.bool)
+        for k in TARGETED:
+            targeted |= intent == k
+        lp_t = torch.where(targeted, lp_t, torch.zeros_like(lp_t))
         idx = intent[:, None, None].expand(-1, 1, N_MIX)
         mix = out["mix"].gather(1, idx).squeeze(1)
         mu = out["mu"].gather(1, idx).squeeze(1)

@@ -155,3 +155,74 @@ under ~0.05 is noise.
   (walk-here clicks dropped, crab adjacent instead of 5 tiles away, no bystanders, no focus
   flag) and the cut-off of reactions at 15 s chunks. Those, and the choice of observation
   features, are the next things to change; see `training-directions/plan.md` in the project.
+
+## Where the detector was reading the clone's rhythm (`rhythm` branch)
+
+The flat curve above says the labels are not the bottleneck, so the next question was *which*
+features the detector uses. Fitting the feature detector on all real windows against the
+mixed-BC clone's windows and ranking features by permutation importance and single-feature
+AUC gave a short list, none of it about reflexes:
+
+| Feature (real vs clone) | Before | After |
+|---|---|---|
+| `gap_hist_6`, share of input gaps in the 13–29 s band | 2 % vs 15 % (AUC 0.83) | 2 % vs 8 % (not in the top ten) |
+| `gap_p50`, median gap between inputs | 2.3 s vs 11.7 s (0.78) | 2.3 s vs 5.5 s (0.63 on the log mean) |
+| `nearest_target_rate` | 0.85 vs 0.99 (0.77) | gone from the list |
+| `walk_per_h`, Walk-here clicks | not a feature | 2.4 vs 0.4 (0.71) |
+| `react_logstd`, spread of reaction times | 1.9 vs 1.4 (not in the top ten) | 1.9 vs 1.35 (0.67) |
+| `check_tab_per_h` | 13 vs 24 | 13 vs 18 |
+
+Each of the "before" tells was a clock we had put in the clone, not something Jason does:
+
+* **The 13–29 s pile** came from two places. `real_bc.py` cut every long wait into 15 s
+  WAIT chunks, so BC learned "wait 15 s" as the most common label; and the env re-asked the
+  policy every 15 s while an action was in progress (`busy_check`), so even a policy that
+  wanted to wait longer was quantised to that cadence. Jason's gaps are 54 % under a second
+  (bursts of clicks) with a long tail past a minute, and almost nothing at 15 s.
+* **`nearest_target_rate`** was 0.99 because the converter dropped Walk-here clicks: Jason
+  walks a few tiles between attacks (2.4 times an hour, about a fifth of his crab-area
+  clicks), and those are the only clicks that do not land on the nearest interactable.
+* **Median gap** was five times too long for the same reason as the pile: the clone never
+  produced the sub-second bursts.
+
+What changed, in order of effect:
+
+1. **Delays are continuous and interruptible.** The policy's delay can be anything from 50 ms
+   to 300 s. A pending delay is cut short when an event in `INTERRUPTS` fires (inventory full,
+   target gone, bank open, shell ready, arrived, idle); the policy then re-decides with that
+   event as the trigger and the elapsed time recorded. There is no fixed clock any more: after
+   a click the policy is asked straight away how long to wait before the next one. The
+   recordings are labelled the same way: the next input with its true delay if it comes
+   before the next event, else WAIT until the event.
+2. **Walk-here is an intent.** `WALK` targets an entity slot and walks next to it without
+   interacting (`Activity.walk_near`), fires `idle` on arrival, and is logged with kind `""`
+   so the metrics can count it (`walk_per_h`).
+3. **The observation carries burst context.** Two new context fields, log time since the
+   last input and a one-hot of the last intent (`N_CTX = 8 + N_INTENTS`), so the policy can
+   tell "I clicked 300 ms ago" from "I have been idle for a minute" and produce the burst
+   second click.
+
+Rerunning the 100 % points of the efficiency curve on the new env and converter
+(`results/efficiency_rhythm/`, one subset, same recordings and validation file):
+
+| BC learns from | Progress/h | Worst AUC all (90 % CI) | Worst AUC held-out file | Worst detector | Reaction KS |
+|---|---|---|---|---|---|
+| Synthetic + Jason, before | 75,445 | 0.94 | 0.93 | feature GBT | 0.11 |
+| **Synthetic + Jason, after** | 80,235 | **0.84** [0.78, 0.90] | **0.78** [0.70, 0.85] | sequence GRU | 0.10 |
+| Jason only, before | 39,253 | 0.95 | 0.99 | feature GBT | 0.39 |
+| Jason only, after | 52,341 | 0.92 [0.87, 0.96] | 1.00 (1 window) | feature GBT | 0.17 |
+| Synthetic only, before | 76,431 | 0.93 | 0.93 | feature GBT | 0.07 |
+| Synthetic only, after | 83,812 | 0.93 [0.88, 0.96] | 0.93 | sequence GRU | 0.14 |
+
+The mixed clone is the first one under 0.9 without PPO or a detector in the reward, and the
+feature detector is no longer the stronger of the two: the GRU is, which is what you expect
+once the session-level histograms stop separating. The synthetic-only floor does not move,
+because the scripted players set their own delays and never had the chunk clock; the gain
+comes from BC now being able to copy Jason's bursts and walks. The Jason-only clone remains
+a one-player overfit (its held-out score is one window and means nothing).
+
+What is left on the list is smaller and different in kind: the clone still walks too rarely
+(0.4/h vs 2.4), its reaction times are too regular (log-std 1.35 vs 1.9, the mixture head
+collapses toward one component on 411 real inputs), and it checks tabs a little too often.
+Those are policy-capacity and data questions rather than simulator clocks, and the detector
+now needs several of them together to score above 0.7 on any single feature.

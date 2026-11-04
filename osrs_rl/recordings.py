@@ -16,7 +16,7 @@ import json
 import sys
 from collections import Counter
 
-from .env import CAMERA, CHECK_TAB, DEPOSIT, INTERACT, CLOSE
+from .env import CAMERA, CHECK_TAB, DEPOSIT, INTERACT, CLOSE, WALK
 
 KIND_WORDS = [
     ("shell", "shell"),
@@ -197,7 +197,7 @@ def records_to_session(recs: list) -> dict:
             elif opt in ("close",):
                 add(t, CLOSE)
             elif opt == "walk here":
-                add(t, INTERACT, "")
+                add(t, WALK, "")
             elif not tgt:
                 add(t, CHECK_TAB)  # side-panel tabs: Skills, Inventory, Friends List, ...
             else:
