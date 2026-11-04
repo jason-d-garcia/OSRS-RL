@@ -12,4 +12,5 @@ dependencies {
     implementation(projects.api.realm)
     implementation(projects.api.registry)
     implementation(projects.content.other.gemstoneCrab)
+    implementation(projects.content.areas.tutorialIsland)
 }

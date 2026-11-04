@@ -106,6 +106,9 @@ class AgentConnection(val id: Int, private val socket: Socket) {
     var lastCoords: org.rsmod.map.CoordGrid? = null
     var lastTunnelCycle: Int = Int.MIN_VALUE
 
+    /** What this agent plays: "gemcrab" (default) or "tutorial". */
+    var scene: String = "gemcrab"
+
     fun readLoop() {
         try {
             while (true) {

@@ -22,7 +22,8 @@ yet: watching a headless bot from a real client, and `attach`.
 
 ## Install
 
-From the root of your RSMod clone, with `gemstone-crab` installed as in its README:
+From the root of your RSMod clone, with `gemstone-crab` and `tutorial-island` installed as in
+their READMEs (the bridge depends on both):
 
 ```
 cp -r <this repo>/rsmod-content/agent-bridge content/other/agent-bridge
@@ -117,6 +118,27 @@ Actions (`type`): `attack_crab`, `mine_shell`, `tunnel`, `walk` (`x`, `z`), `wal
 (`dx`, `dz`), `npc` (`slot`, `op` as a name like `"Attack"` or a number 1-5), and `camera`,
 `check_tab`, `wait`, `noop`, which the server never sees and only accepts so the agent's log is
 complete.
+
+Tutorial Island (needs `tutorial-island` installed): `spawn`, `attach` and `reset` take
+`scene: "tutorial"` and `stage` (default 2). The bot is then put at that stage's start tile with
+the items the stage expects (and the stats it already has; a new account is level 1), not
+at the crab, and no crab loadout is applied. More
+actions, usable in any scene:
+
+| action | fields | |
+|---|---|---|
+| `loc` | `id`, `op` (1-5) | click an option on the nearest loc of that type in view |
+| `use_on_loc` | `item`, `loc` | use an inventory item on the nearest loc of that type |
+| `use_on_item` | `item`, `target` | use one inventory item on another |
+| `continue` | | "Click here to continue" on the open dialogue |
+| `option` | `n` (1-based) | pick an option of a multiple-choice dialogue |
+| `tab` | `name` (`settings`, `inventory`, `skills`, ...) | open a side-panel tab |
+
+Every tick now has `dialogue` (`null`, or `kind`: `npc`, `player`, `options`, `message`,
+`sprite`, with `options` for a choice; the lines themselves arrive in `messages` as
+`Name|text`), and the stats include fishing, woodcutting, firemaking and cooking. In the
+tutorial scene a tick also has `tutorial` (`stage`, `hint`), `npcs` in view (`slot`, `id`, `x`,
+`z`) and the island's clickable `locs` in view (`id`, `kind`, `x`, `z`).
 
 Server to agent: a `tick` message at the end of every cycle with `cycle`, `x`, `z`, `level`,
 `run_energy` (0-100), `moving`, `delayed`, `attacking`, `interaction`, `levels`, `xp`, `inv`,

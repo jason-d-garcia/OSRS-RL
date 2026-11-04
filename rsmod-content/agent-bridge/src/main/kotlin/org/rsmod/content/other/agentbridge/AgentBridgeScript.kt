@@ -10,7 +10,12 @@ import net.rsprot.protocol.common.client.OldSchoolClientType
 import org.rsmod.api.account.AccountManager
 import org.rsmod.api.account.loader.request.AccountLoadAuth
 import org.rsmod.api.account.loader.request.AccountLoadResponse
+import org.rsmod.api.config.refs.components
+import org.rsmod.api.config.refs.interfaces
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.player.input.ResumePauseButtonInput
+import org.rsmod.api.player.interact.LocTInteractions
+import org.rsmod.api.player.ui.IfOverlayButtonT
 import org.rsmod.api.game.process.GameLifecycle
 import org.rsmod.api.player.interact.LocInteractions
 import org.rsmod.api.player.interact.NpcInteractions
@@ -28,10 +33,13 @@ import org.rsmod.api.registry.player.PlayerRegistry
 import org.rsmod.api.registry.player.isSuccess
 import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onGameStartup
+import org.rsmod.content.areas.tutorialisland.TutorialIslandApi
+import org.rsmod.content.areas.tutorialisland.TutorialRules
 import org.rsmod.content.other.gemstonecrab.GemstoneCrabRules
 import org.rsmod.content.other.gemstonecrab.GemstoneCrabStatus
 import org.rsmod.content.other.gemstonecrab.configs.gem_crab_locs
 import org.rsmod.content.other.gemstonecrab.configs.gem_crab_objs
+import org.rsmod.content.areas.tutorialisland.configs.tut_locs
 import org.rsmod.events.EventBus
 import org.rsmod.game.MapClock
 import org.rsmod.game.entity.Npc
@@ -41,6 +49,7 @@ import org.rsmod.game.entity.PlayerList
 import org.rsmod.game.entity.player.SessionStateEvent
 import org.rsmod.game.entity.util.PathingEntityCommon
 import org.rsmod.game.interact.InteractionLocOp
+import org.rsmod.game.interact.InteractionLocT
 import org.rsmod.game.interact.InteractionNpcOp
 import org.rsmod.game.interact.InteractionOp
 import org.rsmod.game.inv.InvObj
@@ -55,7 +64,11 @@ import org.rsmod.game.stat.PlayerSkillXPTable
 import org.rsmod.game.type.loc.LocTypeList
 import org.rsmod.game.type.obj.ObjType
 import org.rsmod.game.type.obj.ObjTypeList
+import org.rsmod.game.type.comp.ComponentType
+import org.rsmod.game.type.interf.InterfaceType
 import org.rsmod.game.type.stat.StatType
+import org.rsmod.game.ui.Component
+import org.rsmod.game.ui.UserInterface
 import org.rsmod.map.CoordGrid
 import org.rsmod.map.zone.ZoneKey
 import org.rsmod.plugin.scripts.PluginScript
@@ -89,6 +102,7 @@ constructor(
     private val locRegistry: LocRegistry,
     private val npcInteractions: NpcInteractions,
     private val locInteractions: LocInteractions,
+    private val locTInteractions: LocTInteractions,
     private val collision: CollisionFlagMap,
     private val accountManager: AccountManager,
     private val accountRegistry: AccountRegistry,
@@ -336,8 +350,13 @@ constructor(
         conn.headless = true
         conn.botClient = client
         conn.botCycle = cycle
-        applyLoadout(player, cmd)
-        teleportToCrab(player, cmd.path("mine").asInt(-1), cmd.path("spread").asInt(6))
+        conn.scene = cmd.path("scene").asText("gemcrab")
+        if (conn.scene == SCENE_TUTORIAL) {
+            setUpTutorial(player, cmd)
+        } else {
+            applyLoadout(player, cmd)
+            teleportToCrab(player, cmd.path("mine").asInt(-1), cmd.path("spread").asInt(6))
+        }
         conn.send(
             event("spawned")
                 .put("name", player.displayName)
@@ -370,6 +389,7 @@ constructor(
         conn.player = player
         conn.headless = false
         conn.lockstep = cmd.path("lockstep").asBoolean(false)
+        conn.scene = cmd.path("scene").asText("gemcrab")
         if (cmd.has("loadout")) {
             applyLoadout(player, cmd.path("loadout"))
         }
@@ -500,6 +520,11 @@ constructor(
         }
         conn.pending.clear()
         conn.lastActionType = ""
+        if (conn.scene == SCENE_TUTORIAL) {
+            setUpTutorial(player, cmd)
+            conn.send(event("reset_done").put("cycle", mapClock.cycle))
+            return
+        }
         if (cmd.path("clear_gems").asBoolean(true)) {
             // Like a bank trip between episodes; a full inventory would drop new gems on the floor.
             for (slot in 0 until player.inv.size) {
@@ -554,6 +579,32 @@ constructor(
                     val op = action.path("op")
                     if (op.isInt) opNpc(player, npc, op.asInt())
                     else opNpc(player, npc, op.asText())
+                }
+                "loc" -> {
+                    val loc = nearestLoc(player, action.path("id").asInt(-1))
+                    val op = InteractionOp.entries.firstOrNull { it.slot == action.path("op").asInt(1) }
+                    when {
+                        loc == null -> "no such loc in view"
+                        op == null -> "bad op"
+                        else -> opLoc(player, loc, op)
+                    }
+                }
+                "use_on_loc" ->
+                    useOnLoc(player, action.path("item").asInt(-1), action.path("loc").asInt(-1))
+                "use_on_item" ->
+                    useOnItem(player, action.path("item").asInt(-1), action.path("target").asInt(-1))
+                "use_on_npc" -> "use_on_npc is not supported yet"
+                "continue" -> resumeDialogue(conn, player, option = -1)
+                "option" -> resumeDialogue(conn, player, option = action.path("n").asInt(-1))
+                "tab" -> {
+                    val name = action.path("name").asText().uppercase()
+                    val tab = TutorialRules.Tab.entries.firstOrNull { it.name == name }
+                    if (tab == null) {
+                        "unknown tab '$name'"
+                    } else {
+                        TutorialIslandApi.openTab(player, tab)
+                        null
+                    }
                 }
                 "walk" -> walk(player, action.path("x").asInt(), action.path("z").asInt())
                 "walk_rel" ->
@@ -703,6 +754,202 @@ constructor(
         return best
     }
 
+    // ---- tutorial island -------------------------------------------------------------------
+
+    /** Puts the player at a tutorial stage with that stage's items, at the stage's start tile. */
+    private fun setUpTutorial(player: Player, cmd: JsonNode) {
+        val stage = cmd.path("stage").asInt(TutorialRules.TALK_TO_GUIDE)
+        player.clearPendingAction(eventBus)
+        if (cmd.path("clear_inv").asBoolean(true)) {
+            for (slot in 0 until player.inv.size) {
+                player.inv[slot] = null
+            }
+        }
+        if (cmd.path("run").asBoolean(true)) {
+            player.varMoveSpeed = MoveSpeed.Run
+        }
+        player.xpRate = cmd.path("xp_rate").asDouble(1.0)
+        TutorialIslandApi.start(player, stage)
+        val tile = TutorialRules.startTile(stage)
+        PathingEntityCommon.telejump(player, collision, CoordGrid(tile.x, tile.z, 0))
+    }
+
+    /** The nearest loc of type [id] on the player's level within view. */
+    private fun nearestLoc(player: Player, id: Int): LocInfo? {
+        var best: LocInfo? = null
+        var bestDistance = Int.MAX_VALUE
+        forEachLocInView(player) { loc ->
+            if (loc.id == id) {
+                val d = loc.coords.chebyshevDistance(player.coords)
+                if (d < bestDistance) {
+                    best = loc
+                    bestDistance = d
+                }
+            }
+        }
+        return best
+    }
+
+    private inline fun forEachLocInView(player: Player, action: (LocInfo) -> Unit) {
+        val zones = VIEW_RADIUS / 8 + 1
+        for (dx in -zones..zones) {
+            for (dz in -zones..zones) {
+                val zone =
+                    ZoneKey.from(CoordGrid(player.x + dx * 8, player.z + dz * 8, player.level))
+                for (loc in locRegistry.findAll(zone)) {
+                    if (loc.coords.level != player.level) {
+                        continue
+                    }
+                    if (loc.coords.chebyshevDistance(player.coords) > VIEW_RADIUS) {
+                        continue
+                    }
+                    action(loc)
+                }
+            }
+        }
+    }
+
+    /** Same steps as RSMod's OpLocTHandler for "Use item -> loc" from the inventory. */
+    private fun useOnLoc(player: Player, item: Int, locId: Int): String? {
+        if (player.isDelayed) {
+            return "busy"
+        }
+        val slot = player.inv.indexOfFirst { it?.id == item }
+        if (slot < 0) {
+            return "no item $item"
+        }
+        val loc = nearestLoc(player, locId) ?: return "no such loc in view"
+        val type = locTypes[loc.id] ?: return "unknown loc"
+        val objType = objTypes[item]
+        val component = components.inv_items
+        val bound = BoundLocInfo(loc, type)
+        val interaction =
+            InteractionLocT(
+                target = bound,
+                comsub = slot,
+                objType = objType,
+                component = component,
+                hasOpTrigger =
+                    locTInteractions.hasOpTrigger(player, bound, type, objType, component, slot),
+                hasApTrigger =
+                    locTInteractions.hasApTrigger(player, bound, type, objType, component, slot),
+            )
+        player.clearPendingAction(eventBus)
+        player.resetFaceEntity()
+        player.faceLoc(loc, type.width, type.length)
+        player.interaction = interaction
+        player.routeRequest =
+            RouteRequestLoc(
+                destination = loc.coords,
+                width = type.width,
+                length = type.length,
+                shape = loc.entity.shape,
+                angle = loc.entity.angle,
+                forceApproachFlags = type.forceApproachFlags,
+                clientRequest = true,
+            )
+        player.tempMoveSpeed = null
+        return null
+    }
+
+    /** "Use item -> item" in the inventory, as RSMod's IfButtonTHandler publishes it. */
+    private fun useOnItem(player: Player, item: Int, target: Int): String? {
+        if (player.isDelayed || player.isAccessProtected) {
+            return "busy"
+        }
+        val selected = player.inv.indexOfFirst { it?.id == item }
+        val other =
+            (0 until player.inv.size).firstOrNull { it != selected && player.inv[it]?.id == target }
+        if (selected < 0 || other == null) {
+            return "missing item"
+        }
+        val inventory = Component(components.inv_items.packed)
+        eventBus.publish(
+            IfOverlayButtonT(
+                player = player,
+                selectedSlot = selected,
+                selectedObj = objTypes[item],
+                targetSlot = other,
+                targetObj = objTypes[target],
+                selectedComponent = inventory,
+                targetComponent = inventory,
+            )
+        )
+        return null
+    }
+
+    /** The chatbox dialogue open for [player], if any. */
+    private fun openDialogue(player: Player): Triple<InterfaceType, String, ComponentType>? =
+        DIALOGUES.firstOrNull { player.ui.containsModal(it.first) }
+
+    /**
+     * "Click here to continue", or picking option [option] (1-based) of a multiple choice, the way
+     * RSMod's ResumePauseButtonHandler does it.
+     */
+    private fun resumeDialogue(conn: AgentConnection, player: Player, option: Int): String? {
+        val (iface, kind, button) = openDialogue(player) ?: return "no dialogue open"
+        val sub =
+            if (kind == "options") {
+                val count = conn.botClient?.lastChoices?.size ?: 5
+                if (option !in 1..count) {
+                    return "pick an option from 1 to $count"
+                }
+                option
+            } else if (option != -1) {
+                return "this dialogue has no options"
+            } else if (iface == interfaces.obj_dialogue) {
+                0
+            } else {
+                -1
+            }
+        val modal = player.ui.modals.getComponent(UserInterface(iface))
+        if (modal != null) {
+            player.ui.queueClose(modal)
+        }
+        player.resumeActiveCoroutine(ResumePauseButtonInput(button, sub))
+        return null
+    }
+
+    private fun dialogueSnapshot(conn: AgentConnection, player: Player, node: ObjectNode) {
+        val open = openDialogue(player)
+        if (open == null) {
+            node.putNull("dialogue")
+            return
+        }
+        val dialogue = node.putObject("dialogue").put("kind", open.second)
+        if (open.second == "options") {
+            val options = dialogue.putArray("options")
+            conn.botClient?.lastChoices?.drop(1)?.forEach { options.add(it) }
+        }
+    }
+
+    private fun tutorialSnapshot(player: Player, node: ObjectNode) {
+        val stage = TutorialIslandApi.stage(player)
+        node.putObject("tutorial").put("stage", stage).put("hint", TutorialRules.hint(stage))
+        val npcs = node.putArray("npcs")
+        for (npc in npcList) {
+            if (!inView(player, npc)) {
+                continue
+            }
+            npcs
+                .addObject()
+                .put("slot", npc.slotId)
+                .put("id", npc.id)
+                .put("x", npc.x)
+                .put("z", npc.z)
+        }
+        val locs = node.putArray("locs")
+        forEachLocInView(player) { loc ->
+            val kind = TUTORIAL_LOCS[loc.id] ?: return@forEachLocInView
+            locs
+                .addObject()
+                .put("id", loc.id)
+                .put("kind", kind)
+                .put("x", loc.coords.x)
+                .put("z", loc.coords.z)
+        }
+    }
+
     // ---- observation ----------------------------------------------------------------------
 
     private fun snapshot(conn: AgentConnection, player: Player): ObjectNode {
@@ -823,6 +1070,11 @@ constructor(
             o.put("target_npc", if (oi is InteractionNpcOp) oi.target.slotId else -1)
         }
 
+        dialogueSnapshot(conn, player, node)
+        if (conn.scene == SCENE_TUTORIAL) {
+            tutorialSnapshot(player, node)
+        }
+
         val messages = node.putArray("messages")
         conn.botClient?.drain()?.forEach { messages.add(it) }
 
@@ -873,6 +1125,35 @@ constructor(
                 "ranged" to stats.ranged,
                 "magic" to stats.magic,
                 "mining" to stats.mining,
+                "fishing" to stats.fishing,
+                "woodcutting" to stats.woodcutting,
+                "firemaking" to stats.firemaking,
+                "cooking" to stats.cooking,
             )
+
+        const val SCENE_TUTORIAL = "tutorial"
+
+        /** Locs a tutorial agent may want to click, sent with every tick in the tutorial scene. */
+        val TUTORIAL_LOCS: Map<Int, String> by lazy {
+            mapOf(
+                tut_locs.guide_door.id to "guide_door",
+                tut_locs.survival_gate_left.id to "survival_gate",
+                tut_locs.survival_gate_right.id to "survival_gate",
+                tut_locs.tree.id to "tree",
+                tut_locs.fire.id to "fire",
+            )
+        }
+
+        /** The chatbox dialogues, the kind the agent sees and the button that moves each on. */
+        val DIALOGUES: List<Triple<InterfaceType, String, ComponentType>> by lazy {
+            listOf(
+                Triple(interfaces.chat_left, "npc", components.chat_left_pbutton),
+                Triple(interfaces.chat_right, "player", components.chat_right_pbutton),
+                Triple(interfaces.chatmenu, "options", components.chatmenu_pbutton),
+                Triple(interfaces.messagebox, "message", components.messagebox_pbutton),
+                Triple(interfaces.obj_dialogue, "sprite", components.objectbox_pbutton),
+                Triple(interfaces.double_obj_dialogue, "sprite", components.objectbox_double_pbutton),
+            )
+        }
     }
 }

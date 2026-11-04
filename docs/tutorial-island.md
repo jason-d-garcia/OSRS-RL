@@ -29,3 +29,21 @@ What it shows:
 * **Most continues are the space bar** (97 of 104), so the reader counts keys as well as
   clicks.
 * **Bystanders:** 21 other players were seen even on a quiet island, up to 11 at once.
+
+## The bot on the private server
+
+`python run_tutorial.py` plays the first two sections on RSMod (`rsmod-content/tutorial-island`)
+with the scripted bot in `osrs_rl/tutorial.py`, using delays fitted to the run above. 80 of 80
+episodes finished, with no refused actions (`results/tutorial/runs.json`, seed 2).
+
+| Section | Bot (median of 80) | Jason |
+|---|---|---|
+| Gielinor Guide | 12 s | 23 s |
+| Survival Expert | 56 s | 49 s |
+
+* **The guide is quicker for the bot** because the module's guide has fewer lines than live
+  (the live guide talks more before and after the settings step), not because the bot skips
+  faster: its median per line is 330 ms against Jason's 317 ms.
+* **The Survival Expert is a little slower.** Chopping (7 s) and lighting the fire (7 s) are
+  fitted to Jason's 10 s and 7 s. Most of the rest is fishing, a 19% roll every 4 ticks, so a
+  run varies with luck.

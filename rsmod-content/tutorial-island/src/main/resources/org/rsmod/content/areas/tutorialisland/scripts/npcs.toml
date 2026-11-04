@@ -1,0 +1,26 @@
+# Tutorial Island, map square 48_48 (x 3072-3135, z 3072-3135). Coords are level_mx_mz_lx_lz.
+# Positions are where a live run (Nov 2026) found each NPC.
+
+# Gielinor Guide, in the starting house (3094, 3108)
+[[spawn]]
+npc = 'newbie_basics_instructor'
+coords = '0_48_48_22_36'
+
+# Survival Expert, by the pond (3104, 3095)
+[[spawn]]
+npc = 'newbie_survival_instructor'
+coords = '0_48_48_32_23'
+
+# Fishing spots in the pond (3101, 3092) and (3103, 3092)
+[[spawn]]
+npc = '0_48_48_newbiefishing'
+coords = '0_48_48_29_20'
+
+[[spawn]]
+npc = '0_48_48_newbiefishing'
+coords = '0_48_48_31_20'
+
+# Master Chef, in the kitchen (3075, 3086)
+[[spawn]]
+npc = 'newbie_cook_instructor'
+coords = '0_48_48_3_14'
