@@ -88,6 +88,12 @@ class AgentConnection(val id: Int, private val socket: Socket) {
     /** In lockstep the game waits at the end of every cycle until this agent sends `step`. */
     var lockstep: Boolean = false
 
+    /**
+     * A `reset` that arrived while the player was delayed (mid-swing, mid-mine). RSMod forbids
+     * clearing a delayed player's pending action, so the reset waits until the delay ends.
+     */
+    var pendingReset: JsonNode? = null
+
     /** Actions to apply at the start of the next cycle. */
     val pending = ArrayList<JsonNode>()
 
