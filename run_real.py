@@ -30,9 +30,9 @@ from sklearn.metrics import roc_auc_score
 
 from osrs_rl.agents.controllers import ScriptedBot, SyntheticHuman
 from osrs_rl.detector import FeatureDetector, SequenceDetector, rules_floor
-from osrs_rl.env import OsrsEnv
+from osrs_rl.env import OsrsEnv, set_focus_model
 from osrs_rl.metrics import FEATURE_NAMES, gaps, reaction_delays, session_features, timescale_metrics
-from osrs_rl.recordings import crab_windows
+from osrs_rl.recordings import crab_windows, focus_after_input_ms
 from osrs_rl.train import PolicyController, train_bc, train_ppo
 
 WINDOW_TICKS = 1500  # 15 minutes
@@ -134,6 +134,8 @@ def describe(sessions):
         "frac_gaps_over_60s": float(np.mean(g > 60_000)) if len(g) else None,
         "camera_per_h": f("camera_per_h"),
         "check_tab_per_h": f("check_tab_per_h"),
+        "walk_per_h": f("walk_per_h"),
+        "react_logstd": f("react_logstd"),
         "rules_floor_flag_rate": float(np.mean([rules_floor(s) for s in sessions])),
     }
 
@@ -153,6 +155,11 @@ def main():
     ap.add_argument("--bc-val-frac", type=float, default=0.15,
                     help="hold out the newest recordings holding this share of real decisions to validate BC "
                          "and pick its best epoch")
+    ap.add_argument("--bystanders", action="store_true",
+                    help="infer other players' inputs (bystanders.py) and also score agents against Jason + "
+                         "bystanders, on the inputs a bystander's IDM can see")
+    ap.add_argument("--adv-population", action="store_true",
+                    help="with --adv-weight and --bystanders: the in-loop detectors' human side is Jason + bystanders")
     ap.add_argument("--skip-pure", action="store_true", help="skip the pure-RL baseline (for leash sweeps)")
     args = ap.parse_args()
     out = Path(args.out)
@@ -168,8 +175,40 @@ def main():
         groups += [p.name] * len(w)
         log(f"{p.name}: {len(w)} crab windows")
     log(f"real: {len(real)} windows of 15 min from {len(set(groups))} files")
+    _d = describe(real)
+    log(f"real walk/h {_d['walk_per_h']:.1f} tab/h {_d['check_tab_per_h']:.1f} react logsd {_d['react_logstd']:.2f}")
     if len(set(groups)) < N_FOLDS:
         raise SystemExit("need crab windows from at least 4 recording files")
+
+    bys_raw, idm = [], None
+    if args.bystanders:
+        from osrs_rl import bystanders as B
+        tracks = [B.read_tracks(p) for p in sorted(Path(args.recordings).expanduser().glob("session-*.jsonl.gz"))]
+        tracks = [t for t in tracks if t["me"]]
+        min_gap = B.fit_min_gap(tracks)
+        evals = [B.evaluate_idm(t) for t in tracks]
+        lags = B.fit_lags(evals)
+        idm = {"lags_ms": lags, "min_gap_ticks": min_gap, "per_intent": {}}
+        for k in ("crab", "shell", "cave", "walk"):
+            tot = {f: sum(e.get(k, {}).get(f, 0) for e in evals) for f in ("truth", "invisible", "inferred", "matched")}
+            tot["precision"] = tot["matched"] / max(tot["inferred"], 1)
+            tot["recall"] = tot["matched"] / max(tot["truth"], 1)
+            idm["per_intent"][k] = tot
+            log(f"idm on jason, {k:5s}: precision {tot['precision']:.2f} recall {tot['recall']:.2f} "
+                f"({tot['matched']}/{tot['truth']} clicks, {tot['invisible']} invisible re-clicks)")
+        bys_raw = [w for t in tracks for w in B.bystander_windows(t, lags)]
+        log(f"idm lags {lags['interact']:.0f}/{lags['move']:.0f} ms; {len(bys_raw)} bystander windows from "
+            f"{len({(w['file'], w['pid']) for w in bys_raw})} players in {sum(1 for t in tracks if t['others'])} files")
+
+    # Attention model: how long the window stays focused after an input (see env.FOCUS_MODEL).
+    fo = np.concatenate([focus_after_input_ms(p) for p in sorted(Path(args.recordings).expanduser()
+                                                                  .glob("session-*.jsonl.gz"))] or [np.zeros(0)])
+    fo = fo[fo > 0]
+    if len(fo) >= 20:
+        set_focus_model(float(np.median(fo)), float(np.clip(np.std(np.log(fo)), 0.3, 2.5)))
+    from osrs_rl.env import FOCUS_MODEL
+    log(f"focus after input: median {FOCUS_MODEL['median_ms'] / 1000:.1f} s, log-sd {FOCUS_MODEL['sigma']:.2f} "
+        f"(from {len(fo)} inputs)")
 
     humans, trans = {}, {}
     for p in range(N_PLAYERS):
@@ -236,7 +275,17 @@ def main():
     adv = adv_curve = None
     if args.adv_weight > 0:
         from osrs_rl.adversarial import DetectorReward
-        dr = DetectorReward(real, weight=args.adv_weight, retrain_every=args.adv_retrain, seed=args.seed, log=log)
+        human_side, project = real, None
+        if args.adv_population and bys_raw:
+            from osrs_rl import bystanders as B
+            pop, _ = B.filter_bots(bys_raw, real, gen(lambda sd: ScriptedBot(sd), range(8_500_000, 8_500_024))[0],
+                                   seed=args.seed, log=log)
+            rng_p = np.random.default_rng(args.seed)
+            pop = [pop[i] for i in rng_p.permutation(len(pop))[: 3 * len(real)]]
+            human_side, project = real + pop, B.observable
+            log(f"in-loop detector human side: {len(real)} Jason + {len(pop)} bystander windows (observable inputs)")
+        dr = DetectorReward(human_side, weight=args.adv_weight, retrain_every=args.adv_retrain, seed=args.seed,
+                            log=log, project=project)
         dr.fit(pol(bc, 8_000_000, n=24))  # start from detectors that already know the BC agent
         log(f"ppo from bc with detector reward, weight {args.adv_weight}, kl {args.kl}")
         adv, adv_curve = train_ppo("gemcrab", bc, bc, reward_cfg, total_ticks=args.ticks, kl_coef=args.kl,
@@ -270,7 +319,31 @@ def main():
         w = det["worst_case"]
         log(f"{name:16s} prog/h {results['vs_real'][name]['describe']['progress_per_h_median']:7.0f}  "
             f"gbt auc {det['feature_gbt']['auc']:.2f}  gru auc {det['sequence_gru']['auc']:.2f}  "
-            f"worst {w['auc']:.2f} [{w['auc_90ci'][0]:.2f}, {w['auc_90ci'][1]:.2f}]  reaction KS {ts['reaction_ks']:.2f}")
+            f"worst {w['auc']:.2f} [{w['auc_90ci'][0]:.2f}, {w['auc_90ci'][1]:.2f}]  reaction KS {ts['reaction_ks']:.2f}  "
+            f"walk/h {results['vs_real'][name]['describe']['walk_per_h']:.1f} "
+            f"tab/h {results['vs_real'][name]['describe']['check_tab_per_h']:.1f} "
+            f"react logsd {results['vs_real'][name]['describe']['react_logstd']:.2f}")
+    if bys_raw:
+        from osrs_rl import bystanders as B
+        pop, filt = B.filter_bots(bys_raw, real, others["scripted"], seed=args.seed, log=log)
+        rng_p = np.random.default_rng(args.seed + 7)
+        pop = [pop[i] for i in rng_p.permutation(len(pop))[: 4 * len(real)]]  # keep the GRU affordable
+        obs_real = [B.observable(s) for s in real]
+        results["bystanders"] = {"idm": idm, "filter": filt, "used_windows": len(pop),
+                                 "describe": describe(pop), "vs_population": {}}
+        # How different do bystanders look from Jason on the same visible inputs? (0.5 = alike)
+        if len(pop) >= 8:
+            jb = cv_detect(obs_real, groups, pop, seed=args.seed)
+            results["bystanders"]["jason_vs_bystanders"] = jb
+            log(f"jason vs bystanders (visible inputs only): worst {jb['worst_case']['auc']:.2f}")
+        human = obs_real + pop
+        hgroups = groups + [w["file"] for w in pop]
+        for name, ss in others.items():
+            det = cv_detect(human, hgroups, [B.observable(s) for s in ss], seed=args.seed)
+            results["bystanders"]["vs_population"][name] = det
+            w = det["worst_case"]
+            log(f"{name:16s} vs jason+bystanders (visible inputs): gbt {det['feature_gbt']['auc']:.2f}  "
+                f"gru {det['sequence_gru']['auc']:.2f}  worst {w['auc']:.2f} [{w['auc_90ci'][0]:.2f}, {w['auc_90ci'][1]:.2f}]")
     results["rl_curve"] = rl_curve
     if adv is not None:
         results["adv"] = {"weight": args.adv_weight, "retrain_every": args.adv_retrain, "curve": adv_curve,

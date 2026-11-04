@@ -264,3 +264,56 @@ the 3 newest files first ("B") gave only 32 decisions, because they were 2–5 m
 * The consistent finding across all three rounds: the detector reward beats plain PPO
   (0.89–0.92 vs 0.93–0.94) while earning more (78–83k/h). The lowest PPO result so far is
   0.85 [0.78, 0.90] (round C, seed 0).
+
+## Window focus, recalibrated synthetic players, and bystanders (`tells-bystanders`)
+
+**Tells.** The env now models whether the game window is focused. It goes unfocused a
+log-normal time after each input, fitted from the recordings (median 2.7 s, log-sd 1.48), and
+the policy sees the flag. `real_bc.py` fills it from the recorded `focused`. Synthetic players
+walk between attacks, check tabs less, and come back slowly when unfocused.
+
+**Bystanders.** `osrs_rl/bystanders.py` follows other players by the recorder's anonymous `pid`
+(schema 4+) and reads back their visible inputs: attack, shell, cave and walk. It uses rules
+whose click-to-change lag (468 / 518 ms) and attack-flicker threshold (21 ticks) are fitted on
+Jason's own clicks. Accuracy on Jason (`python -m osrs_rl.bystanders <files>`):
+
+| Intent | Precision | Recall | Note |
+|---|---|---|---|
+| Attack crab | 0.85 | 0.91 | 171 re-clicks on a crab already being attacked are invisible by construction |
+| Cave | 0.97 | 0.83 | |
+| Walk | 0.97 | 0.57 | short walks that end in an attack are read as part of the attack |
+
+This gave 25 windows (6.2 h) from 20 players in 6 files. No gear farms were found, and the
+Jason-vs-scripted detector dropped 4. Everything compared with bystanders goes through
+`observable` (visible intents only, tick-quantised, no progress). `run_real.py --bystanders`
+adds a "vs Jason + bystanders" score, and `--adv-population` puts bystanders on the in-loop
+detector's human side.
+
+Snapshot 1104b (24 files: 1104 plus two 3 Nov sessions, one cut while still being recorded),
+mixed BC, KL 0.3, 8M ticks, detector reward weight 1, 3 seeds. "Old code" is main at
+06610d7 on the same snapshot.
+
+| Agent | Old code | New code | New + population reward | New, vs Jason + bystanders |
+|---|---|---|---|---|
+| BC | 0.92 | 0.92 | 0.92 | **0.86** |
+| PPO, KL 0.3 | 0.95 | 0.95 | 0.94 | 0.94 |
+| PPO + detector reward | 0.93 | **0.90** | 0.91 | 0.87 (best run 0.82 [0.77, 0.88]) |
+
+| Tell (real) | Old clone | New clone |
+|---|---|---|
+| Walk-here / h (2.7) | 0.4 | 1.9–2.8 |
+| Tab checks / h (15.1) | 18 | 10–12 |
+| Reaction log-sd (1.76) | 1.35 | 1.31–1.55 |
+
+* Comparing on the same data, the fixes help the detector-reward agent (0.93 to 0.90) and
+  leave BC unchanged. They cost ~5k progress/h (64–77k vs 69–83k).
+* Walking now matches Jason. Tab checks overshoot slightly low. Reaction spread is still too
+  narrow.
+* The population reward adds nothing yet: 0.91 vs 0.90, and 0.88 vs 0.87 against Jason plus
+  bystanders.
+* Treat "vs Jason + bystanders" as a second opinion. A detector separates Jason's visible
+  inputs from the bystanders' at 0.91–0.96. Part of that gap is real (they are different
+  people), and part may be the IDM, for example the converter's "target gone" fires when Jason
+  walks away, while for bystanders it fires only when the crab burrows.
+* Every arm scores higher than on snapshot 1104, the baseline included. BC now validates on a
+  single long session (the 3 Nov one that was cut mid-recording).

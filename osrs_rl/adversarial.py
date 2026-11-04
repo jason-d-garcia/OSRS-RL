@@ -36,8 +36,11 @@ def split_windows(session: dict, window_ms: int = WINDOW_MS) -> list[dict]:
 
 class DetectorReward:
     def __init__(self, human_windows, weight: float = 1.0, clip: float = 4.0, retrain_every: int = 10,
-                 buffer_windows: int = 160, seed: int = 0, log=print):
-        self.human = list(human_windows)
+                 buffer_windows: int = 160, seed: int = 0, log=print, project=None):
+        # ``project`` maps every window before the detectors see it (e.g. bystanders.observable,
+        # when the human side includes other players whose tab checks and camera moves are unseen).
+        self.project = project or (lambda w: w)
+        self.human = [self.project(w) for w in human_windows]
         self.weight, self.clip = weight, clip
         self.retrain_every, self.buffer_windows = retrain_every, buffer_windows
         self.seed, self.log = seed, log
@@ -46,7 +49,7 @@ class DetectorReward:
         self.history: list[dict] = []
 
     def fit(self, bot_windows=None) -> None:
-        bots = list(bot_windows if bot_windows is not None else self.buffer[-self.buffer_windows:])
+        bots = [self.project(w) for w in (bot_windows if bot_windows is not None else self.buffer[-self.buffer_windows:])]
         if len(bots) < 8:
             return
         sess = self.human + bots
@@ -57,6 +60,7 @@ class DetectorReward:
     def p_bot(self, windows) -> np.ndarray:
         if self.fd is None or not windows:
             return np.full(len(windows), 0.5)
+        windows = [self.project(w) for w in windows]
         return 0.5 * (self.fd.predict(windows) + self.sd.predict(windows))
 
     def bonus(self, session: dict) -> float:

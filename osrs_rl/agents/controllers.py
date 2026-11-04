@@ -17,7 +17,7 @@ import math
 
 import numpy as np
 
-from ..env import CAMERA, CHECK_TAB, CLOSE, DEPOSIT, INTERACT, WAIT
+from ..env import CAMERA, CHECK_TAB, CLOSE, DEPOSIT, INTERACT, WAIT, WALK
 from ..sim import params as P
 from ..sim.base import cheb
 
@@ -87,7 +87,7 @@ class SyntheticHuman(Controller):
         self.glance_mu = math.log(prof.uniform(4000, 15000))  # time between glances while busy
         self.crab_glance_mu = math.log(prof.uniform(20000, 90000))
         self.p_camera = prof.uniform(0.02, 0.09)
-        self.p_tab = prof.uniform(0.01, 0.06)
+        self.p_tab = prof.uniform(0.005, 0.03)
         self.p_redundant = prof.uniform(0.05, 0.3)
         self.tree_temp = prof.uniform(1.0, 5.0)
         self.p_close_bank = prof.uniform(0.1, 0.8)
@@ -97,9 +97,12 @@ class SyntheticHuman(Controller):
         # burrows or the target is lost, the next input comes a median 26-37 s later (p90 ~3-5 min),
         # because the game window is unfocused 61% of the time; arriving at a new mine is answered
         # in ~1.4 s; ~12 tab clicks an hour; and the shell is almost never mined.
-        self.p_crab_afk = prof.uniform(0.4, 0.8)
-        self.crab_afk_mu = math.log(prof.uniform(8_000, 35_000))
-        self.p_crab_tab = prof.uniform(0.03, 0.3)
+        self.p_crab_afk = prof.uniform(0.75, 0.95)  # unfocused: share of returns that are slow
+        self.crab_afk_mu = math.log(prof.uniform(15_000, 60_000))
+        # REAL: ~13 tab clicks an hour; the clone ran at 18-24 with the old range (0.03-0.3).
+        self.p_crab_tab = prof.uniform(0.02, 0.15)
+        # REAL: Jason walks a few tiles between attacks about 2.4 times an hour (Walk here).
+        self.p_crab_walk = prof.uniform(0.03, 0.12)
         self.p_burst = prof.uniform(0.5, 0.8)  # REAL: tab clicks come in quick runs (median gap 2.8 s)
         self.burst_mu = math.log(prof.uniform(700, 2000))
         self.p_try_shell = prof.uniform(0.0, 0.15) if prof.random() < 0.4 else prof.uniform(0.5, 0.98)
@@ -125,9 +128,13 @@ class SyntheticHuman(Controller):
         d *= 1.0 + self.fatigue * env.t_ms / 1_800_000.0
         if self.rng.random() < self.p_afk:
             d += self.afk_scale * (self.rng.pareto(1.6) + 1.0)
-        if (env.activity_name == "gemcrab" and env.trigger in ("target_gone", "shell_ready")
-                and self.rng.random() < self.p_crab_afk):
-            d += math.exp(self.crab_afk_mu + 1.1 * self.rng.standard_normal())  # tabbed out
+        if env.activity_name == "gemcrab" and not getattr(env, "focused", True):
+            # Window unfocused: the input waits until they come back (a notification, a glance).
+            # This is what makes real reactions bimodal: ~1.4 s when watching, 30 s+ when not.
+            if self.rng.random() < self.p_crab_afk:
+                d += math.exp(self.crab_afk_mu + 1.1 * self.rng.standard_normal())
+            else:
+                d += math.exp(math.log(4000.0) + 0.8 * self.rng.standard_normal())
         return d
 
     def glance(self, env, crab=False) -> float:
@@ -202,6 +209,9 @@ class SyntheticHuman(Controller):
             if self.rng.random() < self.p_crab_tab:
                 self.burst_left = int(self.rng.geometric(1 - self.p_burst)) - 1
                 return self._act(env, CHECK_TAB)
+            if self.rng.random() < self.p_crab_walk:
+                # step a few tiles; the crab is re-attacked when the walk ends ("idle")
+                return self._act(env, WALK, sim.crab)
             return act(WAIT, 0, self.glance(env, crab=True))
         if sim.busy or sim.moving:
             return act(WAIT, 0, self.glance(env) * 0.3)

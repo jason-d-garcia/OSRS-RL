@@ -61,8 +61,9 @@ INTERRUPTS = {"inv_full", "target_gone", "bank_open", "shell_ready", "arrived", 
 MAX_ENTITIES = 12
 ENT_FEATS = len(KINDS) + 6
 # Timing context: time since break, inputs in the last minute, last three delays, time since
-# a camera move, time since the last input (linear and log), and the last input's intent.
-N_CTX = 8 + N_INTENTS
+# a camera move, time since the last input (linear and log), whether the game window is
+# focused, and the last input's intent.
+N_CTX = 9 + N_INTENTS
 GLOBAL_DIM = 4 + N_SELF_EXTRA + len(EVENTS) + N_CTX
 OBS_DIM = GLOBAL_DIM + MAX_ENTITIES * ENT_FEATS
 
@@ -72,6 +73,17 @@ BUSY_CHECK_TICKS = 25  # 15 s
 EPISODE_TICKS = 3000  # 30 minutes of game time
 
 ACTIVITIES = {"willows": Willows, "gemcrab": GemCrab}
+
+# Attention. Jason's game window is unfocused about two thirds of the time and he never clicks
+# while it is: he clicks, watches for a while, then switches to something else until a
+# notification or a glance brings him back. The env models that as a focus flag the policy can
+# see: an input focuses the window, and it stays focused for a log-normal time after the last
+# input before going unfocused. run_real.py sets the median and spread from the recordings.
+FOCUS_MODEL = {"median_ms": 20_000.0, "sigma": 1.0}
+
+
+def set_focus_model(median_ms: float, sigma: float) -> None:
+    FOCUS_MODEL["median_ms"], FOCUS_MODEL["sigma"] = float(median_ms), float(sigma)
 
 
 class OsrsEnv(gym.Env):
@@ -111,6 +123,8 @@ class OsrsEnv(gym.Env):
         self.recent_actions: deque = deque()
         self.last_delays = deque([800.0, 800.0, 800.0], maxlen=3)
         self.last_intent = -1
+        self.focused = True
+        self._schedule_unfocus(0.0)
         self.log: list[dict] = []
         self.events_log: list[tuple[float, str]] = []
         self.cum_progress = 0.0
@@ -132,12 +146,18 @@ class OsrsEnv(gym.Env):
             if self.sim.tick_count >= self.episode_ticks:
                 return True, None
             evs = self.sim.tick()
+            if self.focused and self.sim.tick_count * TICK_MS >= self.unfocus_at:
+                self.focused = False
             for e in evs:
                 self._note_event(e)
             hit = [e for e in evs if e in INTERRUPTS] if interruptible else []
             if hit:
                 return self.sim.tick_count >= self.episode_ticks, hit[-1]
         return self.sim.tick_count >= self.episode_ticks, None
+
+    def _schedule_unfocus(self, t_ms: float) -> None:
+        m = FOCUS_MODEL
+        self.unfocus_at = t_ms + m["median_ms"] * math.exp(m["sigma"] * self.rng.standard_normal())
 
     def _note_event(self, e: str) -> None:
         self.last_event = e
@@ -232,6 +252,8 @@ class OsrsEnv(gym.Env):
         self.log.append(rec)
         self.last_obs_action_ms = t
         self.last_intent = intent
+        self.focused = True  # nobody clicks into an unfocused window
+        self._schedule_unfocus(t)
         self.recent_actions.append(t)
         # humanness shaping: reacting faster than the human floor for this context
         pen = 0.0
@@ -293,8 +315,9 @@ class OsrsEnv(gym.Env):
         g[o + 5] = min((self.t_ms - self.last_camera_ms) / 600_000.0, 3.0)
         g[o + 6] = min((self.t_ms - self.last_obs_action_ms) / 60_000.0, 5.0)
         g[o + 7] = (math.log(max(self.t_ms - self.last_obs_action_ms, 1.0)) - 7.0) / 2.0
+        g[o + 8] = float(self.focused)
         if self.last_intent >= 0:
-            g[o + 8 + self.last_intent] = 1.0
+            g[o + 9 + self.last_intent] = 1.0
 
         # Things you can click first, then bystanders, each nearest first. Large NPCs make raw tile
         # distance a poor guide, and at a busy crab other players would otherwise crowd it out.
