@@ -1,0 +1,52 @@
+diff --git a/server/app/src/main/kotlin/org/rsmod/server/app/GameService.kt b/server/app/src/main/kotlin/org/rsmod/server/app/GameService.kt
+index 517c9a7..1ea6582 100644
+--- a/server/app/src/main/kotlin/org/rsmod/server/app/GameService.kt
++++ b/server/app/src/main/kotlin/org/rsmod/server/app/GameService.kt
+@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit
+ import java.util.concurrent.atomic.AtomicBoolean
+ import kotlin.system.measureNanoTime
+ import kotlinx.coroutines.delay
++import kotlinx.coroutines.yield
+ import org.rsmod.game.GameProcess
+ import org.rsmod.server.services.concurrent.ScheduledListenerService
+ 
+@@ -24,6 +25,12 @@ class GameService @Inject constructor(private val process: GameProcess) : Schedu
+         if (shutdownSignaled.get()) {
+             return
+         }
++        if (GAME_TICK_INTERVAL <= 0L) {
++            // Unthrottled: cycle as fast as the game (or an agent holding it in lockstep) allows.
++            process.cycle()
++            yield()
++            return
++        }
+         val elapsedNanos = measureNanoTime { process.cycle() } + excessCycleNanos
+         val elapsedMillis = TimeUnit.NANOSECONDS.toMillis(elapsedNanos)
+         val overdue = elapsedMillis > GAME_TICK_INTERVAL
+@@ -57,6 +64,9 @@ class GameService @Inject constructor(private val process: GameProcess) : Schedu
+         // Intentionally call `process.startup` on the game thread instead of in `startup`,
+         // which runs on the main application thread.
+         process.startup()
++        if (GAME_TICK_INTERVAL != 600L) {
++            logger.info { "Game tick interval: ${GAME_TICK_INTERVAL}ms (live game: 600ms)" }
++        }
+     }
+ 
+     override suspend fun signalStartup() {}
+@@ -79,7 +89,15 @@ class GameService @Inject constructor(private val process: GameProcess) : Schedu
+     }
+ 
+     private companion object {
+-        private const val GAME_TICK_INTERVAL = 600L
++        /**
++         * Milliseconds per game cycle: 600 like the live game, unless `RSMOD_TICK_MS` (or the
++         * `rsmod.tickMs` system property) says otherwise. 0 runs cycles back to back, for headless
++         * training; real clients desync below 600, so only use it with no one logged in.
++         */
++        private val GAME_TICK_INTERVAL: Long =
++            (System.getProperty("rsmod.tickMs") ?: System.getenv("RSMOD_TICK_MS"))
++                ?.toLongOrNull()
++                ?.coerceAtLeast(0L) ?: 600L
+         private const val GAME_THREAD_NAME = "game"
+     }
+ }
