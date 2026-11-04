@@ -226,3 +226,22 @@ What is left on the list is smaller and different in kind: the clone still walks
 collapses toward one component on 411 real inputs), and it checks tabs a little too often.
 Those are policy-capacity and data questions rather than simulator clocks, and the detector
 now needs several of them together to score above 0.7 on any single feature.
+
+## After the rhythm fix (PR #16): PPO with and without the detector reward
+
+Main at 4315ffa. Snapshot of 23 finished recordings: 49 crab windows from 15 files, and
+1,350 BC decisions (575 inputs). Mixed BC, KL 0.3, 8M ticks, 3 seeds. The detector reward
+has weight 1 and is retrained every 5 updates. Each seed's two runs share the same BC.
+
+| Agent | Seed 0 | Seed 1 | Seed 2 | Mean worst AUC | Progress/h |
+|---|---|---|---|---|---|
+| BC | 0.92 | 0.87 | 0.84 | **0.88** | 69–74k |
+| PPO, KL 0.3 (two runs per seed) | 0.90, 0.94 | 0.95, 0.97 | 0.91, 0.94 | 0.935 | 79–81k |
+| PPO, KL 0.3 + detector reward | 0.89 | 0.90 | 0.90 | **0.90** | 80–82k |
+
+* On every seed, the detector reward beats plain PPO trained alongside it (0.89–0.90 vs
+  0.94–0.97). It roughly ties BC while earning ~10k/h more, the first time RL hasn't made
+  the agent more detectable.
+* The in-loop detectors still re-catch the agent at each retrain (p(bot) ~0.95 afterwards).
+* BC validation is noisy: the val file (an early, short schema-2 session) gives val NLL of
+  3.8–8.1 and accuracy of ~0.45. Pick a more representative validation file next.
