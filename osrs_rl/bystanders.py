@@ -60,6 +60,10 @@ OBSERVABLE = (INTERACT, WALK)
 # Click -> visible change, ms. Overwritten by fit_lags() on Jason's files; these are the defaults
 # for a 600 ms tick (the server applies a click on the next tick, the client sees it a tick later).
 LAGS = {"interact": 900.0, "move": 900.0}
+# A new attack only counts if the player had another target (or none) for at least this many ticks
+# before: the client's "interacting" flickers off and on between hits. Fitted by fit_min_gap().
+MIN_GAP = {"ticks": 1}
+MIN_GAP_CHOICES = (1, 2, 3, 5, 8, 13, 21)
 
 
 def _name(n):
@@ -156,7 +160,7 @@ def _near_cave(x, y, caves):
 
 # ----------------------------------------------------------------------
 # The IDM
-def infer_inputs(seg, caves_at, vanished_at_end: bool, lags=None):
+def infer_inputs(seg, caves_at, vanished_at_end: bool, lags=None, min_gap=None):
     """Infer (t_ms, intent, kind) inputs from one track segment.
 
     ``caves_at(t)`` gives the cave tiles in view at time t. ``vanished_at_end``: the segment ends
@@ -164,14 +168,20 @@ def infer_inputs(seg, caves_at, vanished_at_end: bool, lags=None):
     Times are the visible change minus the fitted lag, i.e. the estimated click time.
     """
     lags = lags or LAGS
+    min_gap = MIN_GAP["ticks"] if min_gap is None else min_gap
     out = []
     n = len(seg)
+    last_on = {}  # target kind -> index of the last row with that target
     i = 1
     while i < n:
         t, _, x, y, _, tk = seg[i]
         _, _, px, py, _, ptk = seg[i - 1]
+        if ptk is not None:
+            last_on[ptk] = i - 1
         step = max(abs(x - px), abs(y - py))
-        if tk in ("crab", "shell") and ptk != tk:
+        flicker = tk in last_on and (i - last_on[tk]) <= min_gap \
+            and all(seg[m][2:4] == seg[i][2:4] for m in range(last_on[tk], i))
+        if tk in ("crab", "shell") and ptk != tk and not flicker:
             out.append((t - lags["interact"], INTERACT, tk))
             # the approach walk that follows belongs to this click
             while i + 1 < n and seg[i + 1][2:4] != seg[i][2:4] and step <= JUMP:
@@ -218,7 +228,7 @@ def _caves_lookup(scene):
     return caves_at
 
 
-def evaluate_idm(tracks, lags=None, tol_ms=1800.0):
+def evaluate_idm(tracks, lags=None, tol_ms=1800.0, min_gap=None):
     """Run the IDM on Jason's own track and match it against his real clicks.
 
     Returns per-intent counts and the raw lags (visible change - click) of matched pairs, which
@@ -229,7 +239,7 @@ def evaluate_idm(tracks, lags=None, tol_ms=1800.0):
     caves_at = _caves_lookup(tracks["scene"])
     inferred = []
     for seg in _segments(tracks["me"]):
-        inferred += infer_inputs(seg, caves_at, vanished_at_end=False, lags=zero)
+        inferred += infer_inputs(seg, caves_at, vanished_at_end=False, lags=zero, min_gap=min_gap)
     truth = [c for c in tracks["clicks"] if c[1] in OBSERVABLE]
     # A crab click while already attacking leaves no trace.
     me_t = np.array([r[0] for r in tracks["me"]]) if tracks["me"] else np.zeros(0)
@@ -261,6 +271,22 @@ def evaluate_idm(tracks, lags=None, tol_ms=1800.0):
     for ti, ii, ki in inferred:
         res["walk" if ii == WALK else ki]["inferred"] += 1
     return dict(res)
+
+
+def fit_min_gap(all_tracks) -> int:
+    """Pick the flicker threshold with the best attack-click F1 on Jason, and set MIN_GAP."""
+    best, best_f1 = MIN_GAP["ticks"], -1.0
+    for g in MIN_GAP_CHOICES:
+        m = tr = inf = 0
+        for t in all_tracks:
+            e = evaluate_idm(t, min_gap=g).get("crab", {})
+            m, tr, inf = m + e.get("matched", 0), tr + e.get("truth", 0), inf + e.get("inferred", 0)
+        p, r = m / max(inf, 1), m / max(tr, 1)
+        f1 = 2 * p * r / max(p + r, 1e-9)
+        if f1 > best_f1:
+            best, best_f1 = g, f1
+    MIN_GAP["ticks"] = best
+    return best
 
 
 def fit_lags(evals) -> dict:
@@ -394,6 +420,16 @@ def filter_bots(bwin, jason_windows, bot_windows, p_max: float = 0.8, seed: int 
 def main(paths):
     import json
     all_tracks = [read_tracks(p) for p in paths]
+    sweep = {}
+    for g in MIN_GAP_CHOICES:
+        c = Counter()
+        for t in all_tracks:
+            for f, v in evaluate_idm(t, min_gap=g).get("crab", {}).items():
+                if f != "lags":
+                    c[f] += v
+        sweep[g] = {"precision": round(c["matched"] / max(c["inferred"], 1), 3),
+                    "recall": round(c["matched"] / max(c["truth"], 1), 3)}
+    min_gap = fit_min_gap(all_tracks)
     evals = [evaluate_idm(t) for t in all_tracks]
     # Leave-one-file-out lags, so each file's accuracy uses lags fitted without it.
     agg = defaultdict(lambda: Counter())
@@ -411,7 +447,7 @@ def main(paths):
     acts = [len(w["log"]) for w in bw]
     print(json.dumps({
         "files": len(paths), "files_with_pids": sum(1 for t in all_tracks if t["others"]),
-        "lags_ms": lags, "idm_on_jason": table,
+        "lags_ms": lags, "min_gap_ticks": min_gap, "crab_min_gap_sweep": sweep, "idm_on_jason": table,
         "bystander_windows": len(bw), "bystander_players": len({(w["file"], w["pid"]) for w in bw}),
         "bystander_hours": round(len(bw) * WINDOW_MS / 3.6e6, 1),
         "inputs_per_window_p50": float(np.median(acts)) if acts else 0,

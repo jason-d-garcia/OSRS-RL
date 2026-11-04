@@ -185,9 +185,10 @@ def main():
         from osrs_rl import bystanders as B
         tracks = [B.read_tracks(p) for p in sorted(Path(args.recordings).expanduser().glob("session-*.jsonl.gz"))]
         tracks = [t for t in tracks if t["me"]]
+        min_gap = B.fit_min_gap(tracks)
         evals = [B.evaluate_idm(t) for t in tracks]
         lags = B.fit_lags(evals)
-        idm = {"lags_ms": lags, "per_intent": {}}
+        idm = {"lags_ms": lags, "min_gap_ticks": min_gap, "per_intent": {}}
         for k in ("crab", "shell", "cave", "walk"):
             tot = {f: sum(e.get(k, {}).get(f, 0) for e in evals) for f in ("truth", "invisible", "inferred", "matched")}
             tot["precision"] = tot["matched"] / max(tot["inferred"], 1)
