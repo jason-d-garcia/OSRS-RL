@@ -40,6 +40,7 @@ from osrs_rl.detector import FeatureDetector, SequenceDetector, rules_floor
 from osrs_rl.env import OsrsEnv, set_focus_model
 from osrs_rl.metrics import FEATURE_NAMES, gaps, reaction_delays, session_features, timescale_metrics
 from osrs_rl.recordings import crab_windows, focus_after_input_ms
+from osrs_rl.policy import PolicyConfig, timing_targets
 from osrs_rl.train import PolicyController, train_bc, train_ppo
 
 WINDOW_TICKS = 1500  # 15 minutes
@@ -170,6 +171,13 @@ def main():
     ap.add_argument("--threads", type=int, default=2,
                     help="CPU threads for torch and the tree models (keep low when the machine is shared)")
     ap.add_argument("--skip-pure", action="store_true", help="skip the pure-RL baseline (for leash sweeps)")
+    ap.add_argument("--n-mix", type=int, default=3, help="mixture components in the timing head")
+    ap.add_argument("--wide-tail", action="store_true", help="let timing components be wider (long attention lapses)")
+    ap.add_argument("--situated-delay", action="store_true",
+                    help="feed trigger event, focus and time-since-input straight into the timing head")
+    ap.add_argument("--recurrent", action="store_true", help="GRU policy that carries state across decisions")
+    ap.add_argument("--timing-match", type=float, default=0.0,
+                    help="weight of a PPO loss matching per-intent log-delay mean/sd to the recordings; 0 = off")
     args = ap.parse_args()
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -272,10 +280,19 @@ def main():
             # Upweight the real decisions so they are about half of the data.
             k = max(1, len(tr_train) // max(len(r_train), 1))
             tr_train, tr_val = tr_train + r_train * k, r_val
-    bc, _ = train_bc(tr_train, tr_val, seed=args.seed, log=log, select_best=args.bc != "synthetic")
+    pconf = PolicyConfig(n_mix=args.n_mix, wide_tail=args.wide_tail, situated_delay=args.situated_delay,
+                         recurrent=args.recurrent)
+    log(f"policy config: {pconf.as_dict()}")
+    # Timing targets come from Jason's decisions when BC has them, else from the synthetic players.
+    t_targets = timing_targets(r_train if args.bc != "synthetic" else tr_train) if args.timing_match > 0 else None
+    if t_targets:
+        log("timing targets (log-delay mean/sd by intent): " +
+            ", ".join(f"{k}: {m:.2f}/{s:.2f}" for k, (m, s) in sorted(t_targets.items())))
+    tm = {"timing_targets": t_targets, "timing_coef": args.timing_match}
+    bc, _ = train_bc(tr_train, tr_val, seed=args.seed, log=log, select_best=args.bc != "synthetic", config=pconf)
     log(f"ppo from bc, kl {args.kl}, {args.ticks / 1e6:.1f}M ticks")
     rl, rl_curve = train_ppo("gemcrab", bc, bc, reward_cfg, total_ticks=args.ticks, kl_coef=args.kl,
-                             seed=args.seed, log=log)
+                             seed=args.seed, log=log, **tm)
 
     def pol(p, base, n=N_BOT_EPISODES):
         torch.manual_seed(base)
@@ -298,7 +315,7 @@ def main():
         dr.fit(pol(bc, 8_000_000, n=24))  # start from detectors that already know the BC agent
         log(f"ppo from bc with detector reward, weight {args.adv_weight}, kl {args.kl}")
         adv, adv_curve = train_ppo("gemcrab", bc, bc, reward_cfg, total_ticks=args.ticks, kl_coef=args.kl,
-                                   seed=args.seed, log=log, detector_reward=dr)
+                                   seed=args.seed, log=log, detector_reward=dr, **tm)
         adv_history = dr.history
 
     pure = None
@@ -360,11 +377,12 @@ def main():
     results["wall_s"] = time.time() - t0
     (out / "results.json").write_text(json.dumps(results, indent=1))
     # Checkpoints, in run_experiment.py's format, so run_server.py can play them on RSMod.
-    ckpt = {"bc": bc.state_dict(), "rl_kl": rl.state_dict(), "reward_cfg": reward_cfg}
+    ckpt = {"bc": bc.state_dict(), "rl_kl": rl.state_dict(), "reward_cfg": reward_cfg, "config": pconf.as_dict()}
     if adv is not None:
         ckpt["rl_adv"] = adv.state_dict()
     if pure is not None:
         ckpt["pure_rl"] = pure.state_dict()
+        ckpt["config_pure_rl"] = pure.config.as_dict()
     torch.save(ckpt, out / "policies.pt")
     log(f"wrote {out / 'results.json'}")
 

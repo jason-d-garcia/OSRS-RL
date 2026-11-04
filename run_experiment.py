@@ -132,7 +132,8 @@ def run(activity, ticks, out_dir, kl_coef, seed, log):
     results["pure_rl_curve"] = pure_curve
     results["wall_s"] = time.time() - t0
     (out_dir / "results.json").write_text(json.dumps(results, indent=1))
-    torch.save({"bc": bc.state_dict(), "rl_kl": rl.state_dict(), "pure_rl": pure.state_dict(), "reward_cfg": reward_cfg},
+    torch.save({"bc": bc.state_dict(), "rl_kl": rl.state_dict(), "pure_rl": pure.state_dict(), "reward_cfg": reward_cfg,
+                "config": bc.config.as_dict()},
                out_dir / "policies.pt")
     # a few sample sessions for inspection
     samples = {"human": h_test[:3], **{k: v[:3] for k, v in bots.items()}}

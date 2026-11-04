@@ -32,7 +32,7 @@ import torch
 
 from osrs_rl.agents.controllers import ScriptedBot, SyntheticHuman
 from osrs_rl.env import OsrsEnv
-from osrs_rl.policy import Policy
+from osrs_rl.policy import policy_from_checkpoint
 from osrs_rl.recordings import crab_windows
 from osrs_rl.rsmod_bridge import RecordingWriter, RemoteGemCrab
 from osrs_rl.train import PolicyController
@@ -45,8 +45,7 @@ def make_controller(args, seed):
     if args.controller == "human":
         return SyntheticHuman(player_id=seed % 12, session_seed=seed)
     ckpt = torch.load(args.policy, map_location="cpu")
-    pol = Policy()
-    pol.load_state_dict(ckpt[args.which])
+    pol = policy_from_checkpoint(ckpt, args.which)
     pol.eval()
     return PolicyController(pol)
 
