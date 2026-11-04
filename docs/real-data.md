@@ -245,3 +245,22 @@ has weight 1 and is retrained every 5 updates. Each seed's two runs share the sa
 * The in-loop detectors still re-catch the agent at each retrain (p(bot) ~0.95 afterwards).
 * BC validation is noisy: the val file (an early, short schema-2 session) gives val NLL of
   3.8–8.1 and accuracy of ~0.45. Pick a more representative validation file next.
+
+### BC validation on held-out recent recordings (`--bc-val-frac`)
+
+Same snapshot and settings as above. BC now holds out the newest recordings until they
+cover 15% of real decisions, and keeps the epoch with the lowest validation NLL. Holding out
+the 3 newest files first ("B") gave only 32 decisions, because they were 2–5 minute sessions.
+
+| Round | BC val | BC | PPO, KL 0.3 | PPO + detector reward |
+|---|---|---|---|---|
+| A (above) | 1 mid-sized file, last epoch | 0.88 | 0.935 | 0.90 |
+| B | 3 newest files (32 decisions), best epoch | 0.93 | 0.94 | 0.92 |
+| C | newest 8 files (324 decisions), best epoch | 0.88 | 0.93 | **0.89** |
+
+* The validation choice doesn't move results beyond noise. Best-epoch picks vary widely
+  (epochs 5, 8 and 26), so validation NLL is flat, and holding out a quarter of the data
+  costs BC training data.
+* The consistent finding across all three rounds: the detector reward beats plain PPO
+  (0.89–0.92 vs 0.93–0.94) while earning more (78–83k/h). The lowest PPO result so far is
+  0.85 [0.78, 0.90] (round C, seed 0).

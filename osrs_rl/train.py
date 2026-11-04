@@ -35,7 +35,8 @@ def transitions_to_tensors(transitions):
     return obs, intent, target, log_delay
 
 
-def train_bc(train_tr, val_tr, epochs: int = 40, lr: float = 1e-3, seed: int = 0, log=print):
+def train_bc(train_tr, val_tr, epochs: int = 40, lr: float = 1e-3, seed: int = 0, log=print, select_best: bool = False):
+    """Behaviour cloning. With ``select_best`` the epoch with the lowest validation NLL is kept."""
     torch.manual_seed(seed)
     pol = Policy()
     opt = torch.optim.Adam(pol.parameters(), lr=lr)
@@ -43,6 +44,7 @@ def train_bc(train_tr, val_tr, epochs: int = 40, lr: float = 1e-3, seed: int = 0
     vO, vI, vT, vD = transitions_to_tensors(val_tr)
     n = len(O)
     hist = []
+    best, best_nll = None, float("inf")
     for ep in range(epochs):
         perm = torch.randperm(n)
         tot = 0.0
@@ -59,9 +61,15 @@ def train_bc(train_tr, val_tr, epochs: int = 40, lr: float = 1e-3, seed: int = 0
         with torch.no_grad():
             vlp, parts = Policy.log_prob(pol(vO), vI, vT, vD)
             acc = (pol(vO)["intent"].argmax(-1) == vI).float().mean().item()
-        hist.append({"epoch": ep, "train_nll": tot / n, "val_nll": -vlp.mean().item(), "val_intent_acc": acc})
+        v_nll = -vlp.mean().item()
+        hist.append({"epoch": ep, "train_nll": tot / n, "val_nll": v_nll, "val_intent_acc": acc})
         if ep % 10 == 0 or ep == epochs - 1:
-            log(f"  bc epoch {ep:3d} train_nll {tot / n:.3f} val_nll {-vlp.mean().item():.3f} val_intent_acc {acc:.3f}")
+            log(f"  bc epoch {ep:3d} train_nll {tot / n:.3f} val_nll {v_nll:.3f} val_intent_acc {acc:.3f}")
+        if select_best and v_nll < best_nll:
+            best_nll, best = v_nll, (ep, copy.deepcopy(pol.state_dict()))
+    if select_best and best is not None:
+        pol.load_state_dict(best[1])
+        log(f"  bc keeps epoch {best[0]} (best val_nll {best_nll:.3f})")
     return pol, hist
 
 

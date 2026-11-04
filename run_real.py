@@ -150,6 +150,9 @@ def main():
     ap.add_argument("--adv-weight", type=float, default=0.0,
                     help="also train PPO with the detectors in the reward (GAIL-style) at this weight; 0 = off")
     ap.add_argument("--adv-retrain", type=int, default=10, help="retrain the in-loop detectors every N PPO updates")
+    ap.add_argument("--bc-val-frac", type=float, default=0.15,
+                    help="hold out the newest recordings holding this share of real decisions to validate BC "
+                         "and pick its best epoch")
     ap.add_argument("--skip-pure", action="store_true", help="skip the pure-RL baseline (for leash sweeps)")
     args = ap.parse_args()
     out = Path(args.out)
@@ -198,19 +201,30 @@ def main():
             tr = recording_transitions(p)
             if tr:
                 real_tr[p.name] = tr
-        files = sorted(real_tr, key=lambda f: len(real_tr[f]))
-        val_file = files[len(files) // 2]  # a mid-sized file for validation
-        r_train = [t for f in files if f != val_file for t in real_tr[f]]
-        r_val = real_tr[val_file]
+        # Hold out the most recent recordings (file names sort by date) for validation: they are the
+        # current recorder schema and Jason's current habits. Keep at least 3 files for training.
+        # Take newest files until they hold --bc-val-frac of all decisions (short sessions alone are too few).
+        files = sorted(real_tr)
+        total = sum(len(real_tr[f]) for f in files)
+        val_files, n_v = [], 0
+        for f in reversed(files[3:]):
+            if n_v >= args.bc_val_frac * total:
+                break
+            val_files.append(f)
+            n_v += len(real_tr[f])
+        n_val = len(val_files)
+        r_train = [t for f in files if f not in val_files for t in real_tr[f]]
+        r_val = [t for f in val_files for t in real_tr[f]]
         n_int = sum(a["intent"] != 0 for _, a in r_train)
-        log(f"real bc data: {len(r_train)} decisions ({n_int} inputs) from {len(files) - 1} files, val {val_file}")
+        log(f"real bc data: {len(r_train)} decisions ({n_int} inputs) from {len(files) - n_val} files, "
+            f"val {len(r_val)} decisions from {', '.join(val_files)}")
         if args.bc == "real":
             tr_train, tr_val = r_train, r_val
         else:
             # Upweight the real decisions so they are about half of the data.
             k = max(1, len(tr_train) // max(len(r_train), 1))
             tr_train, tr_val = tr_train + r_train * k, r_val
-    bc, _ = train_bc(tr_train, tr_val, seed=args.seed, log=log)
+    bc, _ = train_bc(tr_train, tr_val, seed=args.seed, log=log, select_best=args.bc != "synthetic")
     log(f"ppo from bc, kl {args.kl}, {args.ticks / 1e6:.1f}M ticks")
     rl, rl_curve = train_ppo("gemcrab", bc, bc, reward_cfg, total_ticks=args.ticks, kl_coef=args.kl,
                              seed=args.seed, log=log)
