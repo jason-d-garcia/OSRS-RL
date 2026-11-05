@@ -97,6 +97,16 @@ def set_afk_model(prior: dict | None) -> None:
     AFK_MODEL["prior"] = prior
 
 
+# Camera budget: at most this many camera moves per hour of game time; a camera intent over the
+# budget is a wait instead. Jason's recordings have no camera moves at all (yaw and pitch never
+# change), so 0 matches him. None = no cap.
+CAMERA_CAP = {"per_h": None}
+
+
+def set_camera_cap(per_h: float | None) -> None:
+    CAMERA_CAP["per_h"] = per_h
+
+
 class OsrsEnv(gym.Env):
     metadata = {"render_modes": []}
 
@@ -149,6 +159,7 @@ class OsrsEnv(gym.Env):
         self.cum_progress = 0.0
         self.capped_progress = 0.0
         self.n_decisions = 0
+        self.n_camera = 0
         self.ticks_since_camera_penalty = 0.0
         self._visible = []
         return self._obs(), {}
@@ -211,6 +222,12 @@ class OsrsEnv(gym.Env):
         target = int(action["target"])
         delay = float(np.clip(action["delay_ms"], MIN_DELAY_MS, MAX_DELAY_MS))
         self.n_decisions += 1
+        cap = CAMERA_CAP["per_h"]
+        if intent == CAMERA and cap is not None:
+            if self.n_camera + 1 > cap * max(self.t_ms, 1.0) / 3.6e6:
+                intent = WAIT
+            else:
+                self.n_camera += 1
         progress_before = self.sim.progress
         decision_trigger = self.trigger
         if self.attn is not None:

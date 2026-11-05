@@ -83,7 +83,13 @@ def main():
     ap.add_argument("--out", default="results/server")
     ap.add_argument("--afk-model", help="attention prior JSON (python -m osrs_rl.afk): away periods after "
                                         "prompting events, regimes, session mood and tab fidgets")
+    ap.add_argument("--camera-cap-per-h", type=float,
+                    help="camera moves allowed per hour (over the budget a camera intent is a wait); "
+                         "0 matches Jason, whose recordings have none")
     args = ap.parse_args()
+    if args.camera_cap_per_h is not None:
+        from osrs_rl.env import set_camera_cap
+        set_camera_cap(args.camera_cap_per_h)
     if args.afk_model:
         from osrs_rl.afk import load_prior
         from osrs_rl.env import set_afk_model

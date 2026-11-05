@@ -195,7 +195,15 @@ def main():
                     help="weight of a PPO loss matching per-intent log-delay mean/sd to the recordings; 0 = off")
     ap.add_argument("--afk-model", help="attention prior JSON (python -m osrs_rl.afk): away periods after "
                                         "prompting events, regimes, session mood and tab fidgets")
+    ap.add_argument("--camera-weight", type=float, default=0.05,
+                    help="reward penalty for 10 minutes without a camera move (0 = off)")
+    ap.add_argument("--camera-cap-per-h", type=float,
+                    help="camera moves allowed per hour (over the budget a camera intent is a wait); "
+                         "0 matches Jason, whose recordings have none")
     args = ap.parse_args()
+    if args.camera_cap_per_h is not None:
+        from osrs_rl.env import set_camera_cap
+        set_camera_cap(args.camera_cap_per_h)
     if args.afk_model:
         from osrs_rl.afk import load_prior
         from osrs_rl.env import set_afk_model
@@ -263,7 +271,7 @@ def main():
         # Clicks queued before an event register as 0 ms; never let the floor drop below 200 ms.
         "reaction_floor_ms": max(float(np.percentile(rd, 2)), 200.0) if len(rd) else 250.0,
         "shaping_weight": 0.2,
-        "camera_weight": 0.05,
+        "camera_weight": args.camera_weight,
         "reward_scale": 10.0,
     }
     log(f"real median {reward_cfg['human_median_rate_per_hour']:.0f}/h, p75 cap {reward_cfg['cap_rate_per_hour']:.0f}/h, "

@@ -67,3 +67,17 @@ def test_away_slows_progress():
             set_afk_model(None)
         rates.append(sess["progress"])
     assert rates[1] < rates[0]
+
+
+def test_camera_cap_turns_camera_into_wait():
+    from osrs_rl.env import CAMERA, set_camera_cap
+
+    set_camera_cap(0.0)
+    try:
+        env = OsrsEnv("gemcrab", seed=5)
+        env.reset(seed=5)
+        for _ in range(20):
+            env.step({"intent": CAMERA, "target": 0, "delay_ms": 1000.0})
+    finally:
+        set_camera_cap(None)
+    assert not any(r["intent"] == CAMERA for r in env.log)
