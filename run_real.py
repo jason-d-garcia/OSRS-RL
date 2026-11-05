@@ -100,14 +100,29 @@ def bootstrap_auc(y, p, n=2000, seed=0):
     return [float(np.percentile(vals, 5)), float(np.percentile(vals, 95))]
 
 
-def cv_detect(real, real_groups, other, seed=0):
-    """Real play (label 0) vs ``other`` (label 1), folds grouped by recording file."""
+def assign_folds(real_groups, n_other, other_groups=None, seed=0):
+    """Fold index per real and per other window. Real windows are grouped by recording file.
+
+    With ``other_groups``, other windows are grouped too, and a group name that also appears among
+    the real groups goes to the same fold (a re-saved copy of a file is tested with its original).
+    Without it, other windows are spread over the folds at random.
+    """
     rng = np.random.default_rng(seed)
     files = sorted(set(real_groups))
     rng.shuffle(files)
-    fold_of_file = {f: i % N_FOLDS for i, f in enumerate(files)}
-    real_fold = np.array([fold_of_file[g] for g in real_groups])
-    other_fold = rng.permutation(np.arange(len(other)) % N_FOLDS)
+    fold_of = {f: i % N_FOLDS for i, f in enumerate(files)}
+    real_fold = np.array([fold_of[g] for g in real_groups])
+    if other_groups is None:
+        return real_fold, rng.permutation(np.arange(n_other) % N_FOLDS)
+    extra = sorted(set(other_groups) - set(fold_of))
+    rng.shuffle(extra)
+    fold_of.update({g: i % N_FOLDS for i, g in enumerate(extra)})
+    return real_fold, np.array([fold_of[g] for g in other_groups])
+
+
+def cv_detect(real, real_groups, other, seed=0, other_groups=None):
+    """Real play (label 0) vs ``other`` (label 1), folds grouped by recording file."""
+    real_fold, other_fold = assign_folds(real_groups, len(other), other_groups, seed)
     preds = {"feature_gbt": [], "sequence_gru": []}
     ys = []
     for k in range(N_FOLDS):
