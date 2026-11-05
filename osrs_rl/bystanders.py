@@ -56,6 +56,7 @@ TICK_MS = 600
 WINDOW_MS = 15 * 60 * 1000
 CAVE_NEAR = 4  # tiles: a player who vanishes this close to a cave went through it
 JUMP = 10  # tiles in one tick: came out of a cave at another mine
+STITCH_MS = 120_000  # out of view this long or less (a cave crawl to the next mine) is the same run
 OBSERVABLE = (INTERACT, WALK)
 # Click -> visible change, ms. Overwritten by fit_lags() on Jason's files; these are the defaults
 # for a 600 ms tick (the server applies a click on the next tick, the client sees it a tick later).
@@ -109,6 +110,8 @@ def read_tracks(path):
             kinds, caves = _scene(r, cave_ids)
             scene.append((r["t"], r.get("tick"), kinds, caves, r["x"], r["y"]))
             inter = r.get("interacting")
+            if isinstance(inter, str):  # RecordingWriter (server bots) writes just the name
+                inter = {"name": inter}
             tk = _npc_kind(inter.get("name")) if isinstance(inter, dict) and inter.get("name") else None
             if isinstance(inter, dict) and tk is None:
                 tk = "other"
@@ -329,8 +332,26 @@ def _rows(inputs, events, t0, start_event="start"):
     return rows
 
 
-def bystander_windows(tracks, lags=None, min_ms=WINDOW_MS, attack_rate_per_ms=None):
+def _runs(track, stitch_ms):
+    """Group a track's segments into runs: a gap of up to ``stitch_ms`` (the crab relocating and
+    everyone crawling to the next mine) joins two segments; a longer one starts a new run."""
+    runs = []
+    for seg in _segments(track):
+        if runs and seg[0][0] - runs[-1][-1][-1][0] <= stitch_ms:
+            runs[-1].append(seg)
+        else:
+            runs.append([seg])
+    return runs
+
+
+def bystander_windows(tracks, lags=None, min_ms=WINDOW_MS, attack_rate_per_ms=None, stitch_ms=STITCH_MS):
     """15-minute windows of bystander play in the env's session format (observable intents only).
+
+    A bystander drops out of view each time the crab relocates and everyone crawls through a cave
+    (every ~10 minutes), so segments rarely last 15 minutes; with ``stitch_ms`` > 0, segments
+    separated by up to that long are one run (Jason's own windows span relocations the same way),
+    and the end of every segment but the last is read as a cave exit. ``stitch_ms=0`` keeps the
+    old behaviour (continuous segments only).
 
     ``progress`` is not visible for bystanders; it is set from time spent attacking times
     ``attack_rate_per_ms`` (Jason's rate) when given, else 0. ``observable`` zeroes it for
@@ -342,27 +363,63 @@ def bystander_windows(tracks, lags=None, min_ms=WINDOW_MS, attack_rate_per_ms=No
     end_t = tracks["scene"][-1][0] if tracks["scene"] else 0
     out = []
     for pid, track in tracks["others"].items():
-        for seg in _segments(track):
-            t_first, t_last = seg[0][0], seg[-1][0]
+        runs = _runs(track, stitch_ms) if stitch_ms > 0 else [[seg] for seg in _segments(track)]
+        for run in runs:
+            t_first, t_last = run[0][0][0], run[-1][-1][0]
             if t_last - t_first < min_ms:
                 continue
-            vanished = t_last < end_t - 3 * TICK_MS
-            arrived = _near_cave(seg[0][2], seg[0][3], caves_at(t_first))
-            inputs = infer_inputs(seg, caves_at, vanished, lags)
+            arrived = _near_cave(run[0][0][2], run[0][0][3], caves_at(t_first))
+            inputs = []
+            for j, seg in enumerate(run):
+                vanished = j < len(run) - 1 or seg[-1][0] < end_t - 3 * TICK_MS
+                inputs += infer_inputs(seg, caves_at, vanished, lags)
+            rows_all = [r for seg in run for r in seg]
             n_win = int((t_last - t_first) // min_ms)
             for k in range(n_win):
                 lo, hi = t_first + k * min_ms, t_first + (k + 1) * min_ms
                 win_in = [x for x in inputs if lo <= x[0] < hi]
                 rows = _rows(win_in, [e for e in events if e[0] < hi], lo,
                              start_event="arrived" if (k == 0 and arrived) else "start")
-                att = sum(1 for r in seg if lo <= r[0] < hi and r[5] == "crab")
+                att = sum(1 for r in rows_all if lo <= r[0] < hi and r[5] == "crab")
                 prog = att * TICK_MS * attack_rate_per_ms if attack_rate_per_ms else 0.0
-                anims = [r[4] for r in seg if lo <= r[0] < hi and r[4] not in (-1, None)]
+                anims = [r[4] for r in rows_all if lo <= r[0] < hi and r[4] not in (-1, None)]
+                unseen = [(max(a[-1][0], lo) - lo, min(b[0][0], hi) - lo) for a, b in zip(run, run[1:])
+                          if a[-1][0] < hi and b[0][0] > lo]
                 out.append({"log": rows, "progress": float(prog), "ms": float(min_ms), "activity": "bystander",
-                            "source": f"{tracks['file']}#pid{pid}#{k}", "pid": pid, "file": tracks["file"],
+                            "source": f"{tracks['file']}#pid{pid}#{t_first}#{k}", "pid": pid, "file": tracks["file"],
                             "equip": tracks["equip"].get(pid), "combat": tracks["combat"].get(pid),
-                            "attack_anim": Counter(anims).most_common(1)[0][0] if anims else -1})
+                            "attack_anim": Counter(anims).most_common(1)[0][0] if anims else -1,
+                            "unseen": unseen})
     return out
+
+
+def cave_tiles(tracks_list) -> list:
+    """Every cave tile seen in any recording (they're fixed world tiles)."""
+    return sorted({c for t in tracks_list for sc in t["scene"] for c in sc[3]})
+
+
+def self_windows(tracks, lags=None, caves=None, stitch_ms=STITCH_MS):
+    """The recording player's own play read back through the IDM, exactly as a bystander's would
+    be (no logged clicks), so it can be compared with bystanders on equal terms. ``caves``
+    replaces the cave tiles for recordings that don't log objects (server bots)."""
+    t = dict(tracks)
+    if caves is not None:
+        t["scene"] = [(a, b, k, list(caves), x, y) for a, b, k, _, x, y in tracks["scene"]]
+    t["others"] = {"self": tracks["me"]}
+    t["equip"], t["combat"] = {}, {}
+    return bystander_windows(t, lags, stitch_ms=stitch_ms)
+
+
+def apply_unseen(win, unseen):
+    """Drop the inputs that fall in ``unseen`` intervals (ms from window start), as if the player
+    had been out of view then, and recompute the gaps."""
+    rows, last = [], 0.0
+    for r in win["log"]:
+        if any(a <= r["t_ms"] < b for a, b in unseen):
+            continue
+        rows.append({**r, "gap_ms": r["t_ms"] - last})
+        last = r["t_ms"]
+    return {**win, "log": rows, "unseen": list(unseen)}
 
 
 def observable(sess, tick_ms: int = TICK_MS) -> dict:

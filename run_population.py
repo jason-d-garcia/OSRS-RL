@@ -121,6 +121,89 @@ def account_table(acc, score):
     return res
 
 
+def bystander_population(args, real, rgroups, bots, bgroups, bname):
+    """Bots against the other players at the crab, everyone read through the same IDM.
+
+    Bystanders' inputs aren't logged, only their visible state, and they drop out of view while
+    crawling to the next mine. Comparing them with logged clicks would let a detector separate
+    "logged" from "inferred" (it does: about 0.93 for Jason). So Jason and the bots are read back
+    from their own visible state by the same IDM (``bystanders.self_windows``), and each of their
+    windows gets the out-of-view gaps of a random bystander window (``apply_unseen``).
+
+    Folds are grouped by recording file, so every test human (Jason or not) is unseen. Human
+    sets: every bystander, and gear farms + windows a Jason-vs-scripted detector calls bots
+    dropped (that filter leans toward Jason).
+    """
+    from osrs_rl import bystanders as B
+    rng = np.random.default_rng(args.seed + 1)
+    paths = sorted(Path(args.recordings).expanduser().glob("session-*.jsonl.gz"))
+    tracks = [t for t in (B.read_tracks(p) for p in paths) if t["me"]]
+    lags = B.fit_lags([B.evaluate_idm(t) for t in tracks])
+    caves = B.cave_tiles(tracks)
+    raw = [w for t in tracks for w in B.bystander_windows(t, lags)]
+    n_players = len({(w["file"], w["pid"]) for w in raw})
+    masks = [w["unseen"] for w in raw]
+    mask = lambda ws: [B.apply_unseen(w, masks[rng.integers(len(masks))]) for w in ws]
+    jw, jg = [], []
+    for t in tracks:
+        got = B.self_windows(t, lags)
+        jw += got
+        jg += [t["file"]] * len(got)
+    jw = mask(jw)
+    bw, bg, bn = [], [], []
+    for spec in args.bots:
+        name, d = spec.split("=", 1)
+        for p in sorted(Path(d).glob("bot-*.jsonl.gz")):
+            got = B.self_windows(B.read_tracks(p), lags, caves=caves)
+            bw += got
+            bg += [f"{name}:{p.name}"] * len(got)
+            bn += [name] * len(got)
+    bw = mask(bw)
+    ipw = lambda ws: round(float(np.mean([len(w["log"]) for w in ws])), 2) if ws else None
+    res = {"windows": len(raw), "players": n_players, "lags_ms": lags, "jason_idm_windows": len(jw),
+           "bot_idm_windows": {n: bn.count(n) for n in dict.fromkeys(bn)},
+           "inputs_per_window": {"bystanders": ipw(raw), "jason": ipw(jw),
+                                 **{n: ipw([w for w, x in zip(bw, bn) if x == n]) for n in dict.fromkeys(bn)}}}
+    print(f"bystanders: {len(raw)} windows from {n_players} players; jason {len(jw)} IDM windows; bots "
+          + ", ".join(f"{n} {bn.count(n)}" for n in dict.fromkeys(bn)) + f"; inputs/window {res['inputs_per_window']}",
+          flush=True)
+    scripted = [w for w, x in zip(bw, bn) if x == "scripted"]
+    filtered, filt = B.filter_bots(raw, jw, scripted, seed=args.seed, log=lambda m: print(m, flush=True))
+    res["filter"] = filt
+    obs = B.observable
+    oj = [obs(w) for w in jw]
+    ob = [obs(w) for w in bw]
+    for label, pop in (("all", raw), ("filtered", filtered)):
+        if len(pop) > args.max_bystander_windows:
+            pop = [pop[i] for i in rng.permutation(len(pop))[: args.max_bystander_windows]]
+        pw = [obs(w) for w in pop]
+        pg = [w["file"] for w in pop]
+        r = {"n": len(pop)}
+        # How unlike the other players is Jason, through the same IDM? 0.5 = he blends in.
+        r["jason_vs_bystanders"] = {k: round(v["auc"], 3) for k, v in
+                                    cv_detect(pw, pg, oj, seed=args.seed, other_groups=jg).items() if "auc" in v}
+        for human_label, H, HG in (("vs_bystanders", pw, pg), ("vs_jason_and_bystanders", oj + pw, jg + pg)):
+            sc = oof_scores(H, HG, ob, bg, args.seed)
+            per = {}
+            for n in dict.fromkeys(bn):
+                i = len(H) + np.flatnonzero(np.array(bn) == n)
+                row = {}
+                for k in ("gbt", "gru"):
+                    hs, bs = sc[k][: len(H)], sc[k][i]
+                    row[k] = {"auc": round(float(roc_auc_score([0] * len(hs) + [1] * len(bs), np.concatenate([hs, bs]))), 3),
+                              # share of held-out humans scored more bot-like than the median bot window
+                              "humans_above_median_bot": round(float(np.mean(hs > np.median(bs))), 3)}
+                per[n] = row
+            r[human_label] = per
+        res[label] = r
+        print(f"[{label}] n={len(pop)} jason vs bystanders {r['jason_vs_bystanders']}", flush=True)
+        for hl in ("vs_bystanders", "vs_jason_and_bystanders"):
+            print(f"[{label}] {hl}: " + "  ".join(f"{n} gbt {v['gbt']['auc']}/gru {v['gru']['auc']}"
+                                                   f" (humans>median bot {v['gru']['humans_above_median_bot']})"
+                                                   for n, v in r[hl].items()), flush=True)
+    return res
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--recordings", required=True)
@@ -130,6 +213,9 @@ def main():
     ap.add_argument("--out", default="results/population")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--threads", type=int, default=2)
+    ap.add_argument("--bystanders", action="store_true",
+                    help="also score bots against the other players at the crab (visible inputs only)")
+    ap.add_argument("--max-bystander-windows", type=int, default=600)
     args = ap.parse_args()
     torch.set_num_threads(args.threads)
     rng = np.random.default_rng(args.seed)
@@ -191,6 +277,8 @@ def main():
     results["accounts"] = {k: account_table(acc, s) for k, s in sc.items()}
     for k, t in results["accounts"].items():
         print(f"[{k}] accounts: " + "  ".join(f"N={n}: {r['any_bot_auc']}" for n, r in t.items()), flush=True)
+    if args.bystanders:
+        results["bystanders"] = bystander_population(args, real, rgroups, bots, bgroups, bname)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     (out / "results.json").write_text(json.dumps(results, indent=1, default=str))
