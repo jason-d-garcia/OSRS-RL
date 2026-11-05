@@ -11,11 +11,22 @@ import org.rsmod.api.account.AccountManager
 import org.rsmod.api.account.loader.request.AccountLoadAuth
 import org.rsmod.api.account.loader.request.AccountLoadResponse
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.config.refs.varps
 import org.rsmod.api.game.process.GameLifecycle
 import org.rsmod.api.player.interact.LocInteractions
 import org.rsmod.api.player.interact.NpcInteractions
 import org.rsmod.api.player.protect.clearPendingAction
+import org.rsmod.api.player.back
+import org.rsmod.api.player.feet
+import org.rsmod.api.player.front
+import org.rsmod.api.player.hands
+import org.rsmod.api.player.hat
+import org.rsmod.api.player.legs
+import org.rsmod.api.player.lefthand
 import org.rsmod.api.player.righthand
+import org.rsmod.api.player.ring
+import org.rsmod.api.player.torso
+import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.player.stat.statAdvance
 import org.rsmod.api.player.stat.statBase
 import org.rsmod.api.player.vars.varMoveSpeed
@@ -412,18 +423,46 @@ constructor(
     /**
      * Sets combat stats and gear. Defaults are a mid-level melee setup like the simulator's: 80
      * attack, strength and defence, a dragon scimitar, and a rune pickaxe for the shell.
+     *
+     * Optional: `exact_levels` (set levels exactly, also lowering them; otherwise a level only
+     * goes up), worn items by name or obj id in `hat`, `back`, `front`, `shield`, `body`, `legs`,
+     * `hands`, `feet`, `ring` ("none" empties the slot), `stance` (0-3, the weapon's combat
+     * option: 1 is the scimitar's Slash, aggressive, strength xp), and `pickaxe: "none"` also
+     * takes any pickaxe out of the inventory.
      */
     private fun applyLoadout(player: Player, cmd: JsonNode) {
-        setLevel(player, stats.attack, cmd.path("attack").asInt(80))
-        setLevel(player, stats.strength, cmd.path("strength").asInt(80))
-        setLevel(player, stats.defence, cmd.path("defence").asInt(80))
-        setLevel(player, stats.hitpoints, cmd.path("hitpoints").asInt(80))
-        setLevel(player, stats.mining, cmd.path("mining").asInt(41))
+        val exact = cmd.path("exact_levels").asBoolean(false)
+        setLevel(player, stats.attack, cmd.path("attack").asInt(80), exact)
+        setLevel(player, stats.strength, cmd.path("strength").asInt(80), exact)
+        setLevel(player, stats.defence, cmd.path("defence").asInt(80), exact)
+        setLevel(player, stats.hitpoints, cmd.path("hitpoints").asInt(80), exact)
+        setLevel(player, stats.mining, cmd.path("mining").asInt(41), exact)
         val weapon = objByName(cmd.path("weapon").asText("dragon_scimitar"))
         if (weapon != null) {
             player.righthand = InvObj(weapon)
         }
-        val pickaxe = objByName(cmd.path("pickaxe").asText("rune_pickaxe"))
+        wear(cmd, "hat") { player.hat = it }
+        wear(cmd, "back") { player.back = it }
+        wear(cmd, "front") { player.front = it }
+        wear(cmd, "shield") { player.lefthand = it }
+        wear(cmd, "body") { player.torso = it }
+        wear(cmd, "legs") { player.legs = it }
+        wear(cmd, "hands") { player.hands = it }
+        wear(cmd, "feet") { player.feet = it }
+        wear(cmd, "ring") { player.ring = it }
+        if (cmd.has("stance")) {
+            VarPlayerIntMapSetter.set(player, varps.com_mode, cmd.path("stance").asInt(0).coerceIn(0, 3))
+        }
+        val pickName = cmd.path("pickaxe").asText("rune_pickaxe")
+        if (pickName == "none") {
+            val picks = setOf(gem_crab_objs.rune_pickaxe.id, gem_crab_objs.dragon_pickaxe.id, gem_crab_objs.bronze_pickaxe.id)
+            for (slot in 0 until player.inv.size) {
+                if (player.inv[slot]?.id in picks) {
+                    player.inv[slot] = null
+                }
+            }
+        }
+        val pickaxe = objByName(pickName)
         if (pickaxe != null && player.inv.none { it?.id == pickaxe.id }) {
             val free = player.inv.indexOfFirst { it == null }
             if (free >= 0) {
@@ -435,6 +474,24 @@ constructor(
         }
         // Live-game xp (the dev realm's default rate is 150x), so progress matches the simulator.
         player.xpRate = cmd.path("xp_rate").asDouble(1.0)
+    }
+
+    /** Puts the named or numbered obj in a worn slot when `cmd` has that field. */
+    private inline fun wear(cmd: JsonNode, field: String, set: (InvObj?) -> Unit) {
+        if (!cmd.has(field)) {
+            return
+        }
+        val name = cmd.path(field).asText()
+        if (name == "none" || name.isEmpty()) {
+            set(null)
+            return
+        }
+        val type = objByName(name)
+        if (type == null) {
+            logger.warn { "Loadout: unknown obj '$name' for $field" }
+            return
+        }
+        set(InvObj(type))
     }
 
     private fun objByName(name: String): ObjType? =
@@ -450,8 +507,15 @@ constructor(
             else -> name.toIntOrNull()?.let { objTypes[it] }
         }
 
-    private fun setLevel(player: Player, stat: StatType, level: Int) {
+    private fun setLevel(player: Player, stat: StatType, level: Int, exact: Boolean = false) {
         val target = level.coerceIn(1, 99)
+        if (exact) {
+            // Straight to the level's xp, down as well as up, with no xp drop (it isn't progress).
+            player.statMap.setFineXP(stat, PlayerSkillXPTable.getFineXPFromLevel(target))
+            player.statMap.setBaseLevel(stat, target.toByte())
+            player.statMap.setCurrentLevel(stat, target.toByte())
+            return
+        }
         val xp = PlayerSkillXPTable.getXPFromLevel(target)
         val delta = xp - player.statMap.getXP(stat)
         if (delta > 0) {
@@ -507,6 +571,9 @@ constructor(
                     player.inv[slot] = null
                 }
             }
+        }
+        if (cmd.has("loadout")) {
+            applyLoadout(player, cmd.path("loadout"))
         }
         teleportToCrab(player, cmd.path("mine").asInt(-1), cmd.path("spread").asInt(6))
         conn.send(event("reset_done").put("cycle", mapClock.cycle))

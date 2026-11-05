@@ -39,6 +39,16 @@ from osrs_rl.train import PolicyController
 from run_real import N_FOLDS, WINDOW_TICKS, cv_detect, describe, rollout_windows
 
 
+
+# Jason's gem crab setup (2026-11-04): 80 att / 80 def / 95-98 str, no prayers or boosts, Slash
+# (aggressive, strength xp), no pickaxe (he didn't mine the shell). Obj ids from his recordings'
+# ``worn`` field: helm of neitiznot, fire cape, amulet of strength, dragon scimitar, granite body,
+# dragon defender, rune platelegs, barrows gloves, climbing boots, ring of shadows.
+JASON_LOADOUT = {"exact_levels": True, "attack": 80, "strength": 98, "defence": 80, "hitpoints": 92,
+                 "mining": 1, "weapon": "dragon_scimitar", "hat": "10828", "back": "6570", "front": "1725",
+                 "body": "10564", "shield": "12954", "legs": "1079", "hands": "7462", "feet": "3105",
+                 "ring": "28329", "stance": 1, "pickaxe": "none"}
+
 def make_controller(args, seed):
     if args.controller == "scripted":
         return ScriptedBot(seed=seed)
@@ -66,6 +76,9 @@ def main():
     ap.add_argument("--observable", action="store_true",
                     help="also score on server-visible inputs only (attack/shell/cave/walk, tick-quantised, "
                          "no progress), as a server-side anti-cheat would see them")
+    ap.add_argument("--loadout", help="JSON loadout for the bot (see AgentBridgeScript.applyLoadout), "
+                                      "or 'jason' for Jason's gem crab setup")
+    ap.add_argument("--strength", help="strength level per episode, e.g. 95-98 for a random level in that range")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="results/server")
     args = ap.parse_args()
@@ -78,10 +91,21 @@ def main():
 
     sim = RemoteGemCrab(name=args.name, attach=args.attach, lockstep=not args.realtime,
                         host=args.host, port=args.port)
-    windows, files = [], []
+    windows, files, ep_loadouts = [], [], []
+    base_loadout = None
+    if args.loadout:
+        base_loadout = dict(JASON_LOADOUT) if args.loadout == "jason" else json.loads(args.loadout)
+    rng_l = np.random.default_rng(args.seed + 99)
     try:
         for ep in range(args.episodes):
             seed = args.seed * 1000 + ep
+            if base_loadout is not None or args.strength:
+                lo = dict(base_loadout or {})
+                if args.strength:
+                    a, _, b = args.strength.partition("-")
+                    lo["strength"] = int(rng_l.integers(int(a), int(b or a) + 1))
+                sim.next_loadout = lo
+                ep_loadouts.append(lo)
             path = out / "recordings" / f"bot-{args.controller}-{ep:03d}.jsonl.gz"
             sim.recorder = RecordingWriter(path)
             env = OsrsEnv("gemcrab", sim=sim, episode_ticks=args.ticks)
@@ -91,11 +115,14 @@ def main():
             files.append(path)
             rates = [s["progress"] / (s["ms"] / 3.6e6) for s in w]
             log(f"episode {ep}: {sim.tick_count} ticks, {len(env.log)} inputs, "
+                + (f"str {ep_loadouts[-1].get('strength')}, " if ep_loadouts else "")
+                + f"levels {sim.state['levels']}, "
                 f"{sim.gems} gems, {np.mean(rates) if rates else 0:.0f} progress/h -> {path.name}")
     finally:
         sim.close()
 
-    results = {"controller": args.controller, "which": args.which if args.controller == "policy" else None,
+    results = {"loadouts": ep_loadouts,
+               "controller": args.controller, "which": args.which if args.controller == "policy" else None,
                "episodes": args.episodes, "bot": describe(windows) if windows else None}
     # The recorder-format files read back through the same path as your own recordings.
     reread = [s for p in files for s in crab_windows(p, WINDOW_TICKS)]

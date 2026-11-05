@@ -114,6 +114,7 @@ class RemoteGemCrab(Activity):
         self.lockstep = lockstep
         self.spread = spread
         self.recorder = recorder
+        self.next_loadout: dict | None = None
         cmd = {"lockstep": lockstep, "spread": spread, **(loadout or {})}
         if attach:
             self.client.send({"op": "attach", "name": attach, "lockstep": lockstep,
@@ -128,7 +129,11 @@ class RemoteGemCrab(Activity):
 
     # ---- lifecycle ------------------------------------------------------------------------
     def reset(self) -> None:
-        self.client.send({"op": "reset", "spread": self.spread})
+        cmd = {"op": "reset", "spread": self.spread}
+        if self.next_loadout:  # applied on the server before the teleport (stats, gear, stance)
+            cmd["loadout"] = self.next_loadout
+            self.next_loadout = None
+        self.client.send(cmd)
         self.client.wait_for("reset_done")
         self._pending = []
         self._recording = False
