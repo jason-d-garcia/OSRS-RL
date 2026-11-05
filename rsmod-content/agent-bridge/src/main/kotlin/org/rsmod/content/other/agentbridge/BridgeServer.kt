@@ -102,6 +102,9 @@ class AgentConnection(val id: Int, private val socket: Socket) {
 
     /** The last action of each kind the agent sent, used to tell attacking from mining. */
     var lastActionType: String = ""
+
+    /** Whether the agent's game window is focused (it sends `focus` inputs as that changes). */
+    var focused: Boolean = true
     var lastActionCycle: Int = -1
     var lastCoords: org.rsmod.map.CoordGrid? = null
     var lastTunnelCycle: Int = Int.MIN_VALUE

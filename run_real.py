@@ -193,7 +193,13 @@ def main():
     ap.add_argument("--recurrent", action="store_true", help="GRU policy that carries state across decisions")
     ap.add_argument("--timing-match", type=float, default=0.0,
                     help="weight of a PPO loss matching per-intent log-delay mean/sd to the recordings; 0 = off")
+    ap.add_argument("--afk-model", help="attention prior JSON (python -m osrs_rl.afk): away periods after "
+                                        "prompting events, regimes, session mood and tab fidgets")
     args = ap.parse_args()
+    if args.afk_model:
+        from osrs_rl.afk import load_prior
+        from osrs_rl.env import set_afk_model
+        set_afk_model(load_prior(args.afk_model))
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     torch.set_num_threads(args.threads)

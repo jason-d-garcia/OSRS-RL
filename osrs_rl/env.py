@@ -86,6 +86,17 @@ def set_focus_model(median_ms: float, sigma: float) -> None:
     FOCUS_MODEL["median_ms"], FOCUS_MODEL["sigma"] = float(median_ms), float(sigma)
 
 
+# Attention (afk.py): with a prior set, every episode gets an AttentionState. After a prompting
+# event (crab dies, burrows, arrival, episode start) the player may be away for a while: the world
+# keeps going, events don't bring them back, and they may fidget with tabs. Steady fighting has a
+# small hazard of an away bout too. Off (None) by default.
+AFK_MODEL = {"prior": None}
+
+
+def set_afk_model(prior: dict | None) -> None:
+    AFK_MODEL["prior"] = prior
+
+
 class OsrsEnv(gym.Env):
     metadata = {"render_modes": []}
 
@@ -124,6 +135,14 @@ class OsrsEnv(gym.Env):
         self.last_delays = deque([800.0, 800.0, 800.0], maxlen=3)
         self.last_intent = -1
         self.focused = True
+        self.attn = None
+        self._focus = FOCUS_MODEL
+        if AFK_MODEL["prior"] is not None:
+            from .afk import AttentionState
+            self.attn = AttentionState(AFK_MODEL["prior"], self.rng)
+            self._focus = self.attn.focus_model()
+        self._prompt = "start" if self.attn is not None else None
+        self.away_log: list[tuple[float, float, str]] = []
         self._schedule_unfocus(0.0)
         self.log: list[dict] = []
         self.events_log: list[tuple[float, str]] = []
@@ -147,7 +166,7 @@ class OsrsEnv(gym.Env):
                 return True, None
             evs = self.sim.tick()
             if self.focused and self.sim.tick_count * TICK_MS >= self.unfocus_at:
-                self.focused = False
+                self._set_focused(False)
             for e in evs:
                 self._note_event(e)
             hit = [e for e in evs if e in INTERRUPTS] if interruptible else []
@@ -155,8 +174,31 @@ class OsrsEnv(gym.Env):
                 return self.sim.tick_count >= self.episode_ticks, hit[-1]
         return self.sim.tick_count >= self.episode_ticks, None
 
+    def _set_focused(self, v: bool) -> None:
+        if v != self.focused:
+            self.focused = v
+            set_focus = getattr(self.sim, "set_focus", None)
+            if set_focus is not None:
+                set_focus(v)  # a remote world sends the client's focus event
+
+    def _away(self, ms: float, why: str) -> bool:
+        """The player is away for ``ms``: the world goes on, events don't interrupt, and they may
+        fidget with tabs. Returns True if the episode ended meanwhile."""
+        start, end = self.t_ms, self.t_ms + ms
+        self.away_log.append((start, ms, why))
+        for t in self.attn.fidget_times(start, end):
+            done, _ = self._advance_to(t)
+            if done:
+                return True
+            self.t_ms = t
+            valid, _ = self._execute(CHECK_TAB, 0)
+            self._log_action(CHECK_TAB, None, valid, why)
+        done, _ = self._advance_to(end)
+        self.t_ms = max(self.t_ms, min(end, self.sim.tick_count * TICK_MS) if done else end)
+        return done
+
     def _schedule_unfocus(self, t_ms: float) -> None:
-        m = FOCUS_MODEL
+        m = self._focus
         self.unfocus_at = t_ms + m["median_ms"] * math.exp(m["sigma"] * self.rng.standard_normal())
 
     def _note_event(self, e: str) -> None:
@@ -171,6 +213,16 @@ class OsrsEnv(gym.Env):
         self.n_decisions += 1
         progress_before = self.sim.progress
         decision_trigger = self.trigger
+        if self.attn is not None:
+            if self.attn.update(self.t_ms):
+                self._focus = self.attn.focus_model()
+            if self._prompt is not None:
+                ms = self.attn.away_ms(self._prompt)
+                self._prompt = None
+                if ms > 0 and self._away(ms, decision_trigger):
+                    reward, info = self._reward(progress_before, 0.0)
+                    info["episode_progress"], info["episode_ms"] = self.sim.progress, self.t_ms
+                    return self._obs(), reward, True, False, info
         planned = self.t_ms + delay
         done, interrupt = self._advance_to(planned, interruptible=True)
         if interrupt is not None:
@@ -181,12 +233,18 @@ class OsrsEnv(gym.Env):
         shaping = 0.0
         if interrupt is not None:
             self.trigger = interrupt
+            if self.attn is not None:
+                self._prompt = interrupt  # maybe away before the next decision
         elif not done:
             if intent == WAIT:
                 self.trigger = "wait_done"
             else:
                 valid, ent = self._execute(intent, target)
                 shaping += self._log_action(intent, ent, valid, decision_trigger)
+                if self.attn is not None and valid and intent in TARGETED:
+                    fa = self.attn.fight_away_ms(delay)
+                    if fa > 0:
+                        done = self._away(fa, "fight")
                 if not valid:
                     self.trigger = "invalid"
                 elif intent in TARGETED:
@@ -206,10 +264,14 @@ class OsrsEnv(gym.Env):
         set_clock = getattr(sim, "set_clock", None)
         if set_clock is not None:
             set_clock(self.t_ms)  # a remote world timestamps the input it is about to send
+        self._tab_option = ""
         if intent in (CAMERA, CHECK_TAB):
+            if intent == CHECK_TAB and self.attn is not None:
+                self._tab_option = self.attn.tab_option()
             note = getattr(sim, "note_input", None)
             if note is not None:
-                note(intent)  # invisible to the simulator; a remote world logs it
+                # invisible to the simulator; a remote world logs it (with the tab's name)
+                note(intent, self._tab_option) if self._tab_option else note(intent)
         if intent == INTERACT:
             if target < len(self._visible):
                 ent = self._visible[target]
@@ -248,11 +310,12 @@ class OsrsEnv(gym.Env):
             "gap_ms": gap,
             "redundant": bool(ent is not None and self.sim.busy and valid and self._is_current_target(ent)),
             "rank": self._distance_rank(ent),
+            "option": getattr(self, "_tab_option", "") if intent == CHECK_TAB else "",
         }
         self.log.append(rec)
         self.last_obs_action_ms = t
         self.last_intent = intent
-        self.focused = True  # nobody clicks into an unfocused window
+        self._set_focused(True)  # nobody clicks into an unfocused window
         self._schedule_unfocus(t)
         self.recent_actions.append(t)
         # humanness shaping: reacting faster than the human floor for this context

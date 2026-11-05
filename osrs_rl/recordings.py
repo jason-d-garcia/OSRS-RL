@@ -148,19 +148,24 @@ def records_to_session(recs: list) -> dict:
     xp_first, last = {}, {}
     gems, prev_gems = 0, None
 
-    def add(t, intent, kind="", redundant=False, rank=-1):
+    def add(t, intent, kind="", redundant=False, rank=-1, option=""):
         nonlocal last_action_t
         log.append({
             "t_ms": t - t0, "intent": intent, "kind": kind, "uid": -1, "valid": True,
             "trigger": last_event, "since_event_ms": t - last_event_t, "last_event": last_event,
-            "gap_ms": t - last_action_t, "redundant": redundant, "rank": rank,
+            "gap_ms": t - last_action_t, "redundant": redundant, "rank": rank, "option": option,
         })
         last_action_t = t
 
     prev_xy = None
+    n_ticks = n_focused = n_focus_changes = 0
     for r in recs:
         typ, t = r["type"], r["t"]
+        if typ == "focus":
+            n_focus_changes += 1
         if typ == "tick":
+            n_ticks += 1
+            n_focused += bool(r.get("focused", True))  # no focus data: the window never lost focus
             xy = (r.get("x"), r.get("y"))
             if prev_xy is not None and None not in xy and None not in prev_xy \
                     and max(abs(xy[0] - prev_xy[0]), abs(xy[1] - prev_xy[1])) > 10:
@@ -199,7 +204,7 @@ def records_to_session(recs: list) -> dict:
             elif opt == "walk here":
                 add(t, WALK, "")
             elif not tgt:
-                add(t, CHECK_TAB)  # side-panel tabs: Skills, Inventory, Friends List, ...
+                add(t, CHECK_TAB, option=r.get("option") or "")  # side-panel tabs: Skills, Friends List, ...
             else:
                 kind = _kind(tgt, opt)
                 # Each mine has one crab, one shell and one cave, so a click on any of them is a
@@ -211,7 +216,8 @@ def records_to_session(recs: list) -> dict:
             last[r["skill"]] = r["xp"]
     progress = float(sum(last[s] - xp_first[s] for s in last)) + gems * GEM_VALUE
     ms = (recs[-1]["t"] - t0) if recs else 0
-    return {"log": log, "progress": progress, "ms": float(ms), "activity": "recorded"}
+    return {"log": log, "progress": progress, "ms": float(ms), "activity": "recorded",
+            "focus": {"share": n_focused / max(n_ticks, 1), "changes": n_focus_changes}}
 
 
 if __name__ == "__main__":

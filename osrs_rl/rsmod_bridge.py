@@ -196,13 +196,19 @@ class RemoteGemCrab(Activity):
         self.mining_until = -1
         return True
 
-    def note_input(self, intent: int) -> None:
+    def note_input(self, intent: int, option: str = "Skills") -> None:
         """Inputs the server never sees (camera, tabs): only the recording gets them."""
         if intent == CAMERA:
             self._camera_pending = True
         self._pending.append({"type": "camera" if intent == CAMERA else "check_tab"})
         if self.recorder is not None:
-            self.recorder.input(intent)
+            self.recorder.input(intent, option)
+
+    def set_focus(self, focused: bool) -> None:
+        """The game window gained or lost focus: the real client sends this to the server."""
+        self._pending.append({"type": "focus", "on": bool(focused)})
+        if self.recorder is not None:
+            self.recorder.focus(focused)
 
     def set_clock(self, t_ms: float) -> None:
         """The env's clock at the input it is about to make, for the recording's timestamps."""
@@ -353,6 +359,7 @@ class RecordingWriter:
         self.n_ticks = 0
         self.t_ms = 0.0  # set by the caller before each click (env.t_ms), else the tick time
         self._xp: dict[str, int] = {}
+        self.focused = True
         self._write({"type": "session_start", "schema": self.SCHEMA, "world": 0, "source": "rsmod-agent-bridge"})
 
     def _write(self, rec: dict) -> None:
@@ -375,7 +382,7 @@ class RecordingWriter:
             "type": "tick", "t": self.t0 + self.n_ticks * self.tick_ms, "tick": s["cycle"],
             "x": s["x"], "y": s["z"], "plane": s["level"],
             "interacting": "Gemstone Crab" if s["attacking"] else (inter["kind"] if inter else None),
-            "run": s["run_energy"], "camera_moved": camera_moved, "bank_open": False,
+            "run": s["run_energy"], "camera_moved": camera_moved, "bank_open": False, "focused": self.focused,
             "inv": s["inv"], "npcs": npcs,
             "players": [{"pid": p["slot"], "dx": p["x"] - s["x"], "dy": p["z"] - s["z"]} for p in s["players"]],
         })
@@ -392,10 +399,15 @@ class RecordingWriter:
         option, target = CLICK_TEXT.get(kind, ("Walk here", ""))
         self._write({"type": "menu_click", "option": option, "target": target, "tick": s["cycle"]})
 
-    def input(self, intent: int) -> None:
+    def input(self, intent: int, option: str = "Skills") -> None:
         """Camera moves are written on the next tick record; tab checks as target-less clicks."""
         if intent == CHECK_TAB:
-            self._write({"type": "menu_click", "option": "Skills", "target": ""})
+            self._write({"type": "menu_click", "option": option or "Skills", "target": ""})
+
+    def focus(self, focused: bool) -> None:
+        """A focus change, as the RuneLite recorder writes it; ticks carry the current state."""
+        self.focused = bool(focused)
+        self._write({"type": "focus", "focused": self.focused})
 
     def close(self) -> None:
         self._write({"type": "session_end", "reason": "episode end"})

@@ -629,6 +629,13 @@ constructor(
                         player.x + action.path("dx").asInt(),
                         player.z + action.path("dz").asInt(),
                     )
+                // The game window gaining or losing focus. The real client tells the server
+                // (an applet-focus event), so a server-side detector can see it; kept per agent
+                // and reported back in every tick.
+                "focus" -> {
+                    conn.focused = action.path("on").asBoolean(true)
+                    null
+                }
                 // Inputs the server never sees; accepted so the agent's log stays complete.
                 "camera",
                 "check_tab",
@@ -780,6 +787,7 @@ constructor(
         node.put("z", player.z)
         node.put("level", player.level)
         node.put("run_energy", player.runEnergy / 100.0)
+        node.put("focused", conn.focused)
         node.put("running", player.varMoveSpeed == MoveSpeed.Run)
         val moved = conn.lastCoords != null && player.coords != conn.lastCoords
         conn.lastCoords = player.coords

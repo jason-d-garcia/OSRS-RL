@@ -81,7 +81,13 @@ def main():
     ap.add_argument("--strength", help="strength level per episode, e.g. 95-98 for a random level in that range")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="results/server")
+    ap.add_argument("--afk-model", help="attention prior JSON (python -m osrs_rl.afk): away periods after "
+                                        "prompting events, regimes, session mood and tab fidgets")
     args = ap.parse_args()
+    if args.afk_model:
+        from osrs_rl.afk import load_prior
+        from osrs_rl.env import set_afk_model
+        set_afk_model(load_prior(args.afk_model))
     if args.controller == "policy" and not args.policy:
         raise SystemExit("--controller policy needs --policy")
     out = Path(args.out)
