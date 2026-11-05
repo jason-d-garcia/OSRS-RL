@@ -1,0 +1,2402 @@
+[
+ {
+  "episode": 0,
+  "finished": true,
+  "ticks": 94,
+  "game_seconds": 56.4,
+  "wall_seconds": 0.08,
+  "sections": {
+   "Gielinor Guide": 12.6,
+   "Survival Expert": 43.2
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 12,
+   "10": 15,
+   "20": 21,
+   "30": 34,
+   "40": 38,
+   "50": 53,
+   "60": 56,
+   "70": 60,
+   "80": 69,
+   "90": 75,
+   "120": 83,
+   "130": 93
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 291.94291957500354
+ },
+ {
+  "episode": 1,
+  "finished": true,
+  "ticks": 111,
+  "game_seconds": 66.6,
+  "wall_seconds": 0.1,
+  "sections": {
+   "Gielinor Guide": 13.8,
+   "Survival Expert": 52.2
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 8,
+   "7": 13,
+   "10": 17,
+   "20": 23,
+   "30": 35,
+   "40": 38,
+   "50": 45,
+   "60": 51,
+   "70": 55,
+   "80": 83,
+   "90": 91,
+   "120": 97,
+   "130": 110
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 295.0505674525607
+ },
+ {
+  "episode": 2,
+  "finished": true,
+  "ticks": 114,
+  "game_seconds": 68.39999999999999,
+  "wall_seconds": 0.12,
+  "sections": {
+   "Gielinor Guide": 17.4,
+   "Survival Expert": 50.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 8,
+   "7": 13,
+   "10": 23,
+   "20": 29,
+   "30": 40,
+   "40": 44,
+   "50": 67,
+   "60": 68,
+   "70": 73,
+   "80": 86,
+   "90": 95,
+   "120": 103,
+   "130": 113
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 353.8300535164735
+ },
+ {
+  "episode": 3,
+  "finished": true,
+  "ticks": 117,
+  "game_seconds": 70.2,
+  "wall_seconds": 0.14,
+  "sections": {
+   "Gielinor Guide": 10.8,
+   "Survival Expert": 58.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 9,
+   "10": 12,
+   "20": 18,
+   "30": 29,
+   "40": 32,
+   "50": 70,
+   "60": 72,
+   "70": 78,
+   "80": 86,
+   "90": 99,
+   "120": 106,
+   "130": 116
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 360.5295515816706
+ },
+ {
+  "episode": 4,
+  "finished": true,
+  "ticks": 187,
+  "game_seconds": 112.2,
+  "wall_seconds": 0.22,
+  "sections": {
+   "Gielinor Guide": 15.6,
+   "Survival Expert": 96.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 15,
+   "10": 19,
+   "20": 26,
+   "30": 38,
+   "40": 43,
+   "50": 115,
+   "60": 117,
+   "70": 127,
+   "80": 159,
+   "90": 164,
+   "120": 173,
+   "130": 186
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 375.67171365319336
+ },
+ {
+  "episode": 5,
+  "finished": true,
+  "ticks": 90,
+  "game_seconds": 54.0,
+  "wall_seconds": 0.1,
+  "sections": {
+   "Gielinor Guide": 11.4,
+   "Survival Expert": 42.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 8,
+   "10": 13,
+   "20": 19,
+   "30": 31,
+   "40": 34,
+   "50": 40,
+   "60": 43,
+   "70": 47,
+   "80": 59,
+   "90": 72,
+   "120": 79,
+   "130": 89
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 330.21164340241194
+ },
+ {
+  "episode": 6,
+  "finished": true,
+  "ticks": 97,
+  "game_seconds": 58.199999999999996,
+  "wall_seconds": 0.09,
+  "sections": {
+   "Gielinor Guide": 9.6,
+   "Survival Expert": 48.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 4,
+   "7": 7,
+   "10": 11,
+   "20": 16,
+   "30": 25,
+   "40": 30,
+   "50": 49,
+   "60": 51,
+   "70": 58,
+   "80": 67,
+   "90": 77,
+   "120": 84,
+   "130": 96
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 361.42476666193534
+ },
+ {
+  "episode": 7,
+  "finished": true,
+  "ticks": 118,
+  "game_seconds": 70.8,
+  "wall_seconds": 0.11,
+  "sections": {
+   "Gielinor Guide": 10.8,
+   "Survival Expert": 59.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 11,
+   "10": 13,
+   "20": 18,
+   "30": 31,
+   "40": 33,
+   "50": 57,
+   "60": 61,
+   "70": 65,
+   "80": 91,
+   "90": 99,
+   "120": 109,
+   "130": 117
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 359.14431065719646
+ },
+ {
+  "episode": 8,
+  "finished": true,
+  "ticks": 104,
+  "game_seconds": 62.4,
+  "wall_seconds": 0.11,
+  "sections": {
+   "Gielinor Guide": 13.2,
+   "Survival Expert": 48.6
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 11,
+   "10": 13,
+   "20": 22,
+   "30": 34,
+   "40": 38,
+   "50": 54,
+   "60": 56,
+   "70": 66,
+   "80": 81,
+   "90": 86,
+   "120": 92,
+   "130": 103
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 381.0754733602057
+ },
+ {
+  "episode": 9,
+  "finished": true,
+  "ticks": 125,
+  "game_seconds": 75.0,
+  "wall_seconds": 0.1,
+  "sections": {
+   "Gielinor Guide": 17.4,
+   "Survival Expert": 57.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 7,
+   "7": 10,
+   "10": 24,
+   "20": 29,
+   "30": 41,
+   "40": 43,
+   "50": 69,
+   "60": 72,
+   "70": 78,
+   "80": 93,
+   "90": 105,
+   "120": 112,
+   "130": 124
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 307.4192663517747
+ },
+ {
+  "episode": 10,
+  "finished": true,
+  "ticks": 163,
+  "game_seconds": 97.8,
+  "wall_seconds": 0.13,
+  "sections": {
+   "Gielinor Guide": 13.2,
+   "Survival Expert": 84.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 7,
+   "10": 15,
+   "20": 22,
+   "30": 32,
+   "40": 35,
+   "50": 62,
+   "60": 64,
+   "70": 68,
+   "80": 92,
+   "90": 143,
+   "120": 152,
+   "130": 162
+  },
+  "actions": 28,
+  "failed_actions": 0,
+  "median_dialogue_ms": 235.88480150124178
+ },
+ {
+  "episode": 11,
+  "finished": true,
+  "ticks": 93,
+  "game_seconds": 55.8,
+  "wall_seconds": 0.08,
+  "sections": {
+   "Gielinor Guide": 11.4,
+   "Survival Expert": 43.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 9,
+   "7": 11,
+   "10": 14,
+   "20": 19,
+   "30": 30,
+   "40": 35,
+   "50": 45,
+   "60": 48,
+   "70": 54,
+   "80": 64,
+   "90": 73,
+   "120": 81,
+   "130": 92
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 332.141611524426
+ },
+ {
+  "episode": 12,
+  "finished": true,
+  "ticks": 93,
+  "game_seconds": 55.8,
+  "wall_seconds": 0.09,
+  "sections": {
+   "Gielinor Guide": 13.2,
+   "Survival Expert": 42.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 7,
+   "7": 10,
+   "10": 16,
+   "20": 22,
+   "30": 33,
+   "40": 35,
+   "50": 47,
+   "60": 55,
+   "70": 59,
+   "80": 68,
+   "90": 72,
+   "120": 82,
+   "130": 92
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 348.2921881429047
+ },
+ {
+  "episode": 13,
+  "finished": true,
+  "ticks": 126,
+  "game_seconds": 75.6,
+  "wall_seconds": 0.11,
+  "sections": {
+   "Gielinor Guide": 12.6,
+   "Survival Expert": 62.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 11,
+   "10": 14,
+   "20": 21,
+   "30": 35,
+   "40": 38,
+   "50": 59,
+   "60": 63,
+   "70": 67,
+   "80": 87,
+   "90": 104,
+   "120": 112,
+   "130": 125
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 363.2070691863996
+ },
+ {
+  "episode": 14,
+  "finished": true,
+  "ticks": 110,
+  "game_seconds": 66.0,
+  "wall_seconds": 0.1,
+  "sections": {
+   "Gielinor Guide": 12.0,
+   "Survival Expert": 53.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 7,
+   "7": 11,
+   "10": 13,
+   "20": 20,
+   "30": 30,
+   "40": 35,
+   "50": 65,
+   "60": 66,
+   "70": 71,
+   "80": 83,
+   "90": 89,
+   "120": 99,
+   "130": 109
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 369.9952449219677
+ },
+ {
+  "episode": 15,
+  "finished": true,
+  "ticks": 143,
+  "game_seconds": 85.8,
+  "wall_seconds": 0.17,
+  "sections": {
+   "Gielinor Guide": 12.0,
+   "Survival Expert": 73.2
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 9,
+   "10": 12,
+   "20": 20,
+   "30": 31,
+   "40": 38,
+   "50": 82,
+   "60": 84,
+   "70": 89,
+   "80": 116,
+   "90": 120,
+   "120": 131,
+   "130": 142
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 444.90229763854086
+ },
+ {
+  "episode": 16,
+  "finished": true,
+  "ticks": 95,
+  "game_seconds": 57.0,
+  "wall_seconds": 0.1,
+  "sections": {
+   "Gielinor Guide": 10.8,
+   "Survival Expert": 45.6
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 8,
+   "10": 12,
+   "20": 18,
+   "30": 28,
+   "40": 31,
+   "50": 45,
+   "60": 46,
+   "70": 52,
+   "80": 59,
+   "90": 76,
+   "120": 83,
+   "130": 94
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 313.3506078243122
+ },
+ {
+  "episode": 17,
+  "finished": true,
+  "ticks": 123,
+  "game_seconds": 73.8,
+  "wall_seconds": 0.1,
+  "sections": {
+   "Gielinor Guide": 15.0,
+   "Survival Expert": 58.2
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 8,
+   "7": 11,
+   "10": 17,
+   "20": 25,
+   "30": 35,
+   "40": 40,
+   "50": 83,
+   "60": 84,
+   "70": 87,
+   "80": 99,
+   "90": 104,
+   "120": 114,
+   "130": 122
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 287.5853314340043
+ },
+ {
+  "episode": 18,
+  "finished": true,
+  "ticks": 119,
+  "game_seconds": 71.39999999999999,
+  "wall_seconds": 0.11,
+  "sections": {
+   "Gielinor Guide": 11.4,
+   "Survival Expert": 59.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 10,
+   "10": 13,
+   "20": 19,
+   "30": 28,
+   "40": 32,
+   "50": 56,
+   "60": 57,
+   "70": 67,
+   "80": 81,
+   "90": 98,
+   "120": 106,
+   "130": 118
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 301.66906723349166
+ },
+ {
+  "episode": 19,
+  "finished": true,
+  "ticks": 189,
+  "game_seconds": 113.39999999999999,
+  "wall_seconds": 0.19,
+  "sections": {
+   "Gielinor Guide": 12.0,
+   "Survival Expert": 100.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 11,
+   "10": 16,
+   "20": 20,
+   "30": 30,
+   "40": 32,
+   "50": 68,
+   "60": 70,
+   "70": 75,
+   "80": 86,
+   "90": 167,
+   "120": 176,
+   "130": 188
+  },
+  "actions": 31,
+  "failed_actions": 0,
+  "median_dialogue_ms": 346.04379955083834
+ },
+ {
+  "episode": 20,
+  "finished": true,
+  "ticks": 91,
+  "game_seconds": 54.6,
+  "wall_seconds": 0.09,
+  "sections": {
+   "Gielinor Guide": 13.2,
+   "Survival Expert": 40.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 9,
+   "10": 12,
+   "20": 22,
+   "30": 32,
+   "40": 36,
+   "50": 47,
+   "60": 51,
+   "70": 58,
+   "80": 66,
+   "90": 71,
+   "120": 77,
+   "130": 90
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 267.44022141559935
+ },
+ {
+  "episode": 21,
+  "finished": true,
+  "ticks": 114,
+  "game_seconds": 68.39999999999999,
+  "wall_seconds": 0.13,
+  "sections": {
+   "Gielinor Guide": 14.4,
+   "Survival Expert": 53.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 8,
+   "7": 13,
+   "10": 18,
+   "20": 24,
+   "30": 35,
+   "40": 38,
+   "50": 72,
+   "60": 74,
+   "70": 80,
+   "80": 89,
+   "90": 94,
+   "120": 102,
+   "130": 113
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 364.8729662825608
+ },
+ {
+  "episode": 22,
+  "finished": true,
+  "ticks": 131,
+  "game_seconds": 78.6,
+  "wall_seconds": 0.12,
+  "sections": {
+   "Gielinor Guide": 12.6,
+   "Survival Expert": 65.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 8,
+   "10": 14,
+   "20": 21,
+   "30": 34,
+   "40": 40,
+   "50": 50,
+   "60": 52,
+   "70": 57,
+   "80": 69,
+   "90": 109,
+   "120": 117,
+   "130": 130
+  },
+  "actions": 27,
+  "failed_actions": 0,
+  "median_dialogue_ms": 275.51416764997475
+ },
+ {
+  "episode": 23,
+  "finished": true,
+  "ticks": 130,
+  "game_seconds": 78.0,
+  "wall_seconds": 0.16,
+  "sections": {
+   "Gielinor Guide": 12.6,
+   "Survival Expert": 64.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 7,
+   "7": 11,
+   "10": 13,
+   "20": 21,
+   "30": 32,
+   "40": 36,
+   "50": 80,
+   "60": 82,
+   "70": 89,
+   "80": 96,
+   "90": 109,
+   "120": 115,
+   "130": 129
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 283.2007491434956
+ },
+ {
+  "episode": 24,
+  "finished": true,
+  "ticks": 94,
+  "game_seconds": 56.4,
+  "wall_seconds": 0.1,
+  "sections": {
+   "Gielinor Guide": 11.4,
+   "Survival Expert": 44.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 7,
+   "7": 9,
+   "10": 12,
+   "20": 19,
+   "30": 29,
+   "40": 43,
+   "50": 54,
+   "60": 55,
+   "70": 61,
+   "80": 73,
+   "90": 78,
+   "120": 84,
+   "130": 93
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 381.2117354887205
+ },
+ {
+  "episode": 25,
+  "finished": true,
+  "ticks": 106,
+  "game_seconds": 63.599999999999994,
+  "wall_seconds": 0.1,
+  "sections": {
+   "Gielinor Guide": 10.8,
+   "Survival Expert": 52.2
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 4,
+   "7": 7,
+   "10": 13,
+   "20": 18,
+   "30": 29,
+   "40": 32,
+   "50": 45,
+   "60": 48,
+   "70": 53,
+   "80": 62,
+   "90": 88,
+   "120": 95,
+   "130": 105
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 355.7819974079266
+ },
+ {
+  "episode": 26,
+  "finished": true,
+  "ticks": 135,
+  "game_seconds": 81.0,
+  "wall_seconds": 0.12,
+  "sections": {
+   "Gielinor Guide": 15.0,
+   "Survival Expert": 65.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 14,
+   "10": 20,
+   "20": 25,
+   "30": 35,
+   "40": 40,
+   "50": 85,
+   "60": 87,
+   "70": 93,
+   "80": 101,
+   "90": 114,
+   "120": 124,
+   "130": 134
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 362.77489692847166
+ },
+ {
+  "episode": 27,
+  "finished": true,
+  "ticks": 102,
+  "game_seconds": 61.199999999999996,
+  "wall_seconds": 0.09,
+  "sections": {
+   "Gielinor Guide": 12.6,
+   "Survival Expert": 48.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 7,
+   "7": 12,
+   "10": 16,
+   "20": 21,
+   "30": 31,
+   "40": 34,
+   "50": 56,
+   "60": 62,
+   "70": 66,
+   "80": 79,
+   "90": 84,
+   "120": 91,
+   "130": 101
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 335.6649511230444
+ },
+ {
+  "episode": 28,
+  "finished": true,
+  "ticks": 87,
+  "game_seconds": 52.199999999999996,
+  "wall_seconds": 0.09,
+  "sections": {
+   "Gielinor Guide": 13.8,
+   "Survival Expert": 37.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 9,
+   "7": 13,
+   "10": 16,
+   "20": 23,
+   "30": 36,
+   "40": 40,
+   "50": 47,
+   "60": 49,
+   "70": 54,
+   "80": 62,
+   "90": 71,
+   "120": 78,
+   "130": 86
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 368.8857876843274
+ },
+ {
+  "episode": 29,
+  "finished": true,
+  "ticks": 193,
+  "game_seconds": 115.8,
+  "wall_seconds": 0.24,
+  "sections": {
+   "Gielinor Guide": 13.8,
+   "Survival Expert": 101.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 8,
+   "7": 10,
+   "10": 15,
+   "20": 23,
+   "30": 38,
+   "40": 41,
+   "50": 70,
+   "60": 76,
+   "70": 82,
+   "80": 94,
+   "90": 175,
+   "120": 181,
+   "130": 192
+  },
+  "actions": 31,
+  "failed_actions": 0,
+  "median_dialogue_ms": 289.2401383016795
+ },
+ {
+  "episode": 30,
+  "finished": true,
+  "ticks": 106,
+  "game_seconds": 63.599999999999994,
+  "wall_seconds": 0.12,
+  "sections": {
+   "Gielinor Guide": 12.0,
+   "Survival Expert": 51.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 11,
+   "10": 14,
+   "20": 20,
+   "30": 33,
+   "40": 38,
+   "50": 51,
+   "60": 54,
+   "70": 58,
+   "80": 64,
+   "90": 85,
+   "120": 92,
+   "130": 105
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 449.199832125646
+ },
+ {
+  "episode": 31,
+  "finished": true,
+  "ticks": 87,
+  "game_seconds": 52.199999999999996,
+  "wall_seconds": 0.1,
+  "sections": {
+   "Gielinor Guide": 9.6,
+   "Survival Expert": 42.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 4,
+   "7": 7,
+   "10": 9,
+   "20": 16,
+   "30": 28,
+   "40": 31,
+   "50": 46,
+   "60": 50,
+   "70": 53,
+   "80": 62,
+   "90": 69,
+   "120": 77,
+   "130": 86
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 345.4616183369435
+ },
+ {
+  "episode": 32,
+  "finished": true,
+  "ticks": 97,
+  "game_seconds": 58.199999999999996,
+  "wall_seconds": 0.12,
+  "sections": {
+   "Gielinor Guide": 11.4,
+   "Survival Expert": 46.2
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 7,
+   "7": 11,
+   "10": 15,
+   "20": 19,
+   "30": 33,
+   "40": 38,
+   "50": 53,
+   "60": 56,
+   "70": 61,
+   "80": 75,
+   "90": 79,
+   "120": 86,
+   "130": 96
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 394.02112968602364
+ },
+ {
+  "episode": 33,
+  "finished": true,
+  "ticks": 126,
+  "game_seconds": 75.6,
+  "wall_seconds": 0.15,
+  "sections": {
+   "Gielinor Guide": 13.2,
+   "Survival Expert": 61.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 9,
+   "7": 12,
+   "10": 15,
+   "20": 22,
+   "30": 34,
+   "40": 38,
+   "50": 60,
+   "60": 62,
+   "70": 68,
+   "80": 101,
+   "90": 108,
+   "120": 116,
+   "130": 125
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 349.2402196701937
+ },
+ {
+  "episode": 34,
+  "finished": true,
+  "ticks": 117,
+  "game_seconds": 70.2,
+  "wall_seconds": 0.15,
+  "sections": {
+   "Gielinor Guide": 12.6,
+   "Survival Expert": 57.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 7,
+   "7": 11,
+   "10": 14,
+   "20": 21,
+   "30": 40,
+   "40": 45,
+   "50": 68,
+   "60": 71,
+   "70": 78,
+   "80": 85,
+   "90": 98,
+   "120": 105,
+   "130": 116
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 347.6749177843444
+ },
+ {
+  "episode": 35,
+  "finished": true,
+  "ticks": 107,
+  "game_seconds": 64.2,
+  "wall_seconds": 0.11,
+  "sections": {
+   "Gielinor Guide": 12.0,
+   "Survival Expert": 51.6
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 9,
+   "7": 13,
+   "10": 16,
+   "20": 20,
+   "30": 31,
+   "40": 37,
+   "50": 58,
+   "60": 62,
+   "70": 67,
+   "80": 78,
+   "90": 86,
+   "120": 96,
+   "130": 106
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 428.1645092380895
+ },
+ {
+  "episode": 36,
+  "finished": true,
+  "ticks": 157,
+  "game_seconds": 94.2,
+  "wall_seconds": 0.19,
+  "sections": {
+   "Gielinor Guide": 11.4,
+   "Survival Expert": 82.2
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 9,
+   "10": 13,
+   "20": 19,
+   "30": 29,
+   "40": 32,
+   "50": 107,
+   "60": 110,
+   "70": 121,
+   "80": 129,
+   "90": 135,
+   "120": 146,
+   "130": 156
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 285.99331226026493
+ },
+ {
+  "episode": 37,
+  "finished": true,
+  "ticks": 104,
+  "game_seconds": 62.4,
+  "wall_seconds": 0.09,
+  "sections": {
+   "Gielinor Guide": 12.0,
+   "Survival Expert": 49.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 8,
+   "10": 13,
+   "20": 20,
+   "30": 37,
+   "40": 40,
+   "50": 51,
+   "60": 53,
+   "70": 59,
+   "80": 66,
+   "90": 83,
+   "120": 90,
+   "130": 103
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 376.4362984184342
+ },
+ {
+  "episode": 38,
+  "finished": true,
+  "ticks": 121,
+  "game_seconds": 72.6,
+  "wall_seconds": 0.12,
+  "sections": {
+   "Gielinor Guide": 14.4,
+   "Survival Expert": 57.6
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 11,
+   "10": 16,
+   "20": 24,
+   "30": 37,
+   "40": 42,
+   "50": 56,
+   "60": 57,
+   "70": 63,
+   "80": 71,
+   "90": 97,
+   "120": 104,
+   "130": 120
+  },
+  "actions": 27,
+  "failed_actions": 0,
+  "median_dialogue_ms": 426.36066687342645
+ },
+ {
+  "episode": 39,
+  "finished": true,
+  "ticks": 110,
+  "game_seconds": 66.0,
+  "wall_seconds": 0.13,
+  "sections": {
+   "Gielinor Guide": 12.6,
+   "Survival Expert": 52.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 9,
+   "10": 12,
+   "20": 21,
+   "30": 33,
+   "40": 41,
+   "50": 60,
+   "60": 62,
+   "70": 68,
+   "80": 76,
+   "90": 92,
+   "120": 99,
+   "130": 109
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 295.07706073529425
+ },
+ {
+  "episode": 40,
+  "finished": true,
+  "ticks": 170,
+  "game_seconds": 102.0,
+  "wall_seconds": 0.2,
+  "sections": {
+   "Gielinor Guide": 12.0,
+   "Survival Expert": 89.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 10,
+   "10": 15,
+   "20": 20,
+   "30": 33,
+   "40": 39,
+   "50": 118,
+   "60": 120,
+   "70": 126,
+   "80": 139,
+   "90": 146,
+   "120": 154,
+   "130": 169
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 296.33839675379556
+ },
+ {
+  "episode": 41,
+  "finished": true,
+  "ticks": 170,
+  "game_seconds": 102.0,
+  "wall_seconds": 0.17,
+  "sections": {
+   "Gielinor Guide": 13.2,
+   "Survival Expert": 88.2
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 12,
+   "10": 16,
+   "20": 22,
+   "30": 38,
+   "40": 40,
+   "50": 102,
+   "60": 105,
+   "70": 110,
+   "80": 142,
+   "90": 150,
+   "120": 158,
+   "130": 169
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 303.20451201681135
+ },
+ {
+  "episode": 42,
+  "finished": true,
+  "ticks": 150,
+  "game_seconds": 90.0,
+  "wall_seconds": 0.14,
+  "sections": {
+   "Gielinor Guide": 11.4,
+   "Survival Expert": 78.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 10,
+   "10": 14,
+   "20": 19,
+   "30": 29,
+   "40": 32,
+   "50": 87,
+   "60": 90,
+   "70": 95,
+   "80": 128,
+   "90": 132,
+   "120": 139,
+   "130": 149
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 300.23951351599453
+ },
+ {
+  "episode": 43,
+  "finished": true,
+  "ticks": 93,
+  "game_seconds": 55.8,
+  "wall_seconds": 0.08,
+  "sections": {
+   "Gielinor Guide": 12.6,
+   "Survival Expert": 42.6
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 7,
+   "7": 9,
+   "10": 15,
+   "20": 21,
+   "30": 31,
+   "40": 34,
+   "50": 43,
+   "60": 46,
+   "70": 53,
+   "80": 66,
+   "90": 74,
+   "120": 81,
+   "130": 92
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 310.86033493818286
+ },
+ {
+  "episode": 44,
+  "finished": true,
+  "ticks": 136,
+  "game_seconds": 81.6,
+  "wall_seconds": 0.12,
+  "sections": {
+   "Gielinor Guide": 9.6,
+   "Survival Expert": 71.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 4,
+   "7": 8,
+   "10": 11,
+   "20": 16,
+   "30": 28,
+   "40": 31,
+   "50": 38,
+   "60": 39,
+   "70": 43,
+   "80": 55,
+   "90": 111,
+   "120": 124,
+   "130": 135
+  },
+  "actions": 29,
+  "failed_actions": 0,
+  "median_dialogue_ms": 353.95720023955255
+ },
+ {
+  "episode": 45,
+  "finished": true,
+  "ticks": 114,
+  "game_seconds": 68.39999999999999,
+  "wall_seconds": 0.1,
+  "sections": {
+   "Gielinor Guide": 10.2,
+   "Survival Expert": 57.6
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 9,
+   "10": 12,
+   "20": 17,
+   "30": 29,
+   "40": 33,
+   "50": 59,
+   "60": 61,
+   "70": 66,
+   "80": 82,
+   "90": 97,
+   "120": 103,
+   "130": 113
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 404.0761875750968
+ },
+ {
+  "episode": 46,
+  "finished": true,
+  "ticks": 110,
+  "game_seconds": 66.0,
+  "wall_seconds": 0.11,
+  "sections": {
+   "Gielinor Guide": 9.6,
+   "Survival Expert": 55.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 8,
+   "10": 10,
+   "20": 16,
+   "30": 26,
+   "40": 29,
+   "50": 37,
+   "60": 39,
+   "70": 43,
+   "80": 50,
+   "90": 94,
+   "120": 100,
+   "130": 109
+  },
+  "actions": 28,
+  "failed_actions": 0,
+  "median_dialogue_ms": 371.21067763483006
+ },
+ {
+  "episode": 47,
+  "finished": true,
+  "ticks": 110,
+  "game_seconds": 66.0,
+  "wall_seconds": 0.11,
+  "sections": {
+   "Gielinor Guide": 15.6,
+   "Survival Expert": 49.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 8,
+   "7": 12,
+   "10": 16,
+   "20": 26,
+   "30": 37,
+   "40": 41,
+   "50": 59,
+   "60": 61,
+   "70": 67,
+   "80": 75,
+   "90": 88,
+   "120": 96,
+   "130": 109
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 325.0723697281501
+ },
+ {
+  "episode": 48,
+  "finished": true,
+  "ticks": 107,
+  "game_seconds": 64.2,
+  "wall_seconds": 0.14,
+  "sections": {
+   "Gielinor Guide": 10.2,
+   "Survival Expert": 53.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 4,
+   "7": 7,
+   "10": 11,
+   "20": 17,
+   "30": 27,
+   "40": 29,
+   "50": 53,
+   "60": 56,
+   "70": 59,
+   "80": 75,
+   "90": 88,
+   "120": 95,
+   "130": 106
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 341.9699731203
+ },
+ {
+  "episode": 49,
+  "finished": true,
+  "ticks": 143,
+  "game_seconds": 85.8,
+  "wall_seconds": 0.18,
+  "sections": {
+   "Gielinor Guide": 12.0,
+   "Survival Expert": 73.2
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 8,
+   "7": 11,
+   "10": 14,
+   "20": 20,
+   "30": 30,
+   "40": 33,
+   "50": 96,
+   "60": 99,
+   "70": 108,
+   "80": 120,
+   "90": 124,
+   "120": 131,
+   "130": 142
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 297.58315573527057
+ },
+ {
+  "episode": 50,
+  "finished": true,
+  "ticks": 92,
+  "game_seconds": 55.199999999999996,
+  "wall_seconds": 0.11,
+  "sections": {
+   "Gielinor Guide": 10.2,
+   "Survival Expert": 44.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 7,
+   "10": 10,
+   "20": 17,
+   "30": 29,
+   "40": 33,
+   "50": 47,
+   "60": 49,
+   "70": 56,
+   "80": 65,
+   "90": 72,
+   "120": 79,
+   "130": 91
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 495.7410294855781
+ },
+ {
+  "episode": 51,
+  "finished": true,
+  "ticks": 114,
+  "game_seconds": 68.39999999999999,
+  "wall_seconds": 0.12,
+  "sections": {
+   "Gielinor Guide": 10.8,
+   "Survival Expert": 57.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 11,
+   "10": 13,
+   "20": 18,
+   "30": 33,
+   "40": 36,
+   "50": 45,
+   "60": 48,
+   "70": 54,
+   "80": 73,
+   "90": 99,
+   "120": 105,
+   "130": 113
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 307.0394434235104
+ },
+ {
+  "episode": 52,
+  "finished": true,
+  "ticks": 114,
+  "game_seconds": 68.39999999999999,
+  "wall_seconds": 0.12,
+  "sections": {
+   "Gielinor Guide": 10.8,
+   "Survival Expert": 57.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 7,
+   "7": 10,
+   "10": 12,
+   "20": 18,
+   "30": 28,
+   "40": 33,
+   "50": 65,
+   "60": 66,
+   "70": 70,
+   "80": 87,
+   "90": 97,
+   "120": 104,
+   "130": 113
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 467.3864283973321
+ },
+ {
+  "episode": 53,
+  "finished": true,
+  "ticks": 166,
+  "game_seconds": 99.6,
+  "wall_seconds": 0.17,
+  "sections": {
+   "Gielinor Guide": 14.4,
+   "Survival Expert": 84.6
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 7,
+   "7": 15,
+   "10": 18,
+   "20": 24,
+   "30": 36,
+   "40": 38,
+   "50": 100,
+   "60": 103,
+   "70": 111,
+   "80": 131,
+   "90": 149,
+   "120": 156,
+   "130": 165
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 428.5060083987046
+ },
+ {
+  "episode": 54,
+  "finished": true,
+  "ticks": 90,
+  "game_seconds": 54.0,
+  "wall_seconds": 0.09,
+  "sections": {
+   "Gielinor Guide": 12.0,
+   "Survival Expert": 41.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 9,
+   "10": 13,
+   "20": 20,
+   "30": 31,
+   "40": 33,
+   "50": 49,
+   "60": 51,
+   "70": 58,
+   "80": 66,
+   "90": 71,
+   "120": 78,
+   "130": 89
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 323.68463998893117
+ },
+ {
+  "episode": 55,
+  "finished": true,
+  "ticks": 85,
+  "game_seconds": 51.0,
+  "wall_seconds": 0.12,
+  "sections": {
+   "Gielinor Guide": 11.4,
+   "Survival Expert": 39.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 10,
+   "10": 14,
+   "20": 19,
+   "30": 29,
+   "40": 33,
+   "50": 43,
+   "60": 45,
+   "70": 52,
+   "80": 59,
+   "90": 67,
+   "120": 74,
+   "130": 84
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 353.1292925985531
+ },
+ {
+  "episode": 56,
+  "finished": true,
+  "ticks": 140,
+  "game_seconds": 84.0,
+  "wall_seconds": 0.18,
+  "sections": {
+   "Gielinor Guide": 12.6,
+   "Survival Expert": 70.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 11,
+   "10": 15,
+   "20": 21,
+   "30": 32,
+   "40": 34,
+   "50": 61,
+   "60": 63,
+   "70": 69,
+   "80": 94,
+   "90": 122,
+   "120": 130,
+   "130": 139
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 373.2846537159696
+ },
+ {
+  "episode": 57,
+  "finished": true,
+  "ticks": 201,
+  "game_seconds": 120.6,
+  "wall_seconds": 0.26,
+  "sections": {
+   "Gielinor Guide": 10.2,
+   "Survival Expert": 109.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 7,
+   "10": 10,
+   "20": 17,
+   "30": 28,
+   "40": 31,
+   "50": 134,
+   "60": 139,
+   "70": 146,
+   "80": 162,
+   "90": 183,
+   "120": 191,
+   "130": 200
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 378.3300425937232
+ },
+ {
+  "episode": 58,
+  "finished": true,
+  "ticks": 86,
+  "game_seconds": 51.6,
+  "wall_seconds": 0.11,
+  "sections": {
+   "Gielinor Guide": 12.0,
+   "Survival Expert": 39.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 9,
+   "10": 12,
+   "20": 20,
+   "30": 30,
+   "40": 33,
+   "50": 43,
+   "60": 46,
+   "70": 49,
+   "80": 62,
+   "90": 67,
+   "120": 75,
+   "130": 85
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 312.248691747355
+ },
+ {
+  "episode": 59,
+  "finished": true,
+  "ticks": 182,
+  "game_seconds": 109.2,
+  "wall_seconds": 0.21,
+  "sections": {
+   "Gielinor Guide": 13.8,
+   "Survival Expert": 94.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 13,
+   "10": 17,
+   "20": 23,
+   "30": 31,
+   "40": 35,
+   "50": 120,
+   "60": 123,
+   "70": 128,
+   "80": 141,
+   "90": 155,
+   "120": 164,
+   "130": 181
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 300.0186048745127
+ },
+ {
+  "episode": 60,
+  "finished": true,
+  "ticks": 146,
+  "game_seconds": 87.6,
+  "wall_seconds": 0.16,
+  "sections": {
+   "Gielinor Guide": 12.6,
+   "Survival Expert": 74.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 7,
+   "7": 10,
+   "10": 15,
+   "20": 21,
+   "30": 33,
+   "40": 40,
+   "50": 47,
+   "60": 56,
+   "70": 60,
+   "80": 82,
+   "90": 126,
+   "120": 133,
+   "130": 145
+  },
+  "actions": 28,
+  "failed_actions": 0,
+  "median_dialogue_ms": 361.2610674778143
+ },
+ {
+  "episode": 61,
+  "finished": true,
+  "ticks": 167,
+  "game_seconds": 100.2,
+  "wall_seconds": 0.17,
+  "sections": {
+   "Gielinor Guide": 8.4,
+   "Survival Expert": 91.2
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 8,
+   "10": 10,
+   "20": 14,
+   "30": 26,
+   "40": 30,
+   "50": 101,
+   "60": 108,
+   "70": 114,
+   "80": 141,
+   "90": 147,
+   "120": 157,
+   "130": 166
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 410.2838828863387
+ },
+ {
+  "episode": 62,
+  "finished": true,
+  "ticks": 85,
+  "game_seconds": 51.0,
+  "wall_seconds": 0.09,
+  "sections": {
+   "Gielinor Guide": 11.4,
+   "Survival Expert": 39.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 12,
+   "10": 15,
+   "20": 19,
+   "30": 35,
+   "40": 39,
+   "50": 45,
+   "60": 47,
+   "70": 53,
+   "80": 61,
+   "90": 67,
+   "120": 74,
+   "130": 84
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 314.6861233586769
+ },
+ {
+  "episode": 63,
+  "finished": true,
+  "ticks": 124,
+  "game_seconds": 74.39999999999999,
+  "wall_seconds": 0.12,
+  "sections": {
+   "Gielinor Guide": 12.0,
+   "Survival Expert": 61.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 8,
+   "10": 12,
+   "20": 20,
+   "30": 28,
+   "40": 33,
+   "50": 60,
+   "60": 63,
+   "70": 68,
+   "80": 85,
+   "90": 105,
+   "120": 114,
+   "130": 123
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 328.754236082288
+ },
+ {
+  "episode": 64,
+  "finished": true,
+  "ticks": 116,
+  "game_seconds": 69.6,
+  "wall_seconds": 0.1,
+  "sections": {
+   "Gielinor Guide": 13.2,
+   "Survival Expert": 55.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 10,
+   "7": 13,
+   "10": 16,
+   "20": 22,
+   "30": 31,
+   "40": 35,
+   "50": 69,
+   "60": 71,
+   "70": 77,
+   "80": 89,
+   "90": 97,
+   "120": 105,
+   "130": 115
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 412.8579993890271
+ },
+ {
+  "episode": 65,
+  "finished": true,
+  "ticks": 138,
+  "game_seconds": 82.8,
+  "wall_seconds": 0.11,
+  "sections": {
+   "Gielinor Guide": 12.0,
+   "Survival Expert": 70.2
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 10,
+   "10": 13,
+   "20": 20,
+   "30": 30,
+   "40": 33,
+   "50": 84,
+   "60": 85,
+   "70": 91,
+   "80": 111,
+   "90": 120,
+   "120": 128,
+   "130": 137
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 315.7672686482151
+ },
+ {
+  "episode": 66,
+  "finished": true,
+  "ticks": 174,
+  "game_seconds": 104.39999999999999,
+  "wall_seconds": 0.19,
+  "sections": {
+   "Gielinor Guide": 11.4,
+   "Survival Expert": 92.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 7,
+   "10": 13,
+   "20": 19,
+   "30": 29,
+   "40": 33,
+   "50": 47,
+   "60": 54,
+   "70": 58,
+   "80": 67,
+   "90": 154,
+   "120": 161,
+   "130": 173
+  },
+  "actions": 33,
+  "failed_actions": 0,
+  "median_dialogue_ms": 358.45097532415866
+ },
+ {
+  "episode": 67,
+  "finished": true,
+  "ticks": 103,
+  "game_seconds": 61.8,
+  "wall_seconds": 0.11,
+  "sections": {
+   "Gielinor Guide": 15.0,
+   "Survival Expert": 46.2
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 9,
+   "7": 12,
+   "10": 15,
+   "20": 25,
+   "30": 35,
+   "40": 39,
+   "50": 57,
+   "60": 59,
+   "70": 65,
+   "80": 74,
+   "90": 81,
+   "120": 91,
+   "130": 102
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 354.0099635428942
+ },
+ {
+  "episode": 68,
+  "finished": true,
+  "ticks": 98,
+  "game_seconds": 58.8,
+  "wall_seconds": 0.15,
+  "sections": {
+   "Gielinor Guide": 10.2,
+   "Survival Expert": 48.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 11,
+   "10": 13,
+   "20": 17,
+   "30": 28,
+   "40": 43,
+   "50": 61,
+   "60": 64,
+   "70": 68,
+   "80": 77,
+   "90": 81,
+   "120": 88,
+   "130": 97
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 372.6106909856953
+ },
+ {
+  "episode": 69,
+  "finished": true,
+  "ticks": 151,
+  "game_seconds": 90.6,
+  "wall_seconds": 0.14,
+  "sections": {
+   "Gielinor Guide": 12.6,
+   "Survival Expert": 77.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 9,
+   "10": 13,
+   "20": 21,
+   "30": 30,
+   "40": 33,
+   "50": 40,
+   "60": 42,
+   "70": 48,
+   "80": 57,
+   "90": 127,
+   "120": 140,
+   "130": 150
+  },
+  "actions": 31,
+  "failed_actions": 0,
+  "median_dialogue_ms": 369.0933002007778
+ },
+ {
+  "episode": 70,
+  "finished": true,
+  "ticks": 117,
+  "game_seconds": 70.2,
+  "wall_seconds": 0.13,
+  "sections": {
+   "Gielinor Guide": 13.2,
+   "Survival Expert": 56.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 8,
+   "7": 10,
+   "10": 16,
+   "20": 22,
+   "30": 33,
+   "40": 36,
+   "50": 55,
+   "60": 63,
+   "70": 68,
+   "80": 93,
+   "90": 97,
+   "120": 107,
+   "130": 116
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 275.02257228088456
+ },
+ {
+  "episode": 71,
+  "finished": true,
+  "ticks": 105,
+  "game_seconds": 63.0,
+  "wall_seconds": 0.11,
+  "sections": {
+   "Gielinor Guide": 15.6,
+   "Survival Expert": 46.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 10,
+   "10": 16,
+   "20": 26,
+   "30": 36,
+   "40": 38,
+   "50": 61,
+   "60": 63,
+   "70": 68,
+   "80": 84,
+   "90": 88,
+   "120": 95,
+   "130": 104
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 306.3844647774656
+ },
+ {
+  "episode": 72,
+  "finished": true,
+  "ticks": 90,
+  "game_seconds": 54.0,
+  "wall_seconds": 0.12,
+  "sections": {
+   "Gielinor Guide": 11.4,
+   "Survival Expert": 42.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 7,
+   "7": 10,
+   "10": 14,
+   "20": 19,
+   "30": 34,
+   "40": 37,
+   "50": 47,
+   "60": 50,
+   "70": 56,
+   "80": 68,
+   "90": 74,
+   "120": 81,
+   "130": 89
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 353.193448114926
+ },
+ {
+  "episode": 73,
+  "finished": true,
+  "ticks": 106,
+  "game_seconds": 63.599999999999994,
+  "wall_seconds": 0.1,
+  "sections": {
+   "Gielinor Guide": 12.0,
+   "Survival Expert": 51.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 5,
+   "7": 9,
+   "10": 14,
+   "20": 20,
+   "30": 30,
+   "40": 33,
+   "50": 63,
+   "60": 65,
+   "70": 69,
+   "80": 79,
+   "90": 84,
+   "120": 91,
+   "130": 105
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 298.56359252006405
+ },
+ {
+  "episode": 74,
+  "finished": true,
+  "ticks": 104,
+  "game_seconds": 62.4,
+  "wall_seconds": 0.13,
+  "sections": {
+   "Gielinor Guide": 12.0,
+   "Survival Expert": 49.8
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 9,
+   "10": 14,
+   "20": 20,
+   "30": 29,
+   "40": 33,
+   "50": 52,
+   "60": 55,
+   "70": 64,
+   "80": 73,
+   "90": 84,
+   "120": 93,
+   "130": 103
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 351.9038257436289
+ },
+ {
+  "episode": 75,
+  "finished": true,
+  "ticks": 90,
+  "game_seconds": 54.0,
+  "wall_seconds": 0.13,
+  "sections": {
+   "Gielinor Guide": 12.0,
+   "Survival Expert": 41.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 10,
+   "10": 14,
+   "20": 20,
+   "30": 30,
+   "40": 35,
+   "50": 44,
+   "60": 45,
+   "70": 50,
+   "80": 65,
+   "90": 71,
+   "120": 79,
+   "130": 89
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 323.36509382801273
+ },
+ {
+  "episode": 76,
+  "finished": true,
+  "ticks": 104,
+  "game_seconds": 62.4,
+  "wall_seconds": 0.19,
+  "sections": {
+   "Gielinor Guide": 9.6,
+   "Survival Expert": 52.2
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 6,
+   "7": 9,
+   "10": 12,
+   "20": 16,
+   "30": 28,
+   "40": 32,
+   "50": 54,
+   "60": 57,
+   "70": 61,
+   "80": 73,
+   "90": 86,
+   "120": 94,
+   "130": 103
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 404.24009845791693
+ },
+ {
+  "episode": 77,
+  "finished": true,
+  "ticks": 134,
+  "game_seconds": 80.39999999999999,
+  "wall_seconds": 0.23,
+  "sections": {
+   "Gielinor Guide": 13.8,
+   "Survival Expert": 66.0
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 7,
+   "7": 12,
+   "10": 18,
+   "20": 23,
+   "30": 31,
+   "40": 33,
+   "50": 82,
+   "60": 85,
+   "70": 89,
+   "80": 104,
+   "90": 111,
+   "120": 122,
+   "130": 133
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 339.2811507848885
+ },
+ {
+  "episode": 78,
+  "finished": true,
+  "ticks": 157,
+  "game_seconds": 94.2,
+  "wall_seconds": 0.24,
+  "sections": {
+   "Gielinor Guide": 16.2,
+   "Survival Expert": 77.4
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 8,
+   "7": 12,
+   "10": 20,
+   "20": 27,
+   "30": 39,
+   "40": 50,
+   "50": 92,
+   "60": 94,
+   "70": 101,
+   "80": 125,
+   "90": 138,
+   "120": 145,
+   "130": 156
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 521.0262902612003
+ },
+ {
+  "episode": 79,
+  "finished": true,
+  "ticks": 96,
+  "game_seconds": 57.599999999999994,
+  "wall_seconds": 0.16,
+  "sections": {
+   "Gielinor Guide": 14.4,
+   "Survival Expert": 42.6
+  },
+  "stage_ticks": {
+   "2": 0,
+   "3": 10,
+   "7": 15,
+   "10": 18,
+   "20": 24,
+   "30": 35,
+   "40": 39,
+   "50": 50,
+   "60": 52,
+   "70": 57,
+   "80": 66,
+   "90": 77,
+   "120": 85,
+   "130": 95
+  },
+  "actions": 25,
+  "failed_actions": 0,
+  "median_dialogue_ms": 426.21682217391026
+ }
+]

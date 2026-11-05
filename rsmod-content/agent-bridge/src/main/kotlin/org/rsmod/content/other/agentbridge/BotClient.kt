@@ -5,6 +5,7 @@ import net.rsprot.protocol.game.outgoing.info.playerinfo.PlayerAvatarExtendedInf
 import net.rsprot.protocol.game.outgoing.info.playerinfo.PlayerInfo
 import net.rsprot.protocol.game.outgoing.info.util.BuildArea
 import net.rsprot.protocol.game.outgoing.misc.player.MessageGame
+import net.rsprot.protocol.game.outgoing.misc.player.RunClientScript
 import org.rsmod.api.config.refs.baseanimsets
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.player.righthand
@@ -27,9 +28,20 @@ import org.rsmod.map.zone.ZoneKey
 class BotClient : Client<Any, Any> {
     val messages = ArrayDeque<String>()
 
+    /**
+     * The options of the last multiple-choice dialogue the server opened (clientscript 58,
+     * `chatbox_multi_init`, whose second argument is the options joined with `|`).
+     */
+    var lastChoices: List<String> = emptyList()
+        private set
+
     override fun close() {}
 
     override fun write(message: Any) {
+        if (message is RunClientScript && message.id == CHATBOX_MULTI_INIT) {
+            val joined = message.values.getOrNull(1) as? String
+            lastChoices = joined?.split('|') ?: emptyList()
+        }
         if (message is MessageGame) {
             messages.addLast(message.message)
             while (messages.size > MAX_MESSAGES) {
@@ -54,6 +66,7 @@ class BotClient : Client<Any, Any> {
 
     private companion object {
         const val MAX_MESSAGES = 64
+        const val CHATBOX_MULTI_INIT = 58
     }
 }
 

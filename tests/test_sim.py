@@ -95,3 +95,40 @@ def test_walk_intent():
     assert env.trigger == "idle"
     assert (env.sim.px, env.sim.py) != start
     assert not env.sim.attacking
+
+
+def test_tutorial_next_action_follows_the_stage():
+    from osrs_rl import tutorial as T
+
+    base = {"x": 3094, "z": 3107, "inv": [], "dialogue": None,
+            "npcs": [{"slot": 5, "id": T.NPC_GUIDE, "x": 3094, "z": 3108}],
+            "locs": [{"id": T.LOC_GUIDE_DOOR, "kind": "guide_door", "x": 3098, "z": 3107}]}
+    s = dict(base, tutorial={"stage": T.TALK_TO_GUIDE})
+    assert T.next_action(s) == ("act", {"type": "npc", "slot": 5, "op": 1})
+    s = dict(base, tutorial={"stage": T.OPEN_SETTINGS})
+    assert T.next_action(s)[1] == {"type": "tab", "name": "settings"}
+    s = dict(base, tutorial={"stage": T.OPEN_DOOR})
+    assert T.next_action(s)[1] == {"type": "loc", "id": T.LOC_GUIDE_DOOR, "op": 1}
+    s = dict(base, tutorial={"stage": T.TALK_TO_GUIDE}, dialogue={"kind": "npc"})
+    assert T.next_action(s) == ("continue", {"type": "continue"})
+    s = dict(base, tutorial={"stage": T.TALK_TO_GUIDE}, dialogue={"kind": "options", "options": ["a", "b", "c"]})
+    assert T.next_action(s) == ("option", {"type": "option", "n": 3})
+    s = dict(base, tutorial={"stage": T.MEET_CHEF})
+    assert T.next_action(s) is None
+    # a fire already on the tile: step aside before trying again
+    s = dict(base, tutorial={"stage": T.LIGHT_FIRE})
+    assert T.next_action(s)[1]["type"] == "use_on_item"
+    assert T.next_action(s, fire_blocked=1)[1] == {"type": "walk", "x": 3095, "z": 3107}
+    assert T.next_action(s, fire_blocked=2)[1] == {"type": "walk", "x": 3094, "z": 3106}
+
+
+def test_tutorial_timing_matches_the_live_run():
+    import numpy as np
+    from osrs_rl.tutorial import HumanTiming
+
+    rng = np.random.default_rng(0)
+    t = HumanTiming()
+    cont = [t.draw(rng, "continue") for _ in range(4000)]
+    react = [t.draw(rng, "act") for _ in range(4000)]
+    assert 280 < np.median(cont) < 370  # Jason: 317 ms
+    assert 1000 < np.median(react) < 1350  # Jason: 1.16 s
