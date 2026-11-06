@@ -2,6 +2,8 @@ package com.osrsrl.recorder;
 
 import com.google.gson.Gson;
 import com.google.inject.Provides;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -54,6 +56,7 @@ import net.runelite.api.events.StatChanged;
 import net.runelite.api.events.WidgetClosed;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.ActorSpotAnim;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.gameval.InventoryID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.RuneLite;
@@ -87,7 +90,7 @@ import net.runelite.client.util.Text;
 )
 public class RecorderPlugin extends Plugin
 {
-	static final int SCHEMA_VERSION = 6;
+	static final int SCHEMA_VERSION = 7;
 
 	/** Tutorial Island progress varp (0 at the start, 1000 once the island is done). */
 	static final int VARP_TUTORIAL = 281;
@@ -101,6 +104,19 @@ public class RecorderPlugin extends Plugin
 	static final int GROUP_MESBOX = 229;
 	static final int GROUP_TUTORIAL_TEXT = 263;
 	static final File OUT_DIR = new File(RuneLite.RUNELITE_DIR, "osrs-rl-recordings");
+
+	// Screen regions written to ui_layout records, each tried in order (fixed, resizable classic,
+	// resizable modern) and the first visible one kept. Component ids from gameval.
+	static final int[] XP_DROPS = {InterfaceID.XpDrops.CONTAINER, InterfaceID.Toplevel.XP_DROPS,
+		InterfaceID.ToplevelOsrsStretch.XP_DROPS, InterfaceID.ToplevelPreEoc.XP_DROPS};
+	static final int[] XP_COUNTER = {InterfaceID.XpDrops.COUNTER_CONTAINER};
+	static final int[] XP_ORB = {InterfaceID.Orbs.XP_DROPS};
+	static final int[] MINIMAP = {InterfaceID.Toplevel.MINIMAP, InterfaceID.ToplevelOsrsStretch.MINIMAP,
+		InterfaceID.ToplevelPreEoc.MINIMAP};
+	static final int[] INVENTORY = {InterfaceID.Inventory.ITEMS};
+	static final int[] CHATBOX = {InterfaceID.Chatbox.CHATAREA};
+	/** Height of the mouseover text line drawn at the top-left of the game view. */
+	static final int HOVER_TEXT_H = 24;
 
 	@Inject
 	private Client client;
@@ -122,6 +138,7 @@ public class RecorderPlugin extends Plugin
 	private int lastYaw = -1;
 	private int lastPitch = -1;
 	private String lastDialogue = "";
+	private String lastLayout = "";
 	// Per-session anonymous ids for other players, so one person can be followed from tick to
 	// tick without storing anything that identifies them. Keyed by the client's player slot and
 	// combat level; both reset when a session starts. Never written anywhere but this map.
@@ -291,6 +308,8 @@ public class RecorderPlugin extends Plugin
 			r.put("mouse_hz", config.mouseHz());
 			r.put("typed_text", config.recordTypedText());
 			emit(r);
+			lastLayout = "";
+			layout();
 			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "OSRS-RL recorder: recording to " + f.getName(), null);
 		}
 		catch (IOException ex)
@@ -557,6 +576,80 @@ public class RecorderPlugin extends Plugin
 		scene(r, wp);
 		emit(r);
 		dialogue(me);
+		layout();
+	}
+
+	/**
+	 * Schema 7: where things are on screen, so video crops (XP drops, hover text, inventory...)
+	 * can be cut from the right place in any client layout. Written at session start and
+	 * again whenever anything moves (checked every tick).
+	 */
+	private void layout()
+	{
+		if (writer == null)
+		{
+			return;
+		}
+		Map<String, Object> r = rec("ui_layout");
+		r.put("canvas_w", client.getCanvasWidth());
+		r.put("canvas_h", client.getCanvasHeight());
+		r.put("resized", client.isResized());
+		r.put("stretched", client.isStretchedEnabled());
+		if (client.isStretchedEnabled())
+		{
+			Dimension d = client.getStretchedDimensions();
+			if (d != null)
+			{
+				r.put("stretched_w", d.width);
+				r.put("stretched_h", d.height);
+			}
+		}
+		int vx = client.getViewportXOffset();
+		int vy = client.getViewportYOffset();
+		int vw = client.getViewportWidth();
+		r.put("viewport", new int[]{vx, vy, vw, client.getViewportHeight()});
+		r.put("hover_text", new int[]{vx, vy, vw, HOVER_TEXT_H});
+		putBox(r, "xp_drops", XP_DROPS);
+		putBox(r, "xp_counter", XP_COUNTER);
+		putBox(r, "xp_orb", XP_ORB);
+		putBox(r, "minimap", MINIMAP);
+		putBox(r, "inventory", INVENTORY);
+		putBox(r, "chatbox", CHATBOX);
+		Map<String, Object> key = new LinkedHashMap<>(r);
+		key.remove("t");
+		String s = gson.toJson(key);
+		if (!s.equals(lastLayout))
+		{
+			lastLayout = s;
+			emit(r);
+		}
+	}
+
+	private void putBox(Map<String, Object> r, String name, int[] componentIds)
+	{
+		for (int id : componentIds)
+		{
+			Widget w = client.getWidget(id);
+			if (w != null && !w.isHidden())
+			{
+				int[] b = box(w.getBounds());
+				if (b != null)
+				{
+					r.put(name, b);
+					return;
+				}
+			}
+		}
+	}
+
+	/** [x, y, w, h] on the canvas, or null for an empty rectangle. */
+	static int[] box(Rectangle b)
+	{
+		if (b == null || b.width <= 0 || b.height <= 0)
+		{
+			return null;
+		}
+		return new int[]{b.x, b.y, b.width, b.height};
 	}
 
 	// --- dialogue ------------------------------------------------------------
