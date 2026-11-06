@@ -17,6 +17,7 @@ with `t` (epoch milliseconds) and `type`:
 | type | fields | when |
 |---|---|---|
 | `session_start` | `schema`, `world`, `canvas_w`, `canvas_h`, `stretched`, `mouse_hz`, `typed_text` | login |
+| `ui_layout` | `canvas_w`, `canvas_h`, `resized`, `stretched`, and `[x, y, w, h]` boxes: `viewport`, `hover_text`, `xp_drops`, `xp_counter`, `xp_orb`, `minimap`, `inventory`, `chatbox` | session start, then whenever the layout changes |
 | `mouse_move`, `mouse_drag` | `x`, `y` (canvas pixels) | every move, thinned to `mouse_hz` (100 Hz default) |
 | `mouse_press`, `mouse_release` | `x`, `y`, `button` (1 left, 2 middle, 3 right) | every button |
 | `wheel` | `x`, `y`, `rot` | scroll |
@@ -66,6 +67,14 @@ health bar, `spot`), `hitsplat` records, and the player's own `stats`, `prayers`
 Schema 6 (Nov 2026) added `tut` (the Tutorial Island progress varp, 1000 once done) and
 the `dialogue` record, so the time spent reading each line before clicking on can be
 measured. Dialogue text is game content; your own name in it is replaced by `<name>`.
+Schema 7 (Nov 2026) added the `ui_layout` record: where the client's interface sits on the
+canvas, so video crops can be cut from the right place in any layout. Written right after
+`session_start` and again whenever any value changes (checked each tick): `canvas_w`,
+`canvas_h`, `resized` (resizable vs fixed mode), `stretched` (plus `stretched_w`/`stretched_h`
+when on), and boxes as `[x, y, w, h]` in canvas pixels: `viewport` (the 3D game view),
+`hover_text` (the mouseover text line at the viewport's top-left; its width is the viewport's,
+the text itself is shorter), `xp_drops` (where drops rise), `xp_counter`, `xp_orb`, `minimap`,
+`inventory`, `chatbox`. A box is left out while that interface is hidden or closed.
 
 Privacy defaults: letters and digits are stored as `"char"` (timing only), other
 players' chat and names are never stored, and the login screen is never recorded.
